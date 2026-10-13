@@ -145,8 +145,8 @@ All calculations, point-in-time caches, and scripts are self-contained in this r
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/munger-factor-strategy.git
-cd munger-factor-strategy
+git clone https://github.com/rkenaley/munger-factor-system.git
+cd munger-factor-system
 
 # Execute turnkey reproduction (installs dependencies via uv and runs all tests)
 uv run python reproduce_all.py

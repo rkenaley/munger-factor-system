@@ -29,7 +29,7 @@ Clone and run the complete scientific verification pipeline (verifies datasets, 
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/munger-factor-system.git
+git clone https://github.com/rkenaley/munger-factor-system.git
 cd munger-factor-system
 
 # Run complete reproduction pipeline (with uv or standard python)
@@ -212,6 +212,6 @@ If you use this factor model, backtest engine, or options methodology in your re
   journal={Internal Strategy Whitepaper},
   year={2026},
   month={October},
-  url={https://github.com/your-username/munger-factor-system}
+  url={https://github.com/rkenaley/munger-factor-system}
 }
 ```
