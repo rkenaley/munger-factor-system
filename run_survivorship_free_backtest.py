@@ -33,6 +33,7 @@ def run_study():
     # 1. Load Data
     pkl_path = Path('data/historical_prices_1970_2026.pkl')
     gz_path = Path('data/historical_prices_1970_2026.pkl.gz')
+    xz_path = Path('data/historical_prices_1970_2026.pkl.xz')
     if pkl_path.exists():
         with open(pkl_path, 'rb') as f:
             ohlcv = pickle.load(f)
@@ -40,8 +41,12 @@ def run_study():
         import gzip
         with gzip.open(gz_path, 'rb') as f:
             ohlcv = pickle.load(f)
+    elif xz_path.exists():
+        import lzma
+        with lzma.open(xz_path, 'rb') as f:
+            ohlcv = pickle.load(f)
     else:
-        raise FileNotFoundError(f"Neither {pkl_path} nor {gz_path} was found.")
+        raise FileNotFoundError(f"No price dataset found at {pkl_path}, {gz_path}, or {xz_path}.")
     with open('data/sp100_nasdaq100_universe.json', 'r', encoding='utf-8') as f:
         fund_dict = json.load(f)
     with open('data/historical_quarterly_eps.json', 'r', encoding='utf-8') as f:
