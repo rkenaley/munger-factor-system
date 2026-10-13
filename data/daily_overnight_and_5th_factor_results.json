@@ -1,0 +1,62 @@
+[
+  {
+    "Strategy": "Base 4-Factor Daily (M >= 12x)",
+    "Total Alerts": 10858,
+    "Alerts/Day": 2.36,
+    "Active Days %": 97.6,
+    "Overnight Win %": "52.8%",
+    "Avg Overnight Gap": "+0.09%",
+    "Overnight Alpha": "+0.07%",
+    "3M Win Rate": "61.3%",
+    "3M Ret (MOC)": "+9.52%",
+    "3M Alpha (MOC)": "+6.79%",
+    "3M Ret (Next Open)": "+9.41%",
+    "3M Alpha (Next Open)": "+6.67%",
+    "MOC Execution Bonus": "+0.12%"
+  },
+  {
+    "Strategy": "+ Factor 5A: Sentiment Capitulation (RSI <= 42)",
+    "Total Alerts": 3778,
+    "Alerts/Day": 0.82,
+    "Active Days %": 47.2,
+    "Overnight Win %": "52.7%",
+    "Avg Overnight Gap": "+0.04%",
+    "Overnight Alpha": "+0.02%",
+    "3M Win Rate": "56.6%",
+    "3M Ret (MOC)": "+6.31%",
+    "3M Alpha (MOC)": "+4.53%",
+    "3M Ret (Next Open)": "+6.27%",
+    "3M Alpha (Next Open)": "+4.49%",
+    "MOC Execution Bonus": "+0.04%"
+  },
+  {
+    "Strategy": "+ Factor 5B: Volume Capitulation Climax (Vol >= 1.4x)",
+    "Total Alerts": 679,
+    "Alerts/Day": 0.15,
+    "Active Days %": 12.4,
+    "Overnight Win %": "53.9%",
+    "Avg Overnight Gap": "+0.10%",
+    "Overnight Alpha": "+0.08%",
+    "3M Win Rate": "60.7%",
+    "3M Ret (MOC)": "+9.23%",
+    "3M Alpha (MOC)": "+6.48%",
+    "3M Ret (Next Open)": "+9.09%",
+    "3M Alpha (Next Open)": "+6.34%",
+    "MOC Execution Bonus": "+0.15%"
+  },
+  {
+    "Strategy": "5-Factor Multiplier: Fund + Sentiment (M5 >= 18x)",
+    "Total Alerts": 10590,
+    "Alerts/Day": 2.3,
+    "Active Days %": 97.6,
+    "Overnight Win %": "52.9%",
+    "Avg Overnight Gap": "+0.09%",
+    "Overnight Alpha": "+0.07%",
+    "3M Win Rate": "61.3%",
+    "3M Ret (MOC)": "+9.51%",
+    "3M Alpha (MOC)": "+7.01%",
+    "3M Ret (Next Open)": "+9.40%",
+    "3M Alpha (Next Open)": "+6.90%",
+    "MOC Execution Bonus": "+0.11%"
+  }
+]

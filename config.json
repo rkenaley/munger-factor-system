@@ -1,0 +1,107 @@
+{
+  "investor_profile": {
+    "name": "Ryan",
+    "tax_status": "Married Filing Jointly",
+    "annual_income_usd": 500000,
+    "marginal_tax_rates": {
+      "federal_ordinary": 0.35,
+      "federal_ltcg": 0.20,
+      "niit": 0.038,
+      "state_ordinary": 0.0307,
+      "state_ltcg": 0.0307
+    },
+    "total_net_worth_target": 1950000
+  },
+  "accounts": [
+    {
+      "id": "taxable_brokerage",
+      "name": "Fidelity Taxable Brokerage",
+      "broker": "Fidelity",
+      "tax_type": "Taxable",
+      "current_cash_usd": 500000,
+      "holdings": {
+        "NVDA": {
+          "shares": 1600,
+          "est_value_usd": 200000,
+          "cost_basis_usd": 40000,
+          "unrealized_gain_usd": 160000,
+          "is_concentrated": true
+        },
+        "ROOTS": {
+          "shares": 2500,
+          "est_value_usd": 25000,
+          "cost_basis_usd": 25000,
+          "is_illiquid": true
+        },
+        "BTC": {
+          "shares": 0.20,
+          "est_value_usd": 12500,
+          "cost_basis_usd": 10000
+        },
+        "ETH": {
+          "shares": 4.0,
+          "est_value_usd": 12500,
+          "cost_basis_usd": 10000
+        }
+      }
+    },
+    {
+      "id": "roth_ira",
+      "name": "Fidelity Roth IRA",
+      "broker": "Fidelity",
+      "tax_type": "Roth",
+      "current_cash_usd": 200000,
+      "holdings": {}
+    },
+    {
+      "id": "traditional_retirement",
+      "name": "Fidelity / Employer 401(k) & Traditional IRA",
+      "broker": "Fidelity",
+      "tax_type": "Traditional",
+      "current_cash_usd": 1000000,
+      "holdings": {}
+    }
+  ],
+  "target_asset_allocation": {
+    "core_global_beta": 0.40,
+    "secular_ai_infrastructure": 0.18,
+    "quality_dividend_growth": 0.15,
+    "contrarian_real_estate": 0.09,
+    "fixed_income_preservation": 0.10,
+    "asymmetric_satellites": 0.05,
+    "cash_opportunistic_buffer": 0.03
+  },
+  "risk_limits": {
+    "max_single_stock_pct": 0.08,
+    "max_crypto_pct": 0.025,
+    "munger_buy_buffer_ratio": 1.05,
+    "opportunistic_pullback_triggers": [0.05, 0.08, 0.12]
+  },
+  "watchlist": [
+    "VTI",
+    "VT",
+    "AVGO",
+    "NVDA",
+    "GRID",
+    "ARE",
+    "SCHD",
+    "NOW",
+    "LYTE",
+    "AMAT",
+    "LRCX",
+    "DTCR",
+    "MSFT",
+    "TSM",
+    "ASML",
+    "NEE",
+    "BEPC",
+    "CWEN",
+    "IONQ",
+    "NBIS"
+  ],
+  "fidelity_export": {
+    "default_order_type": "LIMIT",
+    "default_time_in_force": "DAY",
+    "export_directory": "output"
+  }
+}

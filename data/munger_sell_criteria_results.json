@@ -1,0 +1,270 @@
+{
+  "2008 GFC Peak (18.8Y)": {
+    "Buy M>=4x | Mechanical 1Y Exit": {
+      "final_pre": 398789.5360530434,
+      "final_post": 102224.02586654287,
+      "cagr_pre": 0.37643503880815254,
+      "cagr_post": 0.2800128182251316,
+      "drag_bps": 964.2222058302096,
+      "avg_hold_yrs": 1.0141975183144598,
+      "max_hold_yrs": 1.0841889117043122,
+      "num_trades": 101,
+      "trade_win_rate": 0.6336633663366337
+    },
+    "Buy M>=4x | Dynamic M < 1.0": {
+      "final_pre": 520379.58599280776,
+      "final_post": 174560.01011444646,
+      "cagr_pre": 0.39611757464149844,
+      "cagr_post": 0.31708244082274506,
+      "drag_bps": 790.3513381875338,
+      "avg_hold_yrs": 2.3192203643949023,
+      "max_hold_yrs": 11.433264887063656,
+      "num_trades": 42,
+      "trade_win_rate": 0.8571428571428571
+    },
+    "Buy M>=4x | Dynamic M < 1.5 (User)": {
+      "final_pre": 520379.58599280776,
+      "final_post": 174560.01011444646,
+      "cagr_pre": 0.39611757464149844,
+      "cagr_post": 0.31708244082274506,
+      "drag_bps": 790.3513381875338,
+      "avg_hold_yrs": 2.3192203643949023,
+      "max_hold_yrs": 11.433264887063656,
+      "num_trades": 42,
+      "trade_win_rate": 0.8571428571428571
+    },
+    "Buy M>=4x | Dynamic M < 2.0": {
+      "final_pre": 520379.58599280776,
+      "final_post": 174560.01011444646,
+      "cagr_pre": 0.39611757464149844,
+      "cagr_post": 0.31708244082274506,
+      "drag_bps": 790.3513381875338,
+      "avg_hold_yrs": 2.3192203643949023,
+      "max_hold_yrs": 11.433264887063656,
+      "num_trades": 42,
+      "trade_win_rate": 0.8571428571428571
+    },
+    "Buy M>=4x | Dynamic M < 3.0": {
+      "final_pre": 520379.58599280776,
+      "final_post": 174560.01011444646,
+      "cagr_pre": 0.39611757464149844,
+      "cagr_post": 0.31708244082274506,
+      "drag_bps": 790.3513381875338,
+      "avg_hold_yrs": 2.3192203643949023,
+      "max_hold_yrs": 11.433264887063656,
+      "num_trades": 42,
+      "trade_win_rate": 0.8571428571428571
+    },
+    "Buy M>=4x | Dynamic M < 4.0": {
+      "final_pre": 568477.0399761649,
+      "final_post": 179513.57600915822,
+      "cagr_pre": 0.40271787935393455,
+      "cagr_post": 0.3190502059528342,
+      "drag_bps": 836.6767340110038,
+      "avg_hold_yrs": 2.28655110389507,
+      "max_hold_yrs": 11.433264887063656,
+      "num_trades": 43,
+      "trade_win_rate": 0.8604651162790697
+    },
+    "Buy M>=6x | Mechanical 1Y Exit": {
+      "final_pre": 352891.0705442629,
+      "final_post": 90941.83372246688,
+      "cagr_pre": 0.3674849226137942,
+      "cagr_post": 0.27205120305944885,
+      "drag_bps": 954.3371955434532,
+      "avg_hold_yrs": 1.0142635732099725,
+      "max_hold_yrs": 1.0841889117043122,
+      "num_trades": 87,
+      "trade_win_rate": 0.632183908045977
+    },
+    "Buy M>=6x | Dynamic M < 1.0": {
+      "final_pre": 248951.2382247629,
+      "final_post": 91529.86240066306,
+      "cagr_pre": 0.3422649891131453,
+      "cagr_post": 0.2724886920128491,
+      "drag_bps": 697.762971002962,
+      "avg_hold_yrs": 2.469161152939387,
+      "max_hold_yrs": 11.433264887063656,
+      "num_trades": 36,
+      "trade_win_rate": 0.8611111111111112
+    },
+    "Buy M>=6x | Dynamic M < 1.5 (User)": {
+      "final_pre": 248951.2382247629,
+      "final_post": 91529.86240066306,
+      "cagr_pre": 0.3422649891131453,
+      "cagr_post": 0.2724886920128491,
+      "drag_bps": 697.762971002962,
+      "avg_hold_yrs": 2.469161152939387,
+      "max_hold_yrs": 11.433264887063656,
+      "num_trades": 36,
+      "trade_win_rate": 0.8611111111111112
+    },
+    "Buy M>=6x | Dynamic M < 2.0": {
+      "final_pre": 248951.2382247629,
+      "final_post": 91529.86240066306,
+      "cagr_pre": 0.3422649891131453,
+      "cagr_post": 0.2724886920128491,
+      "drag_bps": 697.762971002962,
+      "avg_hold_yrs": 2.469161152939387,
+      "max_hold_yrs": 11.433264887063656,
+      "num_trades": 36,
+      "trade_win_rate": 0.8611111111111112
+    },
+    "Buy M>=6x | Dynamic M < 3.0": {
+      "final_pre": 248951.2382247629,
+      "final_post": 91529.86240066306,
+      "cagr_pre": 0.3422649891131453,
+      "cagr_post": 0.2724886920128491,
+      "drag_bps": 697.762971002962,
+      "avg_hold_yrs": 2.469161152939387,
+      "max_hold_yrs": 11.433264887063656,
+      "num_trades": 36,
+      "trade_win_rate": 0.8611111111111112
+    },
+    "Buy M>=6x | Dynamic M < 4.0": {
+      "final_pre": 275671.27024678385,
+      "final_post": 98209.9949500451,
+      "cagr_pre": 0.34958597004334746,
+      "cagr_post": 0.27728006145423834,
+      "drag_bps": 723.0590858910913,
+      "avg_hold_yrs": 2.4133784708733375,
+      "max_hold_yrs": 11.433264887063656,
+      "num_trades": 37,
+      "trade_win_rate": 0.8378378378378378
+    }
+  },
+  "1971 Stagflation (55.5Y)": {
+    "Buy M>=4x | Mechanical 1Y Exit": {
+      "final_pre": 784631499.3864477,
+      "final_post": 29324608.408568073,
+      "cagr_pre": 0.27559123542502206,
+      "cagr_post": 0.20257662856476144,
+      "drag_bps": 730.1460686026062,
+      "avg_hold_yrs": 1.0275772228478064,
+      "max_hold_yrs": 1.0869267624914443,
+      "num_trades": 186,
+      "trade_win_rate": 0.7150537634408602
+    },
+    "Buy M>=4x | Dynamic M < 1.0": {
+      "final_pre": 64221314.53290264,
+      "final_post": 7881685.7839434305,
+      "cagr_pre": 0.21960202948183127,
+      "cagr_post": 0.17457218975404754,
+      "drag_bps": 450.29839727783735,
+      "avg_hold_yrs": 1.9784531143052704,
+      "max_hold_yrs": 15.852156057494867,
+      "num_trades": 100,
+      "trade_win_rate": 0.76
+    },
+    "Buy M>=4x | Dynamic M < 1.5 (User)": {
+      "final_pre": 64221314.53290264,
+      "final_post": 7881685.7839434305,
+      "cagr_pre": 0.21960202948183127,
+      "cagr_post": 0.17457218975404754,
+      "drag_bps": 450.29839727783735,
+      "avg_hold_yrs": 1.9784531143052704,
+      "max_hold_yrs": 15.852156057494867,
+      "num_trades": 100,
+      "trade_win_rate": 0.76
+    },
+    "Buy M>=4x | Dynamic M < 2.0": {
+      "final_pre": 64221314.53290264,
+      "final_post": 7881685.7839434305,
+      "cagr_pre": 0.21960202948183127,
+      "cagr_post": 0.17457218975404754,
+      "drag_bps": 450.29839727783735,
+      "avg_hold_yrs": 1.9784531143052704,
+      "max_hold_yrs": 15.852156057494867,
+      "num_trades": 100,
+      "trade_win_rate": 0.76
+    },
+    "Buy M>=4x | Dynamic M < 3.0": {
+      "final_pre": 102753265.43517163,
+      "final_post": 7769733.565721165,
+      "cagr_pre": 0.22992504346161824,
+      "cagr_post": 0.17427088669283752,
+      "drag_bps": 556.5415676878072,
+      "avg_hold_yrs": 1.9702766991278182,
+      "max_hold_yrs": 16.522929500342233,
+      "num_trades": 101,
+      "trade_win_rate": 0.7623762376237624
+    },
+    "Buy M>=4x | Dynamic M < 4.0": {
+      "final_pre": 144147098.44997266,
+      "final_post": 11175020.457700886,
+      "cagr_pre": 0.23741404711619296,
+      "cagr_post": 0.1819495630649055,
+      "drag_bps": 554.6448405128746,
+      "avg_hold_yrs": 1.896134447080401,
+      "max_hold_yrs": 16.10130047912389,
+      "num_trades": 103,
+      "trade_win_rate": 0.7572815533980582
+    },
+    "Buy M>=6x | Mechanical 1Y Exit": {
+      "final_pre": 58780878.293882325,
+      "final_post": 2785961.0681214435,
+      "cagr_pre": 0.2176675196053255,
+      "cagr_post": 0.15286960744405653,
+      "drag_bps": 647.9791216126896,
+      "avg_hold_yrs": 1.023001549047156,
+      "max_hold_yrs": 1.0869267624914443,
+      "num_trades": 152,
+      "trade_win_rate": 0.6381578947368421
+    },
+    "Buy M>=6x | Dynamic M < 1.0": {
+      "final_pre": 18203780.09440893,
+      "final_post": 2208809.744871727,
+      "cagr_pre": 0.1923376951822222,
+      "cagr_post": 0.1480801316653393,
+      "drag_bps": 442.57563516882925,
+      "avg_hold_yrs": 2.066281457428012,
+      "max_hold_yrs": 15.852156057494867,
+      "num_trades": 86,
+      "trade_win_rate": 0.7441860465116279
+    },
+    "Buy M>=6x | Dynamic M < 1.5 (User)": {
+      "final_pre": 18203780.09440893,
+      "final_post": 2208809.744871727,
+      "cagr_pre": 0.1923376951822222,
+      "cagr_post": 0.1480801316653393,
+      "drag_bps": 442.57563516882925,
+      "avg_hold_yrs": 2.066281457428012,
+      "max_hold_yrs": 15.852156057494867,
+      "num_trades": 86,
+      "trade_win_rate": 0.7441860465116279
+    },
+    "Buy M>=6x | Dynamic M < 2.0": {
+      "final_pre": 18203780.09440893,
+      "final_post": 2208809.744871727,
+      "cagr_pre": 0.1923376951822222,
+      "cagr_post": 0.1480801316653393,
+      "drag_bps": 442.57563516882925,
+      "avg_hold_yrs": 2.066281457428012,
+      "max_hold_yrs": 15.852156057494867,
+      "num_trades": 86,
+      "trade_win_rate": 0.7441860465116279
+    },
+    "Buy M>=6x | Dynamic M < 3.0": {
+      "final_pre": 49218528.960675314,
+      "final_post": 3563873.1834108406,
+      "cagr_pre": 0.2137966134000937,
+      "cagr_post": 0.15797216333659536,
+      "drag_bps": 558.2445006349834,
+      "avg_hold_yrs": 2.0769463413081195,
+      "max_hold_yrs": 16.522929500342233,
+      "num_trades": 86,
+      "trade_win_rate": 0.7441860465116279
+    },
+    "Buy M>=6x | Dynamic M < 4.0": {
+      "final_pre": 72600334.1994783,
+      "final_post": 7243220.725196353,
+      "cagr_pre": 0.22228719551220344,
+      "cagr_post": 0.1727941292220867,
+      "drag_bps": 494.9306629011674,
+      "avg_hold_yrs": 1.9780016872801363,
+      "max_hold_yrs": 16.10130047912389,
+      "num_trades": 86,
+      "trade_win_rate": 0.7674418604651163
+    }
+  }
+}

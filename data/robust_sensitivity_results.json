@@ -1,0 +1,318 @@
+{
+  "triggers": [
+    {
+      "Trigger Name": "Strict Q1 Value",
+      "Signals": 8192,
+      "Sig/Wk": 8.79,
+      "Active Wks %": "100.0%",
+      "Win Rate": "62.0%",
+      "Fwd 3M Ret": "+6.27%",
+      "3M Alpha": "+3.14%",
+      "Fwd 1Y Ret": "+24.95%",
+      "Max DD": "-15.1%"
+    },
+    {
+      "Trigger Name": "Relaxed to Median",
+      "Signals": 23293,
+      "Sig/Wk": 24.99,
+      "Active Wks %": "100.0%",
+      "Win Rate": "62.1%",
+      "Fwd 3M Ret": "+5.23%",
+      "3M Alpha": "+2.21%",
+      "Fwd 1Y Ret": "+23.29%",
+      "Max DD": "-14.2%"
+    },
+    {
+      "Trigger Name": "Dislocation Quality",
+      "Signals": 17827,
+      "Sig/Wk": 19.13,
+      "Active Wks %": "100.0%",
+      "Win Rate": "64.4%",
+      "Fwd 3M Ret": "+5.62%",
+      "3M Alpha": "+2.41%",
+      "Fwd 1Y Ret": "+26.45%",
+      "Max DD": "-13.4%"
+    },
+    {
+      "Trigger Name": "+0.5 SD Quality",
+      "Signals": 13202,
+      "Sig/Wk": 14.17,
+      "Active Wks %": "100.0%",
+      "Win Rate": "63.2%",
+      "Fwd 3M Ret": "+6.62%",
+      "3M Alpha": "+3.66%",
+      "Fwd 1Y Ret": "+30.57%",
+      "Max DD": "-14.9%"
+    },
+    {
+      "Trigger Name": "+1.0 SD Quality",
+      "Signals": 6020,
+      "Sig/Wk": 6.46,
+      "Active Wks %": "100.0%",
+      "Win Rate": "63.4%",
+      "Fwd 3M Ret": "+8.6%",
+      "3M Alpha": "+5.32%",
+      "Fwd 1Y Ret": "+41.17%",
+      "Max DD": "-16.6%"
+    },
+    {
+      "Trigger Name": "+1.5 SD Quality",
+      "Signals": 4406,
+      "Sig/Wk": 4.73,
+      "Active Wks %": "100.0%",
+      "Win Rate": "61.8%",
+      "Fwd 3M Ret": "+8.88%",
+      "3M Alpha": "+5.79%",
+      "Fwd 1Y Ret": "+41.64%",
+      "Max DD": "-17.2%"
+    },
+    {
+      "Trigger Name": "+2.0 SD Outlier Quality",
+      "Signals": 3022,
+      "Sig/Wk": 3.24,
+      "Active Wks %": "99.8%",
+      "Win Rate": "59.9%",
+      "Fwd 3M Ret": "+9.95%",
+      "3M Alpha": "+6.73%",
+      "Fwd 1Y Ret": "+46.09%",
+      "Max DD": "-18.9%"
+    },
+    {
+      "Trigger Name": "Multiplier >= 4.0x",
+      "Signals": 4314,
+      "Sig/Wk": 4.63,
+      "Active Wks %": "98.3%",
+      "Win Rate": "66.2%",
+      "Fwd 3M Ret": "+9.41%",
+      "3M Alpha": "+6.18%",
+      "Fwd 1Y Ret": "+44.07%",
+      "Max DD": "-16.6%"
+    },
+    {
+      "Trigger Name": "Multiplier >= 6.0x",
+      "Signals": 3509,
+      "Sig/Wk": 3.77,
+      "Active Wks %": "98.2%",
+      "Win Rate": "65.1%",
+      "Fwd 3M Ret": "+8.82%",
+      "3M Alpha": "+5.81%",
+      "Fwd 1Y Ret": "+41.86%",
+      "Max DD": "-17.0%"
+    },
+    {
+      "Trigger Name": "Multiplier >= 8.0x",
+      "Signals": 2697,
+      "Sig/Wk": 2.89,
+      "Active Wks %": "98.2%",
+      "Win Rate": "63.7%",
+      "Fwd 3M Ret": "+9.2%",
+      "3M Alpha": "+6.27%",
+      "Fwd 1Y Ret": "+44.98%",
+      "Max DD": "-17.8%"
+    },
+    {
+      "Trigger Name": "Multiplier >= 10.0x",
+      "Signals": 2290,
+      "Sig/Wk": 2.46,
+      "Active Wks %": "97.3%",
+      "Win Rate": "62.7%",
+      "Fwd 3M Ret": "+9.6%",
+      "3M Alpha": "+6.52%",
+      "Fwd 1Y Ret": "+47.17%",
+      "Max DD": "-18.5%"
+    },
+    {
+      "Trigger Name": "Multiplier >= 12.0x (Optimal)",
+      "Signals": 2070,
+      "Sig/Wk": 2.22,
+      "Active Wks %": "96.9%",
+      "Win Rate": "62.6%",
+      "Fwd 3M Ret": "+10.11%",
+      "3M Alpha": "+6.75%",
+      "Fwd 1Y Ret": "+48.91%",
+      "Max DD": "-18.7%"
+    },
+    {
+      "Trigger Name": "Multiplier >= 14.0x",
+      "Signals": 1978,
+      "Sig/Wk": 2.12,
+      "Active Wks %": "95.8%",
+      "Win Rate": "62.2%",
+      "Fwd 3M Ret": "+9.99%",
+      "3M Alpha": "+6.59%",
+      "Fwd 1Y Ret": "+48.29%",
+      "Max DD": "-18.9%"
+    },
+    {
+      "Trigger Name": "Multiplier >= 16.0x",
+      "Signals": 1949,
+      "Sig/Wk": 2.09,
+      "Active Wks %": "95.7%",
+      "Win Rate": "62.0%",
+      "Fwd 3M Ret": "+9.92%",
+      "3M Alpha": "+6.51%",
+      "Fwd 1Y Ret": "+47.44%",
+      "Max DD": "-18.9%"
+    },
+    {
+      "Trigger Name": "Multiplier >= 18.0x (Generational)",
+      "Signals": 1925,
+      "Sig/Wk": 2.07,
+      "Active Wks %": "95.7%",
+      "Win Rate": "61.7%",
+      "Fwd 3M Ret": "+9.8%",
+      "3M Alpha": "+6.41%",
+      "Fwd 1Y Ret": "+46.31%",
+      "Max DD": "-19.0%"
+    },
+    {
+      "Trigger Name": "Multiplier >= 25.0x (Outlier)",
+      "Signals": 1636,
+      "Sig/Wk": 1.76,
+      "Active Wks %": "93.2%",
+      "Win Rate": "61.1%",
+      "Fwd 3M Ret": "+10.03%",
+      "3M Alpha": "+6.65%",
+      "Fwd 1Y Ret": "+48.8%",
+      "Max DD": "-19.4%"
+    }
+  ],
+  "ablations": [
+    {
+      "Ablation Test": "Base 4-Factor (Full MUNGER)",
+      "Signals": 2070,
+      "Win Rate": "62.6%",
+      "Fwd 3M": "+10.11%",
+      "3M Alpha": "+6.75%",
+      "Fwd 1Y": "+48.91%",
+      "Max DD": "-18.7%"
+    },
+    {
+      "Ablation Test": "Ablation 1: Drop Growth (-g)",
+      "Signals": 2180,
+      "Win Rate": "62.3%",
+      "Fwd 3M": "+11.41%",
+      "3M Alpha": "+8.26%",
+      "Fwd 1Y": "+55.42%",
+      "Max DD": "-19.5%"
+    },
+    {
+      "Ablation Test": "Ablation 2: Drop ROIC (-r)",
+      "Signals": 5309,
+      "Win Rate": "59.6%",
+      "Fwd 3M": "+7.3%",
+      "3M Alpha": "+4.13%",
+      "Fwd 1Y": "+33.24%",
+      "Max DD": "-16.9%"
+    },
+    {
+      "Ablation Test": "Ablation 3: Drop Yield / Value (-y)",
+      "Signals": 7904,
+      "Win Rate": "65.3%",
+      "Fwd 3M": "+9.52%",
+      "3M Alpha": "+6.24%",
+      "Fwd 1Y": "+41.98%",
+      "Max DD": "-17.7%"
+    },
+    {
+      "Ablation Test": "Ablation 4: Drop Debt Solvency (-s)",
+      "Signals": 3809,
+      "Win Rate": "61.6%",
+      "Fwd 3M": "+8.24%",
+      "3M Alpha": "+5.06%",
+      "Fwd 1Y": "+44.16%",
+      "Max DD": "-17.7%"
+    }
+  ],
+  "weightings": [
+    {
+      "Weighting Scheme": "Equal Weight: (1+Z)^1.0",
+      "Signals": 2070,
+      "Win Rate": "62.6%",
+      "Fwd 3M": "+10.11%",
+      "3M Alpha": "+6.75%",
+      "Fwd 1Y": "+48.91%",
+      "Max DD": "-18.7%"
+    },
+    {
+      "Weighting Scheme": "Growth-Tilt: (1+Z_g)^1.5",
+      "Signals": 2373,
+      "Win Rate": "63.0%",
+      "Fwd 3M": "+9.54%",
+      "3M Alpha": "+6.49%",
+      "Fwd 1Y": "+46.09%",
+      "Max DD": "-18.2%"
+    },
+    {
+      "Weighting Scheme": "ROIC-Tilt: (1+Z_r)^1.5",
+      "Signals": 2158,
+      "Win Rate": "62.2%",
+      "Fwd 3M": "+9.88%",
+      "3M Alpha": "+6.6%",
+      "Fwd 1Y": "+48.93%",
+      "Max DD": "-18.8%"
+    },
+    {
+      "Weighting Scheme": "Value-Tilt: (1+Z_y)^1.5",
+      "Signals": 2135,
+      "Win Rate": "62.4%",
+      "Fwd 3M": "+10.09%",
+      "3M Alpha": "+6.86%",
+      "Fwd 1Y": "+49.29%",
+      "Max DD": "-18.7%"
+    },
+    {
+      "Weighting Scheme": "Solvency-Tilt: (1+Z_s)^1.5",
+      "Signals": 2181,
+      "Win Rate": "62.2%",
+      "Fwd 3M": "+9.65%",
+      "3M Alpha": "+6.64%",
+      "Fwd 1Y": "+46.66%",
+      "Max DD": "-18.6%"
+    }
+  ],
+  "hurdles": [
+    {
+      "Hurdle Level": "Sub-Median Hurdle: Z >= -0.25",
+      "Signals": 3900,
+      "Win Rate": "60.0%",
+      "Fwd 3M": "+9.38%",
+      "3M Alpha": "+6.15%",
+      "Fwd 1Y": "+41.72%",
+      "Max DD": "-18.3%"
+    },
+    {
+      "Hurdle Level": "Median Hurdle: Z >= 0.0 (Base)",
+      "Signals": 2070,
+      "Win Rate": "62.6%",
+      "Fwd 3M": "+10.11%",
+      "3M Alpha": "+6.75%",
+      "Fwd 1Y": "+48.91%",
+      "Max DD": "-18.7%"
+    },
+    {
+      "Hurdle Level": "Above-Median Hurdle: Z >= +0.25",
+      "Signals": 1485,
+      "Win Rate": "61.3%",
+      "Fwd 3M": "+10.51%",
+      "3M Alpha": "+7.33%",
+      "Fwd 1Y": "+53.44%",
+      "Max DD": "-18.8%"
+    },
+    {
+      "Hurdle Level": "Quartile Hurdle: Z >= +0.67 (Q3)",
+      "Signals": 914,
+      "Win Rate": "59.4%",
+      "Fwd 3M": "+9.0%",
+      "3M Alpha": "+6.07%",
+      "Fwd 1Y": "+32.19%",
+      "Max DD": "-19.4%"
+    }
+  ],
+  "universe_medians": {
+    "sales_growth_med": 13.76436813998114,
+    "roic_med": 19.82703862660944,
+    "pe_med": 16.904155491528577,
+    "de_med": 59.708921673819745
+  }
+}

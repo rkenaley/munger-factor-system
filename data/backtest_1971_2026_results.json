@@ -1,0 +1,150 @@
+{
+  "overall": [
+    {
+      "Strategy": "Strict Q1 Deep Value",
+      "Signals": 16160,
+      "Win Rate (3M)": "61.5%",
+      "Fwd 1M Ret": "+2.06%",
+      "Fwd 3M Ret": "+6.17%",
+      "S&P 3M Ret": "+2.32%",
+      "3M Alpha vs S&P": "+3.85%",
+      "Fwd 6M Ret": "+12.51%",
+      "Fwd 1Y Ret": "+26.72%",
+      "Max DD (3M)": "-16.0%"
+    },
+    {
+      "Strategy": "Relaxed to Median (All 4)",
+      "Signals": 39796,
+      "Win Rate (3M)": "61.6%",
+      "Fwd 1M Ret": "+1.74%",
+      "Fwd 3M Ret": "+5.32%",
+      "S&P 3M Ret": "+2.34%",
+      "3M Alpha vs S&P": "+2.97%",
+      "Fwd 6M Ret": "+10.64%",
+      "Fwd 1Y Ret": "+23.14%",
+      "Max DD (3M)": "-14.9%"
+    },
+    {
+      "Strategy": "Multiplier >= 6.0x",
+      "Signals": 8179,
+      "Win Rate (3M)": "63.5%",
+      "Fwd 1M Ret": "+2.61%",
+      "Fwd 3M Ret": "+7.90%",
+      "S&P 3M Ret": "+2.44%",
+      "3M Alpha vs S&P": "+5.46%",
+      "Fwd 6M Ret": "+16.59%",
+      "Fwd 1Y Ret": "+38.33%",
+      "Max DD (3M)": "-17.9%"
+    },
+    {
+      "Strategy": "Multiplier >= 10.0x",
+      "Signals": 5473,
+      "Win Rate (3M)": "61.3%",
+      "Fwd 1M Ret": "+2.60%",
+      "Fwd 3M Ret": "+7.69%",
+      "S&P 3M Ret": "+2.30%",
+      "3M Alpha vs S&P": "+5.39%",
+      "Fwd 6M Ret": "+16.09%",
+      "Fwd 1Y Ret": "+37.96%",
+      "Max DD (3M)": "-19.1%"
+    },
+    {
+      "Strategy": "Multiplier >= 12.0x (Optimal)",
+      "Signals": 4818,
+      "Win Rate (3M)": "61.0%",
+      "Fwd 1M Ret": "+2.46%",
+      "Fwd 3M Ret": "+7.65%",
+      "S&P 3M Ret": "+2.34%",
+      "3M Alpha vs S&P": "+5.31%",
+      "Fwd 6M Ret": "+16.27%",
+      "Fwd 1Y Ret": "+38.26%",
+      "Max DD (3M)": "-19.5%"
+    },
+    {
+      "Strategy": "Multiplier >= 16.0x",
+      "Signals": 3915,
+      "Win Rate (3M)": "60.9%",
+      "Fwd 1M Ret": "+2.41%",
+      "Fwd 3M Ret": "+7.39%",
+      "S&P 3M Ret": "+2.25%",
+      "3M Alpha vs S&P": "+5.14%",
+      "Fwd 6M Ret": "+15.81%",
+      "Fwd 1Y Ret": "+37.92%",
+      "Max DD (3M)": "-20.1%"
+    },
+    {
+      "Strategy": "Multiplier >= 18.0x (Generational)",
+      "Signals": 3709,
+      "Win Rate (3M)": "60.3%",
+      "Fwd 1M Ret": "+2.41%",
+      "Fwd 3M Ret": "+7.26%",
+      "S&P 3M Ret": "+2.21%",
+      "3M Alpha vs S&P": "+5.05%",
+      "Fwd 6M Ret": "+15.63%",
+      "Fwd 1Y Ret": "+37.49%",
+      "Max DD (3M)": "-20.4%"
+    }
+  ],
+  "regimes": [
+    {
+      "Strategy": "1971-1981 (Stagflation & Volcker)",
+      "Signals": 182,
+      "Win Rate (3M)": "57.1%",
+      "Fwd 1M Ret": "+2.96%",
+      "Fwd 3M Ret": "+10.23%",
+      "S&P 3M Ret": "+1.20%",
+      "3M Alpha vs S&P": "+9.03%",
+      "Fwd 6M Ret": "+19.15%",
+      "Fwd 1Y Ret": "+35.50%",
+      "Max DD (3M)": "-16.5%"
+    },
+    {
+      "Strategy": "1982-1999 (Disinflation Bull)",
+      "Signals": 758,
+      "Win Rate (3M)": "65.4%",
+      "Fwd 1M Ret": "+3.46%",
+      "Fwd 3M Ret": "+10.38%",
+      "S&P 3M Ret": "+4.46%",
+      "3M Alpha vs S&P": "+5.93%",
+      "Fwd 6M Ret": "+21.75%",
+      "Fwd 1Y Ret": "+44.90%",
+      "Max DD (3M)": "-15.9%"
+    },
+    {
+      "Strategy": "2000-2007 (Dot-Com Bust & Housing)",
+      "Signals": 1001,
+      "Win Rate (3M)": "59.6%",
+      "Fwd 1M Ret": "+2.55%",
+      "Fwd 3M Ret": "+7.92%",
+      "S&P 3M Ret": "+0.70%",
+      "3M Alpha vs S&P": "+7.22%",
+      "Fwd 6M Ret": "+14.80%",
+      "Fwd 1Y Ret": "+26.31%",
+      "Max DD (3M)": "-23.7%"
+    },
+    {
+      "Strategy": "2008-2022 (GFC, ZIRP & Tightening)",
+      "Signals": 2580,
+      "Win Rate (3M)": "59.3%",
+      "Fwd 1M Ret": "+1.61%",
+      "Fwd 3M Ret": "+4.94%",
+      "S&P 3M Ret": "+2.04%",
+      "3M Alpha vs S&P": "+2.90%",
+      "Fwd 6M Ret": "+10.32%",
+      "Fwd 1Y Ret": "+22.43%",
+      "Max DD (3M)": "-19.2%"
+    },
+    {
+      "Strategy": "2023-2026 (AI Infrastructure Supercycle)",
+      "Signals": 297,
+      "Win Rate (3M)": "70.7%",
+      "Fwd 1M Ret": "+6.76%",
+      "Fwd 3M Ret": "+21.73%",
+      "S&P 3M Ret": "+5.82%",
+      "3M Alpha vs S&P": "+15.91%",
+      "Fwd 6M Ret": "+57.17%",
+      "Fwd 1Y Ret": "+200.82%",
+      "Max DD (3M)": "-19.1%"
+    }
+  ]
+}

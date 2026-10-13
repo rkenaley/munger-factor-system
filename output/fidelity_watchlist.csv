@@ -1,0 +1,21 @@
+Symbol,Company Name,Theme,Current Price ($),RSI (14d),Extremizing Status,Extremizing Index,Munger 200w Gating,Buy Below ($),Trim Above ($),Master Signal
+VTI,Vanguard Total Stock Market,Core Total US Equity Beta,381.80,58.3,NEUTRAL,30.2,CLOSED (+38.6%),152.72,229.08,TRIM / WRITE COVERED CALL
+VT,VT,Watchlist,159.63,51.4,NEUTRAL,4.7,CLOSED (+37.1%),63.85,95.78,TRIM / WRITE COVERED CALL
+AVGO,Broadcom Inc.,Custom AI ASICs & Networking,358.52,48.5,NEUTRAL,-9.5,CLOSED (+73.6%),191.67,287.50,TRIM / WRITE COVERED CALL
+NVDA,NVIDIA Corporation,AI Compute Leadership,226.76,49.9,NEUTRAL,16.4,CLOSED (+89.2%),97.91,146.87,TRIM / WRITE COVERED CALL
+GRID,First Trust Smart Grid ETF,AI Power Grid & Transformers,180.16,50.9,NEUTRAL,0.9,CLOSED (+42.0%),72.06,108.10,TRIM / WRITE COVERED CALL
+ARE,Alexandria Real Estate,Life Science Mega-Campuses,43.93,30.0,EXTREME_OVERSOLD,-68.0,OPEN (BUY),32.15,48.22,BUY (EXTREME VALUE / GATING OPEN)
+SCHD,Schwab US Dividend Equity,Quality Dividend Compounding,33.13,47.0,NEUTRAL,-9.7,CLOSED (+29.4%),13.25,19.88,TRIM / WRITE COVERED CALL
+NOW,"ServiceNow, Inc.",Enterprise AI Workflow SaaS,143.72,60.8,NEUTRAL,31.2,OPEN (BUY),57.49,86.23,BUY (EXTREME VALUE / GATING OPEN)
+LYTE,Roundhill Photonics ETF,AI Optical Interconnects,23.44,42.3,NEUTRAL,-7.7,CLOSED (+17.6%),9.38,14.06,TRIM / WRITE COVERED CALL
+AMAT,Applied Materials,Materials Engineering & GAA,496.51,50.5,NEUTRAL,14.1,CLOSED (+120.8%),206.22,309.33,TRIM / WRITE COVERED CALL
+LRCX,Lam Research,Semiconductor Etch & Deposition,311.60,47.6,NEUTRAL,7.3,CLOSED (+151.8%),124.64,186.96,TRIM / WRITE COVERED CALL
+DTCR,Global X Data Center REITs,Data Center Landlords,27.57,48.0,NEUTRAL,-10.5,CLOSED (+53.6%),11.03,16.54,TRIM / WRITE COVERED CALL
+MSFT,Microsoft Corporation,Enterprise Cloud & Copilot,539.64,69.4,OVERBOUGHT,69.1,CLOSED (+34.8%),215.86,323.78,TRIM / WRITE COVERED CALL
+TSM,Taiwan Semiconductor,Foundry Monopoly,450.02,50.7,NEUTRAL,22.9,CLOSED (+118.6%),340.40,510.60,HOLD / TRANCHE ACCUMULATE
+ASML,ASML Holding,EUV Lithography Monopoly,1767.67,50.8,NEUTRAL,15.7,CLOSED (+89.0%),712.03,1068.05,TRIM / WRITE COVERED CALL
+NEE,NextEra Energy,Clean Energy & Regulated Power,78.01,45.0,OVERSOLD,-24.8,CLOSED (+9.4%),36.09,54.13,ACCUMULATE (DIP BUY)
+BEPC,Brookfield Renewable,Hydro & Solar Power Yield,29.42,46.0,OVERSOLD,-44.7,OPEN (BUY),17.35,26.02,BUY (EXTREME VALUE / GATING OPEN)
+CWEN,Clearway Energy,Contracted Clean Power,30.32,49.0,OVERSOLD,-20.1,CLOSED (+12.9%),14.90,22.36,ACCUMULATE (DIP BUY)
+IONQ,"IonQ, Inc.",Trapped-Ion Quantum Moonshot,36.45,35.3,OVERSOLD,-47.8,CLOSED (+38.9%),29.16,43.74,ACCUMULATE (DIP BUY)
+NBIS,Nebius Group N.V.,Pure-Play AI GPU Neo-Cloud,210.50,42.9,NEUTRAL,2.1,CLOSED (+105.4%),168.40,252.60,HOLD / TRANCHE ACCUMULATE

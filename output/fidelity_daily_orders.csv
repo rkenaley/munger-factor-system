@@ -1,0 +1,9 @@
+Order ID,Account Name,Ticker,Action,Order Type,Limit Price ($),Quantity,Est Principal ($),Target Tier,Urgency,Fidelity Execution Instructions
+FID-TX-001,Fidelity Taxable Brokerage,VTI,BUY,LIMIT,381.04,327,124600.08,Core Global Beta,TRANCHE_SCHEDULE,Buy 327 shares of VTI with Limit @ $381.04 (Day order). Account: Taxable Brokerage.
+FID-TX-002,Fidelity Taxable Brokerage,GRID,BUY,LIMIT,179.26,138,24737.88,Secular AI Infrastructure,TRANCHE_SCHEDULE,Buy 138 shares of GRID with Limit @ $179.26 (Day order). Account: Taxable Brokerage.
+FID-TX-003,Fidelity Taxable Brokerage,NVDA,WRITE_COVERED_CALL,LIMIT,3.50,4,1400.00,Risk Management Collar,IMMEDIATE,"Sell to Open 4 contracts NVDA Calls @ Strike $261, Expiration 30-45 days out. Account: Taxable Brokerage."
+FID-ROTH-004,Fidelity Roth IRA,AVGO,BUY,LIMIT,356.73,167,59573.91,Secular AI Infrastructure,IMMEDIATE,Buy 167 shares of AVGO with Limit @ $356.73. Account: Roth IRA.
+FID-ROTH-005,Fidelity Roth IRA,NOW,BUY,LIMIT,143.00,347,49621.00,Enterprise AI Software,TRANCHE_SCHEDULE,Buy 347 shares of NOW with Limit @ $143.00. Account: Roth IRA.
+FID-ROTH-006,Fidelity Roth IRA,LYTE,BUY,LIMIT,23.21,1706,39596.26,Thematic Photonics,TRANCHE_SCHEDULE,Buy 1706 shares of LYTE with Limit @ $23.21. Account: Roth IRA.
+FID-RET-007,Traditional 401(k) / IRA,ARE,BUY,LIMIT,43.58,2276,99188.08,Contrarian Real Estate,OPPORTUNISTIC_DIP,Buy 2276 shares of ARE with Limit @ $43.58. Account: Traditional IRA/401(k).
+FID-RET-008,Traditional 401(k) / IRA,SCHD,BUY,LIMIT,33.06,4527,149662.62,Quality Value & Dividend Growth,TRANCHE_SCHEDULE,Buy 4527 shares of SCHD with Limit @ $33.06. Account: Traditional IRA/401(k).

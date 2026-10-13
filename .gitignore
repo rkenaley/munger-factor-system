@@ -1,0 +1,55 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Pytest / Unit test caches
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# LaTeX intermediate build files (keep whitepaper.pdf, whitepaper.tex)
+docs/*.aux
+docs/*.log
+docs/*.out
+docs/*.xdv
+docs/*.synctex.gz
+
+# Large uncompressed cache (>50MB GitHub warning limit)
+# Note: The compressed 28MB archive 'data/historical_prices_1970_2026.pkl.gz' is tracked instead
+data/historical_prices_1970_2026.pkl
