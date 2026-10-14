@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "munger-factor-system"
-version = "2.0.0"
-description = "Audited, Vectorized, Zero-Lookahead Quantitative Munger Factor Backtesting & Options Overlay System"
+version = "2.2.0"
+description = "Audited, Vectorized, Zero-Lookahead Quantitative Munger Factor System & Fidelity Control Center"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
@@ -14,20 +14,22 @@ dependencies = [
     "pandas>=2.0.0",
     "matplotlib>=3.8.0",
     "scipy>=1.10.0",
-]
-
-[project.optional-dependencies]
-data = [
     "yfinance>=0.2.36",
+    "edgartools>=5.0.0",
+    "finvizfinance>=1.0.0",
     "requests>=2.31.0",
     "beautifulsoup4>=4.12.0",
     "openpyxl>=3.1.0",
 ]
+
+[project.optional-dependencies]
 dev = [
     "pytest>=7.4.0",
 ]
 
 [tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["fidelity_control"]
 py-modules = [
     "munger_engine",
     "run_survivorship_free_backtest",
@@ -36,6 +38,7 @@ py-modules = [
     "optimize_1y_threshold_1971_2008",
     "optimize_call_tenors",
     "simulate_call_spreads",
+    "scan_strike_zone",
     "reproduce_all",
     "test_causality_and_performance",
 ]
@@ -43,4 +46,6 @@ py-modules = [
 [project.scripts]
 munger-reproduce = "reproduce_all:main"
 munger-backtest = "run_survivorship_free_backtest:main"
+munger-scan = "scan_strike_zone:run_strike_zone_scan"
 munger-test = "test_causality_and_performance:main"
+fidelity-control = "fidelity_control.cli:main"

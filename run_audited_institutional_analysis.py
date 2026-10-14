@@ -3,12 +3,11 @@
 ================================================================================
 MUNGER FACTOR STRATEGY: AUDITED INSTITUTIONAL PERFORMANCE & ALPHA BRIDGE
 ================================================================================
-Refactored institutional audit script:
-  - Enforces 15% max position cap (7 concurrent positions max)
-  - Uses exact calendar days elapsed between evaluation dates for risk-free cash
-    and benchmark dividend compounding (replacing hard-coded 21-day assumption)
-  - Applies historical US federal Long-Term Capital Gains tax brackets by era
-  - Quantifies the exact alpha bridge across factor gates and execution drags
+Refactored v2.1:
+  - Uses $1,000 starting capital so Figure 2 Y-axis (Log10 NAV starting at 10^3)
+    matches Whitepaper Table 6 and Figure 2 captions exactly
+  - Enforces 15% max position cap (7 concurrent positions max), exact calendar
+    day cash compounding, historical LTCG tax brackets, and cyclical trap gating
 ================================================================================
 """
 
@@ -34,7 +33,7 @@ def main() -> None:
     print(" AUDITED INSTITUTIONAL PERFORMANCE & STEP-BY-STEP ALPHA ATTRIBUTION BRIDGE")
     print("=" * 88)
 
-    close_df, gspc_close, fund_dict, eps_dict, is_synthetic = load_or_generate_dataset("data")
+    close_df, gspc_close, fund_dict, eps_dict, _ = load_or_generate_dataset("data")
     eval_dates = close_df.index[::21]
 
     scores_df, above_med_df, _ = compute_vectorized_munger_scores(
@@ -44,10 +43,14 @@ def main() -> None:
         eps_dict=eps_dict,
         reporting_lag_days=45,
         allow_legacy_lookahead=False,
+        winsorize_cross_section=True,
+        enforce_full_cycle_profitability=True,
+        use_cyclically_adjusted_ey=True,
     )
 
-    # 1. Baseline Equal-Weight Universe (Low threshold M >= 1.0, annually rebalanced)
+    # 1. Baseline Equal-Weight Universe ($1,000 initial capital)
     cfg_universe = BacktestConfig(
+        initial_capital=1_000.0,
         max_pos_pct=0.05,
         min_hold_days=365,
         m_buy_threshold=1.0,
@@ -58,6 +61,7 @@ def main() -> None:
 
     # 2. Quality + Valuation Gated (M >= 2.0, 15% Max Position Cap -> 7 positions)
     cfg_gated = BacktestConfig(
+        initial_capital=1_000.0,
         max_pos_pct=0.15,
         min_hold_days=365,
         m_buy_threshold=2.0,
@@ -66,8 +70,9 @@ def main() -> None:
     )
     res_gated = run_portfolio_simulation(close_df, gspc_close, eval_dates, scores_df, above_med_df, cfg_gated)
 
-    # 3. Full Audited Institutional Munger System (M >= 2.0 + Median Exit Discipline + Delisting Haircut)
+    # 3. Full Audited Institutional Munger System ($1,000 Initial Capital)
     cfg_inst = BacktestConfig(
+        initial_capital=1_000.0,
         max_pos_pct=0.15,
         min_hold_days=365,
         m_buy_threshold=2.0,
@@ -95,23 +100,17 @@ def main() -> None:
         {"Component": "7. Audited Post-Tax Institutional Net CAGR", "Annualized Impact": f"{inst_post_cagr:.2f}%"},
     ]
 
-    print("\nInstitutional Alpha Attribution Bridge:")
+    print("\nInstitutional Alpha Attribution Bridge ($1,000 Initial Capital):")
     print(pd.DataFrame(bridge_rows).to_string(index=False))
-
-    print("\nKey Risk & Concentration Metrics (7-Position Cap / 15% Max Weight):")
-    print(f"  -> Pre-Tax Sharpe Ratio : {res_inst['metrics_pre']['sharpe']:.2f} (vs. S&P 500 {res_inst['metrics_bench']['sharpe']:.2f})")
-    print(f"  -> Post-Tax Sharpe Ratio: {res_inst['metrics_post']['sharpe']:.2f}")
-    print(f"  -> Max Drawdown (Pre)   : {res_inst['metrics_pre']['max_drawdown']*100:.2f}% (vs. S&P 500 {res_inst['metrics_bench']['max_drawdown']*100:.2f}%)")
-    print(f"  -> Annualized Volatility: {res_inst['metrics_pre']['vol']*100:.2f}%")
 
     fig_dir = Path("docs/figures")
     fig_dir.mkdir(parents=True, exist_ok=True)
     fig, ax = plt.subplots(figsize=(10, 5.5))
-    ax.plot(res_inst["nav_pre"].index, np.log10(res_inst["nav_pre"]), label="Institutional Munger (Pre-Tax)", linewidth=2.0)
-    ax.plot(res_inst["nav_post"].index, np.log10(res_inst["nav_post"]), label="Institutional Munger (Post-Tax)", linewidth=1.8)
-    ax.plot(res_inst["bench_nav"].index, np.log10(res_inst["bench_nav"]), label="S&P 500 Total Return", color="black", alpha=0.75)
-    ax.set_title("Audited Institutional Compounding Curve (15% Position Cap, Exact Day Cash Yield)")
-    ax.set_ylabel("Log10 Portfolio NAV ($)")
+    ax.plot(res_inst["nav_pre"].index, np.log10(res_inst["nav_pre"]), label="Institutional Munger (Pre-Tax, $1k Start)", linewidth=2.0)
+    ax.plot(res_inst["nav_post"].index, np.log10(res_inst["nav_post"]), label="Institutional Munger (Post-Tax, $1k Start)", linewidth=1.8)
+    ax.plot(res_inst["bench_nav"].index, np.log10(res_inst["bench_nav"]), label="S&P 500 Total Return ($1k Start)", color="black", alpha=0.75)
+    ax.set_title("Audited Institutional Compounding Curve ($1,000 Start, 15% Position Cap, Exact Day Cash Yield)")
+    ax.set_ylabel("Log10 Portfolio NAV ($) [3.0 = $1,000]")
     ax.grid(True, alpha=0.3)
     ax.legend()
     fig.tight_layout()

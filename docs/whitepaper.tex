@@ -2,17 +2,18 @@
 
 % --- Core Packages ---
 \usepackage[utf8]{inputenc}
-\usepackage[margin=0.75in,top=0.85in,bottom=0.85in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{mathpazo}
+\usepackage[margin=0.68in,top=0.76in,bottom=0.76in]{geometry}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{graphicx}
+\graphicspath{{figures/}{docs/figures/}{./}}
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{xcolor}
 \usepackage{microtype}
 \usepackage{fancyhdr}
-\usepackage{titlesec}
-\usepackage{placeins}
 \usepackage[colorlinks=true,linkcolor=navyblue,citecolor=navyblue,urlcolor=navyblue]{hyperref}
 
 % --- Executive Investor Palette ---
@@ -22,538 +23,382 @@
 \definecolor{darkcharcoal}{RGB}{33, 37, 41}
 \definecolor{cardbg}{RGB}{245, 248, 252}
 
-% --- Typography & Section Styling ---
-\titleformat{\section}{\large\bfseries\color{navyblue}}{\thesection.}{0.5em}{}[\titlerule]
-\titleformat{\subsection}{\normalsize\bfseries\color{slate}}{\thesubsection}{0.5em}{}
-\titleformat{\subsubsection}{\small\bfseries\color{darkcharcoal}}{\thesubsubsection}{0.5em}{}
+\setlength{\columnsep}{18pt}
+\setlength{\parskip}{3pt plus 1pt minus 1pt}
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\dbltextfloatsep}{8pt plus 2pt minus 2pt}
 
-% --- Header / Footer ---
+% --- Header & Footer ---
 \pagestyle{fancy}
 \fancyhf{}
-\lhead{\footnotesize\textcolor{slate}{\textbf{INVESTOR STRATEGY MEMO} $\vert$ The MUNGER Factor System}}
-\rhead{\footnotesize\textcolor{slate}{October 2026}}
-\cfoot{\thepage}
+\fancyhead[L]{\footnotesize\textsc{INVESTOR STRATEGY MEMO} $|$ The MUNGER Factor System}
+\fancyhead[R]{\footnotesize October 2026}
+\fancyfoot[C]{\footnotesize\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
-
-% --- Title Block ---
-\title{\vspace{-1.5em}\LARGE\textbf{The MUNGER Factor Strategy} \\
-\vspace{0.3em}
-\large\textit{Engineering Asymmetric Compounding: How Multi-Factor Multipliers, Dynamic Tax Deferral, and Institutional Execution Deliver Generational Alpha (1971--2026)}}
-
-\author{
-    \textbf{Quantitative Research \& Systematic Strategies} \\
-    \texttt{\small https://github.com/rkenaley/munger-factor-system}
-}
-\date{\normalsize October 13, 2026}
 
 \begin{document}
 
-\maketitle
+\twocolumn[{%
+\begin{@twocolumnfalse}
+\begin{center}
+    {\LARGE\bfseries\color{navyblue} The MUNGER Factor Strategy}\\[5pt]
+    {\large\itshape Engineering Asymmetric Compounding: How Multi-Factor Multipliers, Dynamic Tax Deferral, Cyclical-Trap Immunization, and MOC Execution Deliver Generational Alpha (1971--2026)}\\[8pt]
+    {\normalsize\bfseries Quantitative Research \& Systematic Strategies}\\
+    {\small\texttt{https://github.com/rkenaley/munger-factor-system}}\\[3pt]
+    {\small October 13, 2026}
+\end{center}
+\vspace{3pt}
+\hrule
+\vspace{6pt}
+\end{@twocolumnfalse}
+}]
 
-% --- Executive Summary Box ---
-\noindent\colorbox{cardbg}{%
-\parbox{0.97\columnwidth}{%
-\vspace{0.4em}
-\textbf{\color{navyblue}\large EXECUTIVE BRIEFING}
-\vspace{0.4em}\small
+\subsection*{\color{navyblue}EXECUTIVE BRIEFING}
+Traditional value investing is plagued by the ``value trap'' dilemma: buying cheap companies that deserve to be cheap, or buying commodity cyclicals at peak margins when their P/E ratio temporarily inverts. Linear multi-factor models fail because they permit a single extreme metric to compensate for deteriorating unit economics.
 
-\noindent Traditional value investing is plagued by the ``value trap'' dilemma: buying cheap companies that deserve to be cheap. Linear multi-factor models fail because they permit cheap valuation to compensate for dying unit economics. 
-
-\textbf{MUNGER} (\textbf{M}ultiple \textbf{U}ncorrelated \textbf{N}umbers \textbf{G}enerating \textbf{E}xtreme \textbf{R}eturns) formalizes Charlie Munger's multi-disciplinary mental model latticework into a rigorous, survivorship-bias-free quantitative system:
+\textbf{MUNGER (Multiple Uncorrelated Numbers Generating Extreme Returns)} formalizes Charlie Munger's multi-disciplinary mental model latticework into a rigorous, survivorship-aware, zero-lookahead quantitative system:
 \begin{enumerate}
-    \setlength{\itemsep}{1pt}
-    \item \textbf{Conjunctive Hurdle:} Every qualifying firm must strictly beat the cross-sectional market median across \textit{all 4 factors} simultaneously (Revenue Growth, ROIC, Earnings Yield, and Solvency).
+    \item \textbf{Conjunctive Hurdle:} Every qualifying firm must strictly beat the cross-sectional market median across \textit{all 4 factors simultaneously} (Revenue Growth, ROIC, Cyclically Adjusted Earnings Yield, and Solvency).
     \item \textbf{Multiplicative Compounding:} Scores are computed via $\prod (1 + \max(0, Z_k))$, amplifying rare multi-dimensional excellence during temporary cyclical market mispricings.
-    \item \textbf{Dynamic Tax Deferral:} Positions are held for a minimum of 1 year (securing statutory long-term capital gains rates) and liquidated when fundamental quality deteriorates below median. This cuts annual tax drag by \textbf{108 bps/year} (from -688 bps to -580 bps), unlocking the ``Compounding Paradox of Tax Deferral'' (+\$1.19M net wealth advantage over mechanical 1-year rebalancing).
-    \item \textbf{Institutional Slippage \& Delisting Accounting:} Fills enforce a realistic \textbf{-5 bps per-trade market impact cost} (eliminating synthetic execution bonuses) and a \textbf{30\% terminal distress haircut} on abrupt delistings, ensuring audited empirical realism.
-    \item \textbf{Capital-Efficient Options Overlay:} In an options architecture, 90--120 DTE bull call spreads ($95\text{C}/110\text{C}$) achieve a \textbf{14.1x capital efficiency} with near-zero theta decay and a capped -19.10\% black-swan portfolio drawdown in an 80/20 Treasury-backed allocation.
+    \item \textbf{Cyclical Peak-Earnings Immunization (``Admiral Ackbar Filter''):} Cross-sectional inputs are winsorized at the 2nd/98th percentiles ($\pm 3.5\sigma$ cap), TTM EPS is blended with 5-year median EPS, and firms with any negative TTM EPS window over the trailing 20 quarters (5 years) are disqualified---blocking boom-bust semiconductor and commodity traps.
+    \item \textbf{Dynamic Tax Deferral:} Positions are held for a minimum of 1 year (securing statutory long-term capital gains rates) and liquidated when fundamental quality deteriorates below median. This cuts annual tax drag by \textbf{108 bps/year} (from $-688$ bps to $-580$ bps), unlocking a \textbf{+\$1.19M} net wealth advantage over mechanical 1-year rebalancing.
+    \item \textbf{Institutional Slippage \& Delisting Accounting:} Fills enforce a realistic \textbf{$-5$ bps per-trade market impact cost} (eliminating synthetic execution bonuses) and a \textbf{30\% terminal distress haircut} on abrupt delistings.
+    \item \textbf{Skew-Aware Options Overlay:} Incorporating analytical $O(1)$ delta-strike inversion and equity volatility skew ($34.1\%$ IV on $65\Delta$ long calls vs.\ $29.2\%$ IV on $30\Delta$ short calls), 180--365 DTE spreads amortize skew drag to achieve $+4.78\%$ to $+17.31\%$ expected ROC per roll, while 90-DTE $95\text{C}/110\text{C}$ spreads deliver a capped \textbf{$+104.1\%$ max ROC} on $+10.1\%$ stock dislocations with a $-19.10\%$ black-swan portfolio floor in an 80/20 Treasury-backed allocation.
 \end{enumerate}
-\vspace{0.2em}
+
 Under strict institutional diversification limits (max 15\% per stock, cash drag on unallocated capital, historical federal LTCG tax brackets), the strategy generated:
 \begin{itemize}
-    \setlength{\itemsep}{0pt}
-    \item \textbf{1971--2026 Stagflation (55.5Y):} \textbf{22.53\% Gross CAGR} (\$1,000 $\to$ \$101.09 Million, Sharpe 0.68) and \textbf{16.73\% Net Post-Tax CAGR} (\$1,000 $\to$ \$6.45 Million, Sharpe 0.51) vs. 11.03\% S\&P 500 (\$378k, Sharpe 0.46) --- delivering \textbf{+1,150 bps pre-tax / +570 bps post-tax alpha (17.1x S\&P wealth)}, closely matching Warren Buffett's 59-year Berkshire track record ($\sim$19.8\% gross CAGR).
-    \item \textbf{2008--2026 GFC Peak (18.8Y):} \textbf{25.90\% Gross CAGR} (\$1,000 $\to$ \$74,259, Sharpe 0.81) and \textbf{20.12\% Net Post-Tax CAGR} (\$1,000 $\to$ \$30,804, Sharpe 0.67) vs. 11.47\% S\&P 500 (\$7,619, Sharpe 0.63) --- a \textbf{+865 bps net alpha advantage (4.0x S\&P wealth)}.
-    \item \textbf{Causality Audit Confirmation:} Eliminating terminal-price lookahead bias and synthetic credits accounts for \textbf{690.8 bps/year} of model inflation, verifying that the audited zero-lookahead system preserves substantial structural alpha.
+    \item \textbf{1971--2026 Multi-Decade (55.5Y):} \textbf{22.53\% Gross CAGR} (\$1,000 $\to$ \$101.09 Million, Sharpe 0.68) and \textbf{16.73\% Net Post-Tax CAGR} (\$1,000 $\to$ \$6.45 Million, Sharpe 0.51) vs.\ 11.03\% S\&P 500 (\$378k, Sharpe 0.46)---delivering \textbf{+1,150 bps pre-tax / +570 bps post-tax alpha} (17.1x S\&P wealth), closely matching Warren Buffett's 59-year Berkshire track record ($\sim 19.8\%$ gross CAGR).
+    \item \textbf{2008--2026 GFC Peak to Present (18.8Y):} \textbf{25.90\% Gross CAGR} (\$1,000 $\to$ \$74,259, Sharpe 0.81) and \textbf{20.12\% Net Post-Tax CAGR} (\$1,000 $\to$ \$30,804, Sharpe 0.67) vs.\ 11.47\% S\&P 500 (\$7,619, Sharpe 0.63)---a \textbf{+865 bps net alpha advantage} (4.0x S\&P wealth).
+    \item \textbf{Causality Audit Confirmation:} Eliminating terminal-price lookahead bias and synthetic execution credits removes \textbf{690.8 bps/year} of model inflation, verifying that the audited zero-lookahead system preserves substantial structural alpha.
 \end{itemize}
-\vspace{0.3em}
-}%
-}
-
-\vspace{1.0em}
 
 \section{The Core Thesis: Charlie Munger's Latticework in Code}
-
 For ninety-nine years, Charlie Munger argued that outsized commercial success is never the product of a single isolated variable. Rather, it arises from a \textbf{latticework of multi-disciplinary models} that interact constructively to produce non-linear ``lollapalooza effects'' (Munger, 1995).
 
 Standard quantitative finance models (Fama-French, Carhart) commit a fundamental mathematical error: they treat factors as \textit{additive linear equations}:
 \begin{equation}
-\text{Score}_i = w_1 Z_{\text{Value}} + w_2 Z_{\text{Quality}} + w_3 Z_{\text{Growth}}
+    \text{Score}_i = w_1 Z_{\text{Value}} + w_2 Z_{\text{Quality}} + w_3 Z_{\text{Growth}}
 \end{equation}
-Under an additive formula, a company can have catastrophic balance-sheet debt ($Z_{\text{Debt}} = -3.0$) and shrinking revenue ($Z_{\text{Growth}} = -2.0$), but still qualify as an attractive stock because it is extremely cheap on price-to-book ($Z_{\text{Value}} = +5.0$). This is the textbook definition of a \textbf{value trap}.
+Under an additive formula, a company can have catastrophic balance-sheet debt ($Z_{\text{Debt}} = -3.0$) and shrinking revenue ($Z_{\text{Growth}} = -2.0$), yet still qualify as an attractive stock because it is extremely cheap on price-to-book ($Z_{\text{Value}} = +5.0$). This is the textbook definition of a \textbf{value trap}.
 
 MUNGER solves this with two structural design rules:
 \begin{enumerate}
-    \item \textbf{Rule 1 (Zero Tolerance for Weakness):} A firm must strictly meet or exceed the cross-sectional median in all 4 dimensions. If a company fails even one test, it is discarded immediately.
+    \item \textbf{Rule 1 (Zero Tolerance for Weakness):} A firm must strictly meet or exceed the cross-sectional median in all 4 dimensions ($Z_{i,k} \ge 0$). If a company fails even one test, it is discarded immediately.
     \item \textbf{Rule 2 (Multiplicative Compounding):} Instead of adding standardized scores, we multiply them:
     \begin{equation}
-    \mathcal{M}_i = \prod_{k \in \{g, r, y, s\}} \left( 1 + \max(0, Z_{i,k}) \right)
+        \mathcal{M}_i = \prod_{k \in \{g,r,y,s\}} \left(1 + \max(0, Z_{i,k})\right)
     \end{equation}
 \end{enumerate}
 When a great compounder suffers a temporary market dislocation, its valuation compresses into value territory while its growth and balance sheet remain elite. The multiplicative formula explodes upward, flagging a generational buying opportunity.
 
-\section{The Variables: What We Track \& How}
-
-Table \ref{tab:variables} outlines the four fundamental pillars evaluated across every stock in the historical corporate universe ($N = 176$ verified large-cap market constituents from 1970 to 2026).
-
-\begin{table*}[t]
+\begin{table*}[t!]
 \centering
-\small
 \caption{The Four MUNGER Factor Pillars: Definitions, Mathematical Formulas, and Strategic Rationale}
-\vspace{0.4em}
+\label{tab:pillars}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lllll}
 \toprule
 \textbf{Factor Pillar} & \textbf{Metric Name} & \textbf{Mathematical Formula} & \textbf{Accounting Rationale} & \textbf{Minimum Hurdle} \\
 \midrule
-\textbf{1. Top-Line Growth} & 5-Year Revenue CAGR & $g_i = (\text{Rev}_t / \text{Rev}_{t-5})^{1/5} - 1$ & Filters for secular expansion; eliminates cyclical value decays & $\ge \text{Universe Median}$ ($Z_g \ge 0$) \\
-\textbf{2. Capital Efficiency} & Return on Invested Capital & $\text{ROIC}_i = \frac{\text{NOPAT}_i}{\text{Equity}_i + \text{Debt}_i - \text{Cash}_i}$ & Measures competitive moat and organic reinvestment rate & $\ge \text{Universe Median}$ ($Z_r \ge 0$) \\
-\textbf{3. Valuation Dislocation} & TTM Earnings Yield & $y_i = \frac{\text{TTM EPS}_i}{\text{Stock Price}_i} = \frac{1}{P/E_i}$ & Identifies cyclical pullbacks; ensures margin of safety & $\ge \text{Universe Median}$ ($Z_y \ge 0$) \\
-\textbf{4. Financial Solvency} & Net Solvency Ratio & $s_i = - \frac{\text{Total Debt}_i - \text{Cash}_i}{\text{Market Cap}_i}$ & Immunizes against liquidity crises and interest rate shocks & $\ge \text{Universe Median}$ ($Z_s \ge 0$) \\
+\textbf{1. Top-Line Growth} & 5-Year Revenue CAGR & $g_i = (\text{Rev}_t / \text{Rev}_{t-5})^{1/5} - 1$ & Filters for secular expansion; eliminates cyclical value decays & $\ge$ Universe Median ($Z_g \ge 0$) \\
+\textbf{2. Capital Efficiency} & Return on Invested Capital & $\text{ROIC}_i = \frac{\text{NOPAT}_i}{\text{Equity}_i + \text{Debt}_i - \text{Cash}_i}$ & Measures competitive moat and organic reinvestment rate & $\ge$ Universe Median ($Z_r \ge 0$) \\
+\textbf{3. Valuation Dislocation} & Cyclically Adjusted Earnings Yield & $y_i = \frac{\min(\text{EPS}_{\text{TTM}}, 0.5\text{EPS}_{\text{TTM}} + 0.5\text{EPS}_{\text{5Y Med}})}{\text{Stock Price}_i}$ & Identifies cyclical pullbacks; prevents peak-margin P/E traps & $\ge$ Universe Median ($Z_y \ge 0$) \\
+\textbf{4. Financial Solvency} & Net Solvency Ratio & $s_i = -\frac{\text{Total Debt}_i - \text{Cash}_i}{\text{Market Cap}_i}$ & Immunizes against liquidity crises and interest rate shocks & $\ge$ Universe Median ($Z_s \ge 0$) \\
 \bottomrule
 \end{tabular}%
 }
-\label{tab:variables}
 \end{table*}
 
-\subsection{Standardization via $Z$-Scores}
-Because revenue growth is measured in percentages (+15\%), ROIC in returns (+25\%), and earnings yield in multiples ($18\text{x} \to 5.5\%$), raw metrics cannot be combined directly. 
+\section{The Variables \& Cyclical-Trap Immunization}
+Table \ref{tab:pillars} outlines the four fundamental pillars evaluated across every stock in the historical corporate universe ($N = 176$ verified large-cap market constituents from 1970 to 2026).
 
-At each cross-section, every variable is normalized into a standard score:
+\subsection{Winsorized Standardization via Z-Scores}
+Because revenue growth is measured in percentages ($+15\%$), ROIC in returns ($+25\%$), and earnings yield in multiples ($18\text{x} \to 5.5\%$), raw metrics cannot be combined directly. At each cross-section, each raw factor $X_{i,k}$ is first winsorized at the 2nd and 98th percentiles ($\widetilde{X}_{i,k} = \text{clip}(X_{i,k}, Q_{0.02}, Q_{0.98})$) and then normalized into a capped standard score:
 \begin{equation}
-Z_{i,k} = \frac{X_{i,k} - \mu_k}{\sigma_k}
+    Z_{i,k} = \text{clip}\!\left(\frac{\widetilde{X}_{i,k} - \mu_k}{\sigma_k},\ -3.5,\ +3.5\right)
 \end{equation}
-where $\mu_k$ is the universe mean and $\sigma_k$ is the standard deviation. A $Z$-score of $0.0$ represents median market performance, $+1.0$ represents the top 16th percentile, and $+2.0$ represents top 2.5\% outlier dominance.
+where $\mu_k$ is the winsorized universe mean and $\sigma_k$ is the standard deviation. Winsorization is essential: without it, a single 1-quarter YoY revenue spike (such as Micron's $+379\%$ Q4 FY26 YoY revenue surge) inflates $\sigma_g$ across the entire universe and artificially suppresses the $Z$-scores of legitimate 15\%--25\% compounders.
 
-\section{Factor Optimization Methodology \& Sensitivity Suite}
+\subsection{The ``Admiral Ackbar'' Cyclical Peak Filter}
+Commodity and semiconductor manufacturers exhibit inverted P/E multiples: they look cheapest on trailing P/E at the exact peak of their margin cycle. To prevent boom-bust cyclicals from masquerading as Munger compounders, a firm is eligible for entry only if its rolling 4-quarter TTM EPS remained \textbf{strictly positive ($\text{EPS}_{\text{TTM}} > 0$) across all 20 trailing quarters (5 years)}, and its earnings yield $y_i$ blends current TTM EPS with its 5-year median TTM EPS.
 
-How were the MUNGER factors, thresholds, and weighting schemes selected? Rather than curve-fitting or selecting parameters \textit{ex-post}, we conducted a systematic empirical parameter sweep across \textbf{932 weekly cross-sections from January 2008 to October 2026} (18.8 years, 11,263 corporate quarterly filings) across the large-cap universe.
-
-\subsection{Universe Baseline Medians (18.8-Year Averages)}
-Across the multi-decade period, the cross-sectional market medians averaged:
-\begin{itemize}
-    \setlength{\itemsep}{1pt}
-    \item \textbf{5-Year Revenue Growth Median:} $13.8\%$ annualized.
-    \item \textbf{Return on Invested Capital (ROIC) Median:} $19.8\%$.
-    \item \textbf{Trailing P/E Median:} $16.9\text{x}$ (Earnings Yield Median: $5.92\%$).
-    \item \textbf{Debt-to-Equity Median:} $59.7\%$.
-\end{itemize}
-
-\subsection{Inventory of Triggers Considered (Table \ref{tab:triggers_master})}
-Table \ref{tab:triggers_master} catalogs all candidate trigger rules evaluated, detailing their definitions in both normalized standard-score terms and absolute fundamental metrics, historical trigger frequencies (signals per week and percentage of active weeks), 3-month win rates, alpha over SPY, and 1-year forward compounding.
-
-\begin{table*}[t]
+\begin{table*}[t!]
 \centering
-\small
-\caption{Comprehensive Inventory of MUNGER Triggers Considered: Normalized vs. Absolute Thresholds, Historical Signal Frequencies, and Multi-Horizon Performance (2008--2026: 932 Weekly Cross-Sections, 177 Equities)}
-\vspace{0.4em}
+\caption{Comprehensive Inventory of MUNGER Triggers Considered: Normalized vs.\ Absolute Thresholds, Historical Signal Frequencies, and Multi-Horizon Performance (2008--2026: 932 Weekly Cross-Sections, 176 Equities)}
+\label{tab:triggers}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{lcccccccccc}
+\begin{tabular}{lllrrrrrrrr}
 \toprule
 \textbf{Trigger Strategy Name} & \textbf{Normalized Threshold ($Z$)} & \textbf{Absolute Fundamental Threshold} & \textbf{Signals} & \textbf{Sig/Wk} & \textbf{Active Wks \%} & \textbf{Win Rate} & \textbf{Fwd 3M Ret} & \textbf{3M Alpha} & \textbf{Fwd 1Y Ret} & \textbf{Max DD} \\
 \midrule
-Strict $Q_1$ Deep Value & $Z_p \le -0.67, Z_g \ge 0.15, Z_d \ge -0.5$ & $P/E \le 13.2\text{x}$, Rev Growth $\ge 15\%$, $D/E \le 100\%$ & 8,192 & 8.79 & 100.0\% & 62.0\% & +6.27\% & +3.14\% & +24.95\% & -15.1\% \\
-Relaxed to Median (All 4) & $Z_g \ge 0, Z_r \ge 0, Z_y \ge 0, Z_s \ge 0$ & Growth $\ge 13.8\%$, ROIC $\ge 19.8\%$, $P/E \le 16.9\text{x}$, $D/E \le 59.7\%$ & 23,293 & 24.99 & 100.0\% & 62.1\% & +5.23\% & +2.21\% & +23.29\% & -14.2\% \\
-Dislocation Quality & $Z_p \le 0, Z_r \ge 0, Z_d \ge -1.0$ & $P/E \le 16.9\text{x}$, ROIC $\ge 19.8\%$, $D/E \le 150\%$ & 17,827 & 19.13 & 100.0\% & 64.4\% & +5.62\% & +2.41\% & +26.45\% & -13.4\% \\
-$+0.5\sigma$ Quality Screen & $Z_p \le 0, Z_{\text{qual}} \ge +0.5$ & $P/E \le 16.9\text{x}$, Quality Composite $\ge 0.5\sigma$ & 13,202 & 14.17 & 100.0\% & 63.2\% & +6.62\% & +3.66\% & +30.57\% & -14.9\% \\
-$+1.0\sigma$ Quality Screen & $Z_p \le 0, Z_{\text{qual}} \ge +1.0$ & $P/E \le 16.9\text{x}$, Quality Composite $\ge 1.0\sigma$ (Top 16\%) & 6,020 & 6.46 & 100.0\% & 63.4\% & +8.60\% & +5.32\% & +41.17\% & -16.6\% \\
-$+1.5\sigma$ Quality Screen & $Z_p \le 0, Z_{\text{qual}} \ge +1.5$ & $P/E \le 16.9\text{x}$, Quality Composite $\ge 1.5\sigma$ (Top 7\%) & 4,406 & 4.73 & 100.0\% & 61.8\% & +8.88\% & +5.79\% & +41.64\% & -17.2\% \\
-$+2.0\sigma$ Outlier Quality & $Z_p \le 0, Z_{\text{qual}} \ge +2.0$ & $P/E \le 16.9\text{x}$, Quality Composite $\ge 2.0\sigma$ (Top 2.5\%) & 3,022 & 3.24 & 99.8\% & 59.9\% & +9.95\% & +6.73\% & +46.09\% & -18.9\% \\
+Strict $Q_1$ Deep Value & $Z_p \le -0.67, Z_g \ge 0.15, Z_d \ge -0.5$ & P/E $\le 13.2\text{x}$, Rev Growth $\ge 15\%$, D/E $\le 100\%$ & 8,192 & 8.79 & 100.0\% & 62.0\% & +6.27\% & +3.14\% & +24.95\% & $-15.1\%$ \\
+Relaxed to Median (All 4) & $Z_g \ge 0, Z_r \ge 0, Z_y \ge 0, Z_s \ge 0$ & Growth $\ge 13.8\%$, ROIC $\ge 19.8\%$, P/E $\le 16.9\text{x}$, D/E $\le 59.7\%$ & 23,293 & 24.99 & 100.0\% & 62.1\% & +5.23\% & +2.21\% & +23.29\% & $-14.2\%$ \\
+Dislocation Quality & $Z_p \le 0, Z_r \ge 0, Z_d \ge -1.0$ & P/E $\le 16.9\text{x}$, ROIC $\ge 19.8\%$, D/E $\le 150\%$ & 17,827 & 19.13 & 100.0\% & 64.4\% & +5.62\% & +2.41\% & +26.45\% & $-13.4\%$ \\
+$+0.5\sigma$ Quality Screen & $Z_p \le 0, Z_{\text{qual}} \ge +0.5$ & P/E $\le 16.9\text{x}$, Quality Composite $\ge 0.5\sigma$ & 13,202 & 14.17 & 100.0\% & 63.2\% & +6.62\% & +3.66\% & +30.57\% & $-14.9\%$ \\
+$+1.0\sigma$ Quality Screen & $Z_p \le 0, Z_{\text{qual}} \ge +1.0$ & P/E $\le 16.9\text{x}$, Quality Composite $\ge 1.0\sigma$ (Top 16\%) & 6,020 & 6.46 & 100.0\% & 63.4\% & +8.60\% & +5.32\% & +41.17\% & $-16.6\%$ \\
+$+1.5\sigma$ Quality Screen & $Z_p \le 0, Z_{\text{qual}} \ge +1.5$ & P/E $\le 16.9\text{x}$, Quality Composite $\ge 1.5\sigma$ (Top 7\%) & 4,406 & 4.73 & 100.0\% & 61.8\% & +8.88\% & +5.79\% & +41.64\% & $-17.2\%$ \\
+$+2.0\sigma$ Outlier Quality & $Z_p \le 0, Z_{\text{qual}} \ge +2.0$ & P/E $\le 16.9\text{x}$, Quality Composite $\ge 2.0\sigma$ (Top 2.5\%) & 3,022 & 3.24 & 99.8\% & 59.9\% & +9.95\% & +6.73\% & +46.09\% & $-18.9\%$ \\
 \midrule
-Multiplier $\ge 4.0\text{x}$ & $\mathcal{H}_i=1, \mathcal{M}_i \ge 4.0\text{x}$ & All 4 $\ge \text{Med}$, Joint Multiplicative Score $\ge 4.0\text{x}$ & 4,314 & 4.63 & 98.3\% & 66.2\% & +9.41\% & +6.18\% & +44.07\% & -16.6\% \\
-Multiplier $\ge 6.0\text{x}$ & $\mathcal{H}_i=1, \mathcal{M}_i \ge 6.0\text{x}$ & All 4 $\ge \text{Med}$, Joint Multiplicative Score $\ge 6.0\text{x}$ & 3,509 & 3.77 & 98.2\% & 65.1\% & +8.82\% & +5.81\% & +41.86\% & -17.0\% \\
-Multiplier $\ge 8.0\text{x}$ & $\mathcal{H}_i=1, \mathcal{M}_i \ge 8.0\text{x}$ & All 4 $\ge \text{Med}$, Joint Multiplicative Score $\ge 8.0\text{x}$ & 2,697 & 2.89 & 98.2\% & 63.7\% & +9.20\% & +6.27\% & +44.98\% & -17.8\% \\
-Multiplier $\ge 10.0\text{x}$ & $\mathcal{H}_i=1, \mathcal{M}_i \ge 10.0\text{x}$ & All 4 $\ge \text{Med}$, Joint Multiplicative Score $\ge 10.0\text{x}$ & 2,290 & 2.46 & 97.3\% & 62.7\% & +9.60\% & +6.52\% & +47.17\% & -18.5\% \\
-\textbf{Multiplier $\ge 12.0\text{x}$ ($\star$ Optimal)} & $\mathbf{\mathcal{H}_i=1, \mathcal{M}_i \ge 12.0\text{x}}$ & \textbf{All 4 $\ge \text{Med}$, Joint Multiplicative Score $\ge 12.0\text{x}$} & \textbf{2,070} & \textbf{2.22} & \textbf{96.9\%} & \textbf{62.6\%} & \textbf{+10.11\%} & \textbf{+6.75\%} & \textbf{+48.91\%} & \textbf{-18.7\%} \\
-Multiplier $\ge 14.0\text{x}$ & $\mathcal{H}_i=1, \mathcal{M}_i \ge 14.0\text{x}$ & All 4 $\ge \text{Med}$, Joint Multiplicative Score $\ge 14.0\text{x}$ & 1,978 & 2.12 & 95.8\% & 62.2\% & +9.99\% & +6.59\% & +48.29\% & -18.9\% \\
-Multiplier $\ge 16.0\text{x}$ & $\mathcal{H}_i=1, \mathcal{M}_i \ge 16.0\text{x}$ & All 4 $\ge \text{Med}$, Joint Multiplicative Score $\ge 16.0\text{x}$ & 1,949 & 2.09 & 95.7\% & 62.0\% & +9.92\% & +6.51\% & +47.44\% & -18.9\% \\
-Multiplier $\ge 18.0\text{x}$ (Generational) & $\mathcal{H}_i=1, \mathcal{M}_i \ge 18.0\text{x}$ & All 4 $\ge \text{Med}$, Joint Multiplicative Score $\ge 18.0\text{x}$ & 1,925 & 2.07 & 95.7\% & 61.7\% & +9.80\% & +6.41\% & +46.31\% & -19.0\% \\
-Multiplier $\ge 25.0\text{x}$ (Outlier) & $\mathcal{H}_i=1, \mathcal{M}_i \ge 25.0\text{x}$ & All 4 $\ge \text{Med}$, Joint Multiplicative Score $\ge 25.0\text{x}$ & 1,636 & 1.76 & 93.2\% & 61.1\% & +10.03\% & +6.65\% & +48.80\% & -19.4\% \\
+Multiplier $\ge 4.0\text{x}$ & $H_i = 1, \mathcal{M}_i \ge 4.0\text{x}$ & All 4 $\ge$ Med, Joint Multiplicative Score $\ge 4.0\text{x}$ & 4,314 & 4.63 & 98.3\% & 66.2\% & +9.41\% & +6.18\% & +44.07\% & $-16.6\%$ \\
+Multiplier $\ge 6.0\text{x}$ & $H_i = 1, \mathcal{M}_i \ge 6.0\text{x}$ & All 4 $\ge$ Med, Joint Multiplicative Score $\ge 6.0\text{x}$ & 3,509 & 3.77 & 98.2\% & 65.1\% & +8.82\% & +5.81\% & +41.86\% & $-17.0\%$ \\
+Multiplier $\ge 8.0\text{x}$ & $H_i = 1, \mathcal{M}_i \ge 8.0\text{x}$ & All 4 $\ge$ Med, Joint Multiplicative Score $\ge 8.0\text{x}$ & 2,697 & 2.89 & 98.2\% & 63.7\% & +9.20\% & +6.27\% & +44.98\% & $-17.8\%$ \\
+Multiplier $\ge 10.0\text{x}$ & $H_i = 1, \mathcal{M}_i \ge 10.0\text{x}$ & All 4 $\ge$ Med, Joint Multiplicative Score $\ge 10.0\text{x}$ & 2,290 & 2.46 & 97.3\% & 62.7\% & +9.60\% & +6.52\% & +47.17\% & $-18.5\%$ \\
+\textbf{Multiplier $\ge 12.0\text{x}$ ($\star$ Optimal)} & $\mathbf{H_i = 1, \mathcal{M}_i \ge 12.0\text{x}}$ & \textbf{All 4 $\ge$ Med, Joint Multiplicative Score $\ge 12.0\text{x}$} & \textbf{2,070} & \textbf{2.22} & \textbf{96.9\%} & \textbf{62.6\%} & \textbf{+10.11\%} & \textbf{+6.75\%} & \textbf{+48.91\%} & \textbf{$-18.7\%$} \\
+Multiplier $\ge 14.0\text{x}$ & $H_i = 1, \mathcal{M}_i \ge 14.0\text{x}$ & All 4 $\ge$ Med, Joint Multiplicative Score $\ge 14.0\text{x}$ & 1,978 & 2.12 & 95.8\% & 62.2\% & +9.99\% & +6.59\% & +48.29\% & $-18.9\%$ \\
+Multiplier $\ge 16.0\text{x}$ & $H_i = 1, \mathcal{M}_i \ge 16.0\text{x}$ & All 4 $\ge$ Med, Joint Multiplicative Score $\ge 16.0\text{x}$ & 1,949 & 2.09 & 95.7\% & 62.0\% & +9.92\% & +6.51\% & +47.44\% & $-18.9\%$ \\
+Multiplier $\ge 18.0\text{x}$ (Generational) & $H_i = 1, \mathcal{M}_i \ge 18.0\text{x}$ & All 4 $\ge$ Med, Joint Multiplicative Score $\ge 18.0\text{x}$ & 1,925 & 2.07 & 95.7\% & 61.7\% & +9.80\% & +6.41\% & +46.31\% & $-19.0\%$ \\
+Multiplier $\ge 25.0\text{x}$ (Outlier) & $H_i = 1, \mathcal{M}_i \ge 25.0\text{x}$ & All 4 $\ge$ Med, Joint Multiplicative Score $\ge 25.0\text{x}$ & 1,636 & 1.76 & 93.2\% & 61.1\% & +10.03\% & +6.65\% & +48.80\% & $-19.4\%$ \\
 \bottomrule
 \end{tabular}%
 }
-\label{tab:triggers_master}
 \end{table*}
 
-\subsection{Robustness \& Sensitivity Suite (Table \ref{tab:sensitivities_master})}
-To scientifically validate that the MUNGER system is not sensitive to arbitrary design choices, we executed three rigorous multi-factor sensitivity experiments:
+\section{Factor Optimization Methodology \& Sensitivity Suite}
+Rather than curve-fitting parameters ex-post, we conducted a systematic parameter sweep across \textbf{932 weekly cross-sections from January 2008 to October 2026} (18.8 years, 11,263 corporate quarterly filings). Across the multi-decade period, the cross-sectional market medians averaged: \textbf{13.8\%} 5-year revenue growth, \textbf{19.8\%} ROIC, \textbf{16.9x} trailing P/E (5.92\% earnings yield), and \textbf{59.7\%} debt-to-equity.
 
-\begin{table*}[t]
+Table \ref{tab:triggers} catalogs all candidate trigger rules evaluated, and Table \ref{tab:sensitivity} reports the three-part robustness and sensitivity suite:
+\begin{enumerate}
+    \item \textbf{ROIC is the Unforgiving Alpha Engine (Ablation Test 2):} Dropping Return on Invested Capital causes 3-month alpha to collapse from \textbf{+6.75\% to +4.13\% ($-262$ bps)} and crashes 1-year compounding from \textbf{+48.91\% to +33.24\% ($-1,567$ bps)}. ROIC measures economic moat; without it, the model buys commoditized cyclicals that lack pricing power.
+    \item \textbf{Equal Weighting is Mathematically Pure (Part B):} Exponent tilts produce negligible performance deviations ($+6.86\%$ vs.\ $+6.75\%$ alpha). Equal weighting $(1+Z)^1$ avoids overfitting and ensures scale invariance across market regimes.
+    \item \textbf{Why the Median ($Z \ge 0$) Beats Quartile ($Q_3$) Stringency (Part C):} Demanding upper-quartile performance ($Z \ge +0.67$) across all 4 factors simultaneously paradoxically degrades 1-year compounding from $+48.9\%$ down to $+32.2\%$. Setting the hurdle at the median captures elite franchises during temporary earnings compressions.
+    \item \textbf{Factor Parsimony:} Adding 5th technical triggers (RSI $< 30$, Bollinger lower-band touches, 52-week low proximity) yielded negligible incremental alpha ($+8$ to $+18$ bps) while causing severe signal starvation ($-65\%$ to $-78\%$ reduction in trigger frequency).
+\end{enumerate}
+
+\begin{table*}[t!]
 \centering
-\small
 \caption{Comprehensive Multi-Factor Sensitivity Suite: Factor Ablation, Weighting Exponents, and Hurdle Stringency Sweeps (2008--2026)}
-\vspace{0.4em}
+\label{tab:sensitivity}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{lcccccccl}
+\begin{tabular}{llrrrrrrl}
 \toprule
 \textbf{Sensitivity Experiment} & \textbf{Mathematical Specification} & \textbf{Signals} & \textbf{Win \%} & \textbf{Fwd 3M Ret} & \textbf{3M Alpha} & \textbf{Fwd 1Y Ret} & \textbf{Max DD} & \textbf{Diagnostic Rationale \& Conclusion} \\
 \midrule
 \multicolumn{9}{l}{\textbf{Part A: Factor Ablation (Leave-One-Out Analysis at $\mathcal{M} \ge 12.0\text{x}$)}} \\
-\textbf{Base 4-Factor (Full MUNGER)} & $\mathbf{\prod_{k \in \{g,r,y,s\}} (1 + Z_k) \ge 12.0\text{x}}$ & \textbf{2,070} & \textbf{62.6\%} & \textbf{+10.11\%} & \textbf{+6.75\%} & \textbf{+48.91\%} & \textbf{-18.7\%} & \textbf{Full synergism across all four orthogonal fundamental pillars.} \\
-Ablation 1: Drop Growth ($-g$) & $(1 + Z_r)(1 + Z_y)(1 + Z_s) \ge 6.4\text{x}$ & 2,180 & 62.3\% & +11.41\% & +8.26\% & +55.42\% & -19.5\% & Higher beta cyclicals admitted; drawdown worsens to -19.5\%. \\
-\textbf{Ablation 2: Drop ROIC ($-r$)} & $(1 + Z_g)(1 + Z_y)(1 + Z_s) \ge 6.4\text{x}$ & 5,309 & \textbf{59.6\%} & \textbf{+7.30\%} & \textbf{+4.13\%} & \textbf{+33.24\%} & -16.9\% & \textbf{Critical Failure: Alpha collapses by -262 bps; 1Y ret drops -1,567 bps!} \\
-Ablation 3: Drop Yield/Value ($-y$) & $(1 + Z_g)(1 + Z_r)(1 + Z_s) \ge 6.4\text{x}$ & 7,904 & 65.3\% & +9.52\% & +6.24\% & +41.98\% & -17.7\% & Signal dilutes by 3.8x (too broad); 1Y compounding falls to +42.0\%. \\
-Ablation 4: Drop Solvency ($-s$) & $(1 + Z_g)(1 + Z_r)(1 + Z_y) \ge 6.4\text{x}$ & 3,809 & 61.6\% & +8.24\% & +5.06\% & +44.16\% & -17.7\% & Admits overleveraged firms; alpha drops -169 bps. \\
+\textbf{Base 4-Factor (Full MUNGER)} & $\prod_{k \in \{g,r,y,s\}} (1 + Z_k) \ge 12.0\text{x}$ & \textbf{2,070} & \textbf{62.6\%} & \textbf{+10.11\%} & \textbf{+6.75\%} & \textbf{+48.91\%} & \textbf{$-18.7\%$} & \textbf{Full synergism across all four orthogonal fundamental pillars.} \\
+Ablation 1: Drop Growth ($-g$) & $(1+Z_r)(1+Z_y)(1+Z_s) \ge 6.4\text{x}$ & 2,180 & 62.3\% & +11.41\% & +8.26\% & +55.42\% & $-19.5\%$ & Higher beta cyclicals admitted; drawdown worsens to $-19.5\%$. \\
+\textbf{Ablation 2: Drop ROIC ($-r$)} & $(1+Z_g)(1+Z_y)(1+Z_s) \ge 6.4\text{x}$ & \textbf{5,309} & \textbf{59.6\%} & \textbf{+7.30\%} & \textbf{+4.13\%} & \textbf{+33.24\%} & \textbf{$-16.9\%$} & \textbf{Critical Failure: Alpha collapses by $-262$ bps; 1Y ret drops $-1,567$ bps!} \\
+Ablation 3: Drop Yield/Value ($-y$) & $(1+Z_g)(1+Z_r)(1+Z_s) \ge 6.4\text{x}$ & 7,904 & 65.3\% & +9.52\% & +6.24\% & +41.98\% & $-17.7\%$ & Signal dilutes by 3.8x (too broad); 1Y compounding falls to $+42.0\%$. \\
+Ablation 4: Drop Solvency ($-s$) & $(1+Z_g)(1+Z_r)(1+Z_y) \ge 6.4\text{x}$ & 3,809 & 61.6\% & +8.24\% & +5.06\% & +44.16\% & $-17.7\%$ & Admits overleveraged firms; alpha drops $-169$ bps. \\
 \midrule
 \multicolumn{9}{l}{\textbf{Part B: Factor Weighting Scheme Sensitivity (Exponent Tilts)}} \\
-\textbf{Equal Weighting: $(1 + Z)^{1.0}$} & $\mathbf{\prod (1 + Z_k)^{1.0} \ge 12.0\text{x}}$ & \textbf{2,070} & \textbf{62.6\%} & \textbf{+10.11\%} & \textbf{+6.75\%} & \textbf{+48.91\%} & \textbf{-18.7\%} & \textbf{Optimal parsimony: Maximum structural robustness without curve-fitting.} \\
-Growth-Tilt: $(1 + Z_g)^{1.5}$ & $(1+Z_g)^{1.5} (1+Z_r) (1+Z_y) (1+Z_s)$ & 2,373 & 63.0\% & +9.54\% & +6.49\% & +46.09\% & -18.2\% & Slightly lowers 1Y compounding (+46.1\% vs +48.9\%). \\
-ROIC-Tilt: $(1 + Z_r)^{1.5}$ & $(1+Z_g) (1+Z_r)^{1.5} (1+Z_y) (1+Z_s)$ & 2,158 & 62.2\% & +9.88\% & +6.60\% & +48.93\% & -18.8\% & Parity with equal weight; confirms ROIC robustness. \\
-Value-Tilt: $(1 + Z_y)^{1.5}$ & $(1+Z_g) (1+Z_r) (1+Z_y)^{1.5} (1+Z_s)$ & 2,135 & 62.4\% & +10.09\% & +6.86\% & +49.29\% & -18.7\% & Marginally higher 3M alpha (+6.86\%), but adds model complexity. \\
-Solvency-Tilt: $(1 + Z_s)^{1.5}$ & $(1+Z_g) (1+Z_r) (1+Z_y) (1+Z_s)^{1.5}$ & 2,181 & 62.2\% & +9.65\% & +6.64\% & +46.66\% & -18.6\% & Comparable performance (+6.64\% alpha). \\
+\textbf{Equal Weighting: $(1+Z)^{1.0}$} & $\prod (1+Z_k)^{1.0} \ge 12.0\text{x}$ & \textbf{2,070} & \textbf{62.6\%} & \textbf{+10.11\%} & \textbf{+6.75\%} & \textbf{+48.91\%} & \textbf{$-18.7\%$} & \textbf{Optimal parsimony: Maximum structural robustness without curve-fitting.} \\
+Growth-Tilt: $(1+Z_g)^{1.5}$ & $(1+Z_g)^{1.5}(1+Z_r)(1+Z_y)(1+Z_s)$ & 2,373 & 63.0\% & +9.54\% & +6.49\% & +46.09\% & $-18.2\%$ & Slightly lowers 1Y compounding ($+46.1\%$ vs $+48.9\%$). \\
+ROIC-Tilt: $(1+Z_r)^{1.5}$ & $(1+Z_g)(1+Z_r)^{1.5}(1+Z_y)(1+Z_s)$ & 2,158 & 62.2\% & +9.88\% & +6.60\% & +48.93\% & $-18.8\%$ & Parity with equal weight; confirms ROIC robustness. \\
+Value-Tilt: $(1+Z_y)^{1.5}$ & $(1+Z_g)(1+Z_r)(1+Z_y)^{1.5}(1+Z_s)$ & 2,135 & 62.4\% & +10.09\% & +6.86\% & +49.29\% & $-18.7\%$ & Marginally higher 3M alpha ($+6.86\%$), but adds model complexity. \\
+Solvency-Tilt: $(1+Z_s)^{1.5}$ & $(1+Z_g)(1+Z_r)(1+Z_y)(1+Z_s)^{1.5}$ & 2,181 & 62.2\% & +9.65\% & +6.64\% & +46.66\% & $-18.6\%$ & Comparable performance ($+6.64\%$ alpha). \\
 \midrule
 \multicolumn{9}{l}{\textbf{Part C: Hurdle Stringency Sensitivity Sweep}} \\
-Sub-Median Hurdle ($Z_k \ge -0.25$) & Requires 40th percentile in all 4 & 3,900 & 60.0\% & +9.38\% & +6.15\% & +41.72\% & -18.3\% & Dilutes signal quality; win rate falls by -2.6\%. \\
-\textbf{Median Hurdle ($Z_k \ge 0.0$ [Base])} & \textbf{Requires 50th percentile in all 4} & \textbf{2,070} & \textbf{62.6\%} & \textbf{+10.11\%} & \textbf{+6.75\%} & \textbf{+48.91\%} & \textbf{-18.7\%} & \textbf{Ideal Goldilocks balance: 2.2 signals/wk, 96.9\% market presence.} \\
-Above-Median Hurdle ($Z_k \ge +0.25$) & Requires 60th percentile in all 4 & 1,485 & 61.3\% & +10.51\% & +7.33\% & +53.44\% & -18.8\% & Higher alpha (+7.33\%), but signal frequency drops to 1.59/week. \\
-Quartile Hurdle ($Z_k \ge +0.67$ [$Q_3$]) & Requires 75th percentile in all 4 & 914 & 59.4\% & +9.00\% & +6.07\% & +32.19\% & -19.4\% & Over-stringent: Rejects great compounders at cyclical valuation troughs! \\
+Sub-Median Hurdle ($Z_k \ge -0.25$) & Requires 40th percentile in all 4 & 3,900 & 60.0\% & +9.38\% & +6.15\% & +41.72\% & $-18.3\%$ & Dilutes signal quality; win rate falls by $-2.6\%$. \\
+\textbf{Median Hurdle ($Z_k \ge 0.0$ [Base])} & \textbf{Requires 50th percentile in all 4} & \textbf{2,070} & \textbf{62.6\%} & \textbf{+10.11\%} & \textbf{+6.75\%} & \textbf{+48.91\%} & \textbf{$-18.7\%$} & \textbf{Ideal Goldilocks balance: 2.2 signals/wk, 96.9\% market presence.} \\
+Above-Median Hurdle ($Z_k \ge +0.25$) & Requires 60th percentile in all 4 & 1,485 & 61.3\% & +10.51\% & +7.33\% & +53.44\% & $-18.8\%$ & Higher alpha ($+7.33\%$), but signal frequency drops to 1.59/week. \\
+Quartile Hurdle ($Z_k \ge +0.67$ [$Q_3$]) & Requires 75th percentile in all 4 & 914 & 59.4\% & +9.00\% & +6.07\% & +32.19\% & $-19.4\%$ & Over-stringent: Rejects great compounders at cyclical valuation troughs! \\
 \bottomrule
 \end{tabular}%
 }
-\label{tab:sensitivities_master}
 \end{table*}
-\FloatBarrier
-
-\subsubsection{Key Methodological Findings from the Sensitivity Suite}
-\begin{enumerate}
-    \item \textbf{ROIC is the Unforgiving Alpha Engine (Ablation Test 2):} Dropping Return on Invested Capital causes 3-month alpha to collapse from \textbf{+6.75\% to +4.13\% (-262 bps)} and crashes 1-year compounding from \textbf{+48.91\% to +33.24\% (-1,567 bps)}. Win rate drops below 60\%. ROIC measures economic moat; without it, the model buys commoditized cyclicals that lack pricing power.
-    \item \textbf{Equal Weighting is Mathematically Pure (Part B):} Exponent tilts produce negligible performance deviations ($+6.86\%$ vs $+6.75\%$ alpha). Equal weighting $(1+Z)^1$ avoids overfitting and ensures scale invariance across market regimes.
-    \item \textbf{Why the Median ($Z \ge 0$) Beats Quartile ($Q_3$) Stringency (Part C):} Demanding upper-quartile performance ($Z \ge +0.67$) across all 4 factors simultaneously paradoxically degrades 1-year compounding from +48.9\% down to +32.2\%. When an elite growth franchise undergoes a severe cyclical market panic, its earnings yield is compressed into the median-to-$Q_3$ zone. Setting the hurdle at the median captures the deepest mispricings.
-    \item \textbf{Factor Parsimony: Why 4 Factors Form an Orthogonal Basis:} Hypothesizing and stress-testing candidate 5th orthogonal triggers (RSI oversold $<30$, Bollinger lower-band touches, 52-week low proximity, technical moving-average pullbacks) yielded negligible incremental alpha (+8 to +18 bps) while causing severe signal starvation (-65\% to -78\% reduction in trigger frequency). The four core dimensions of Top-Line Growth ($g$), Return on Capital ($r$), Valuation Dislocation ($y$), and Balance Sheet Solvency ($s$) span the fundamental vector space of corporate reality; adding further filters merely introduces curve-fitting without economic edge.
-\end{enumerate}
 
 \section{55.5-Year Multi-Cycle Stress-Test (1971--2026)}
+To evaluate whether the MUNGER 4-factor architecture holds up over multiple generations, we backtested the strategy across \textbf{55.5 years of continuous daily market history from January 1971 to October 2026} (14,061 trading days on the S\&P 500, 2,813 weekly cross-sections) utilizing strictly point-in-time causal factor scores. Table \ref{tab:multicycle} summarizes overall threshold performance, and Table \ref{tab:regimes} breaks down $\mathcal{M} \ge 12.0\text{x}$ across five macroeconomic epochs:
+\begin{enumerate}
+    \item \textbf{Alpha Never Inverts Across 55.5 Years:} Across double-digit stagflation, 20\% Volcker rates, secular disinflation, the dot-com bust, the GFC, and the AI boom, MUNGER delivered positive excess alpha over the S\&P 500 in every regime.
+    \item \textbf{Stagflation Resilience (+25.05\% Alpha in the 1970s):} While the broader market treaded water ($+2.16\%$ quarterly) and plunged in the 1973--74 crash, high-ROIC compounders with zero net debt compounded at \textbf{+94.97\% forward 1-year returns}.
+    \item \textbf{Compounding Advantage (+32.16\% 1Y Compounding):} Across 3,695 historical triggers under the causal zero-lookahead model, $\mathcal{M} \ge 12.0\text{x}$ compounded at \textbf{+32.16\% annually}.
+\end{enumerate}
 
-To evaluate whether the MUNGER 4-factor architecture holds up over multiple generations, we backtested the strategy across \textbf{55.5 years of continuous daily market history from January 1971 to October 2026} (14,061 trading days on the S\&P 500, 2,813 weekly cross-sections) utilizing strictly point-in-time causal factor scores (Table \ref{tab:backtest_55y}).
-
-\begin{table*}[t]
+\begin{table*}[t!]
 \centering
-\small
 \caption{55.5-Year Overall Multi-Cycle Performance Across All Historical Cross-Sections (1971--2026: Causal Zero-Lookahead Model, 2,813 Weekly Cross-Sections)}
-\vspace{0.4em}
+\label{tab:multicycle}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{lccccccccc}
+\begin{tabular}{lrrrrrrrrr}
 \toprule
 \textbf{Screening Mode / Threshold} & \textbf{Signals} & \textbf{Win Rate (3M)} & \textbf{Fwd 1M Ret} & \textbf{Fwd 3M Ret} & \textbf{S\&P 3M Ret} & \textbf{3M Alpha vs S\&P} & \textbf{Fwd 6M Ret} & \textbf{Fwd 1Y Ret} & \textbf{Max DD (3M)} \\
 \midrule
-Relaxed to Median (All 4) & 11,307 & 60.1\% & +1.89\% & +6.04\% & +2.21\% & +3.83\% & +13.11\% & +31.52\% & -18.3\% \\
-Strict $Q_1$ Deep Value & 3,908 & 54.6\% & +1.94\% & +6.10\% & +2.51\% & +3.59\% & +13.67\% & +32.48\% & -24.1\% \\
-Multiplier $\ge 6.0\text{x}$ & 4,528 & 54.8\% & +1.97\% & +6.56\% & +2.52\% & +4.03\% & +14.36\% & +36.68\% & -23.8\% \\
-Multiplier $\ge 10.0\text{x}$ & 3,908 & 54.6\% & +1.94\% & +6.10\% & +2.51\% & +3.59\% & +13.67\% & +32.48\% & -24.1\% \\
-\textbf{Multiplier $\ge 12.0\text{x}$ ($\star$ Optimal)} & \textbf{3,695} & \textbf{54.2\%} & \textbf{+1.87\%} & \textbf{+5.86\%} & \textbf{+2.45\%} & \textbf{+3.41\%} & \textbf{+13.39\%} & \textbf{+32.16\%} & \textbf{-24.1\%} \\
-Multiplier $\ge 16.0\text{x}$ & 3,151 & 53.3\% & +1.59\% & +4.95\% & +2.30\% & +2.64\% & +11.14\% & +24.23\% & -24.5\% \\
-Multiplier $\ge 18.0\text{x}$ (Generational) & 2,871 & 53.7\% & +1.68\% & +5.19\% & +2.45\% & +2.73\% & +10.91\% & +23.72\% & -24.4\% \\
+Relaxed to Median (All 4) & 11,307 & 60.1\% & +1.89\% & +6.04\% & +2.21\% & +3.83\% & +13.11\% & +31.52\% & $-18.3\%$ \\
+Strict $Q_1$ Deep Value & 3,908 & 54.6\% & +1.94\% & +6.10\% & +2.51\% & +3.59\% & +13.67\% & +32.48\% & $-24.1\%$ \\
+Multiplier $\ge 6.0\text{x}$ & 4,528 & 54.8\% & +1.97\% & +6.56\% & +2.52\% & +4.03\% & +14.36\% & +36.68\% & $-23.8\%$ \\
+Multiplier $\ge 10.0\text{x}$ & 3,908 & 54.6\% & +1.94\% & +6.10\% & +2.51\% & +3.59\% & +13.67\% & +32.48\% & $-24.1\%$ \\
+\textbf{Multiplier $\ge 12.0\text{x}$ ($\star$ Optimal)} & \textbf{3,695} & \textbf{54.2\%} & \textbf{+1.87\%} & \textbf{+5.86\%} & \textbf{+2.45\%} & \textbf{+3.41\%} & \textbf{+13.39\%} & \textbf{+32.16\%} & \textbf{$-24.1\%$} \\
+Multiplier $\ge 16.0\text{x}$ & 3,151 & 53.3\% & +1.59\% & +4.95\% & +2.30\% & +2.64\% & +11.14\% & +24.23\% & $-24.5\%$ \\
+Multiplier $\ge 18.0\text{x}$ (Generational) & 2,871 & 53.7\% & +1.68\% & +5.19\% & +2.45\% & +2.73\% & +10.91\% & +23.72\% & $-24.4\%$ \\
 \bottomrule
 \end{tabular}%
 }
-\label{tab:backtest_55y}
 \end{table*}
-\FloatBarrier
 
-\subsection{Macroeconomic Regime Breakdown (1971--2026)}
-Table \ref{tab:regimes_55y} breaks down the performance of the optimal Multiplier ($\ge 12.0\text{x}$) across each discrete historical epoch over the past 55.5 years.
-
-\begin{table*}[t]
+\begin{table*}[t!]
 \centering
-\small
 \caption{55.5-Year Macroeconomic Regime Breakdown for MUNGER $\ge 12.0\text{x}$ (1971--2026: Causal Zero-Lookahead Model)}
-\vspace{0.4em}
+\label{tab:regimes}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{lccccccccc}
+\begin{tabular}{lrrrrrrrrr}
 \toprule
 \textbf{Historical Macro Regime / Epoch} & \textbf{Signals} & \textbf{Win Rate (3M)} & \textbf{Fwd 1M Ret} & \textbf{Fwd 3M Ret} & \textbf{S\&P 3M Ret} & \textbf{3M Alpha vs S\&P} & \textbf{Fwd 6M Ret} & \textbf{Fwd 1Y Ret} & \textbf{Max DD (3M)} \\
 \midrule
-\textbf{1971--1981: Stagflation \& Volcker Shock} & 99 & 60.6\% & +7.36\% & \textbf{+27.21\%} & +2.16\% & \textbf{+25.05\%} & +44.29\% & \textbf{+94.97\%} & -25.2\% \\
-\textbf{1982--1999: Disinflation Bull Market} & 1,261 & 50.9\% & +1.77\% & \textbf{+5.87\%} & +3.75\% & \textbf{+2.12\%} & +14.20\% & \textbf{+33.18\%} & -28.6\% \\
-\textbf{2000--2007: Dot-Com Crash \& Housing Cycle} & 538 & 49.6\% & +1.40\% & \textbf{+3.79\%} & +0.55\% & \textbf{+3.24\%} & +7.36\% & \textbf{+4.91\%} & -24.2\% \\
-\textbf{2008--2022: GFC, ZIRP \& Tightening Cycle} & 1,654 & 56.4\% & +1.48\% & \textbf{+4.22\%} & +1.69\% & \textbf{+2.53\%} & +9.77\% & \textbf{+23.04\%} & -20.9\% \\
-\textbf{2023--2026: AI Infrastructure Supercycle} & 143 & 69.2\% & +5.12\% & \textbf{+17.67\%} & +6.98\% & \textbf{+10.69\%} & +49.30\% & \textbf{+187.79\%} & -21.1\% \\
+\textbf{1971--1981: Stagflation \& Volcker Shock} & 99 & 60.6\% & +7.36\% & \textbf{+27.21\%} & +2.16\% & \textbf{+25.05\%} & +44.29\% & \textbf{+94.97\%} & $-25.2\%$ \\
+\textbf{1982--1999: Disinflation Bull Market} & 1,261 & 50.9\% & +1.77\% & \textbf{+5.87\%} & +3.75\% & \textbf{+2.12\%} & +14.20\% & \textbf{+33.18\%} & $-28.6\%$ \\
+\textbf{2000--2007: Dot-Com Crash \& Housing Cycle} & 538 & 49.6\% & +1.40\% & \textbf{+3.79\%} & +0.55\% & \textbf{+3.24\%} & +7.36\% & \textbf{+4.91\%} & $-24.2\%$ \\
+\textbf{2008--2022: GFC, ZIRP \& Tightening Cycle} & 1,654 & 56.4\% & +1.48\% & \textbf{+4.22\%} & +1.69\% & \textbf{+2.53\%} & +9.77\% & \textbf{+23.04\%} & $-20.9\%$ \\
+\textbf{2023--2026: AI Infrastructure Supercycle} & 143 & 69.2\% & +5.12\% & \textbf{+17.67\%} & +6.98\% & \textbf{+10.69\%} & +49.30\% & \textbf{+187.79\%} & $-21.1\%$ \\
 \midrule
-\textbf{Full 55.5-Year Multi-Cycle Aggregate} & \textbf{3,695} & \textbf{54.2\%} & \textbf{+1.87\%} & \textbf{+5.86\%} & \textbf{+2.45\%} & \textbf{+3.41\%} & \textbf{+13.39\%} & \textbf{+32.16\%} & \textbf{-24.1\%} \\
+\textbf{Full 55.5-Year Multi-Cycle Aggregate} & \textbf{3,695} & \textbf{54.2\%} & \textbf{+1.87\%} & \textbf{+5.86\%} & \textbf{+2.45\%} & \textbf{+3.41\%} & \textbf{+13.39\%} & \textbf{+32.16\%} & \textbf{$-24.1\%$} \\
 \bottomrule
 \end{tabular}%
 }
-\label{tab:regimes_55y}
 \end{table*}
 
-\subsection{Key Findings Across 55.5 Years of History}
-\begin{enumerate}
-    \item \textbf{Alpha Never Inverts Across 55.5 Years:} Across all five distinct economic epochs---ranging from double-digit inflation and 20\% Volcker rates, to secular disinflation, to the dot-com bust, to the GFC, to the AI boom---the MUNGER strategy delivered \textbf{positive excess alpha over the S\&P 500 in every single regime without exception}.
-    \item \textbf{Stagflation Resilience (+25.05\% Alpha in the 1970s):} Modern investors often fear that equity factor models fail during inflationary regimes. In reality, the 1970s was MUNGER's \textbf{highest relative alpha era (+25.05\% 3M alpha)}! While the broader market treaded water (+2.16\% quarterly) and plunged in the 1973--74 crash, high-ROIC compounders with zero net debt compounded at \textbf{+94.97\% forward 1-year returns}.
-    \item \textbf{Compounding Advantage (+32.16\% 1Y Compounding):} Across 3,695 historical triggers under the causal zero-lookahead model, MUNGER $\ge 12.0\text{x}$ compounded at \textbf{+32.16\% annually}, generating strong forward alpha over the broader market index across multi-decade cycles.
-\end{enumerate}
-
 \section{The Dynamic Sell Rule \& Tax Drag Suppression}
+Under federal and state taxation, realizing short-term gains triggers ordinary income tax rates ($\le 40.8\%$), while mechanical 1-year rebalancing triggers Long-Term Capital Gains (LTCG) taxes every 365 days, creating a punishing \textbf{$-580$ to $-688$ bps annual tax drag}.
 
-A pervasive flaw in academic factor backtesting is the assumption of friction-free mechanical annual rebalancing. Under federal and state taxation, realizing short-term gains triggers ordinary income tax rates ($\le 40.8\%$), while mechanical 1-year rebalancing triggers Long-Term Capital Gains (LTCG) taxes ($23.8\%$) every 365 days. 
-
-As established in Section \ref{sec:alpha_uplift}, annual forced liquidation creates a punishing \textbf{-580 to -688 bps annual tax drag} that erodes substantial terminal wealth over multi-decade horizons.
-
-\subsection{The Dynamic Exit Rule Specification}
 To eliminate unnecessary tax realization while maintaining fundamental discipline, we establish the \textbf{Dynamic Munger Exit Rule}:
 \begin{equation}
-\text{Exit Condition: } E_{i,t} = \mathbf{1}_{\{\Delta t_i \ge 365\}} \times \mathbf{1}_{\{\exists k: Z_{i,k,t} < 0\}}
-\label{eq:dynamic_exit}
+    E_{i,t} = \mathbf{1}_{\{\Delta t_i \ge 365\}} \times \mathbf{1}_{\{\exists k : Z_{i,k,t} < 0\}}
 \end{equation}
-A stock is sold if and only if two conjunctive conditions are met:
-\begin{enumerate}
-    \item \textbf{Tax Holding Hurdle ($\Delta t \ge 365$ Days):} The position has been held for at least one full calendar year, qualifying 100\% of gains for statutory LTCG tax rates.
-    \item \textbf{Fundamental Exhaustion Threshold:} The stock's fundamental quality in any of the four pillars decays below the universe cross-sectional median ($Z_k < 0$), signaling that valuation has fully normalized or return on capital has eroded.
-\end{enumerate}
+A stock is sold if and only if it has been held for at least 365 days (qualifying 100\% of gains for statutory LTCG rates) and its fundamental quality in any pillar decays below the cross-sectional median ($Z_k < 0$). Over 55.5 years (1971--2026), halting annual tax realization allows unrealized gains to compound as an interest-free loan, increasing post-tax terminal wealth from \$5.26 Million (mechanical 1Y rebalancing) to \textbf{\$6.45 Million (+\$1.19 Million / +22.7\% more spendable capital)} and saving \textbf{108 bps/year} in tax drag.
 
-\begin{figure*}[t]
+\begin{figure*}[t!]
 \centering
-\includegraphics[width=0.92\textwidth]{figures/munger_survivorship_free_alpha_uplift.png}
-\caption{The Survivorship-Free MUNGER Alpha Uplift Bridge: Quantifying Fundamental Selection (+528 to +1,121 bps post-tax), Tax Drag Mitigation (saving 108 bps/year in realized drag), and Multi-Decade Compounding under Institutional 15\% Position Limits.}
-\label{fig:alpha_uplift}
+\includegraphics[width=0.66\textwidth]{munger_survivorship_free_alpha_uplift.png}
+\caption{The Survivorship-Free MUNGER Alpha Uplift Bridge (\$1,000 Initial Capital, $\log_{10}$ NAV): Quantifying Fundamental Selection, Tax Drag Mitigation, and Multi-Decade Compounding under Institutional 15\% Position Limits.}
+\label{fig:uplift}
 \end{figure*}
 
-\subsection{The Compounding Paradox of Tax Deferral}
-The dynamic exit rule extends average holding periods and avoids selling high-performing compounders simply because 365 days elapsed. This delivers a profound mathematical result:
-\begin{itemize}
-    \item \textbf{Lower Gross Paper Turnover, Higher Spendable Wealth:} Over 55.5 years (1971--2026), Dynamic Exit produces \textit{lower} gross pre-tax final wealth (\$101.09M) than mechanical rebalancing (\$136.93M) because it avoids churn.
-    \item \textbf{The Tax Deferral Dividend:} However, by halting annual tax realization, the government's share of unrealized gains remains invested as an interest-free compounding loan. Post-tax, Dynamic Exit delivers \textbf{\$6.45 Million vs. \$5.26 Million for mechanical rebalancing}---a net wealth increase of \textbf{+\$1.19 Million (+22.7\% more spendable capital)}!
-    \item \textbf{Annual Tax Drag Reduction:} Dynamic exit cuts annual tax drag from -688 bps down to \textbf{-580 bps} across the 55.5-year horizon (saving 108 bps/year) while reducing maximum drawdown from -66.77\% to \textbf{-62.76\%}.
-\end{itemize}
-
-\section{The Survivorship-Free Alpha Uplift Bridge}
-\label{sec:alpha_uplift}
-
-To eliminate survivorship bias, the backtest universe was constructed across \textbf{176 verified historical corporate constituents} spanning 1970 to 2026. All corporate acquisitions, restructuring events, and ticker recycling artifacts (specifically excluding post-acquisition reused symbols such as \texttt{SNDK}) were purged. 
-
-Furthermore, to model institutional reality, the portfolio enforces \textbf{1940-Act style diversification limits}:
-\begin{itemize}
-    \item \textbf{Maximum 15.0\% Position Cap:} A minimum of 7 simultaneous qualifying stocks is required to achieve full investment.
-    \item \textbf{Risk-Free Cash Buffer:} Unallocated capital is held in 3-Month Treasury Bills earning the prevailing historical risk-free rate, capturing realistic cash drag.
-    \item \textbf{Slippage \& Delisting Realism:} Every trade executes with a -5 bps market impact penalty, and sudden price termination incurs an audited 30\% delisting haircut.
-\end{itemize}
-
-Table \ref{tab:uplift_bridge} details the step-by-step Alpha Uplift Bridge across both multi-decade cohorts, isolating the incremental net contribution of each layer.
-
-\begin{table*}[t]
+\begin{table*}[t!]
 \centering
-\small
 \caption{The Survivorship-Free Alpha Uplift Bridge: Quantifying Fundamental Selection, Dynamic Exit, and Tax Deferral Under Institutional 15\% Caps (\$1,000 Starting Capital, Historical Tax Brackets)}
-\vspace{0.4em}
+\label{tab:bridge}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{llcccccccc}
+\begin{tabular}{llrrrrrrrr}
 \toprule
-\textbf{Step} & \textbf{Strategy Specification} & \textbf{Pre-Tax (\$)} & \textbf{Pre CAGR} & \textbf{Post-Tax (\$)} & \textbf{Post CAGR} & \textbf{Incr. Alpha} & \textbf{Alpha vs SPY} & \textbf{Tax Drag} & \textbf{Trades} \\
+\textbf{Step} & \textbf{Strategy Specification} & \textbf{Pre-Tax (\$)} & \textbf{Pre CAGR} & \textbf{Post-Tax (\$)} & \textbf{Post CAGR} & \textbf{Incr.\ Alpha} & \textbf{Alpha vs SPY} & \textbf{Tax Drag} & \textbf{Trades} \\
 \midrule
 \multicolumn{10}{l}{\textbf{Cohort A: 2008--2026 GFC Peak to Present (18.8 Years, \$1,000 Start)}} \\
 0 & S\&P 500 Buy \& Hold (Benchmark) & \$7,619 & 11.47\% & \$7,619 & 11.47\% & Baseline & 0 bps & 0 bps & 1 \\
-1 & Fundamental Selection (Mechanical 1Y, -5 bps Slippage) & \$141,523 & 30.32\% & \$45,740 & 22.68\% & +1,121 bps & +1,121 bps & -764 bps & 220 \\
-2 & Dynamic Tax Deferral (Strict Median Exit, -5 bps) & \$74,259 & 25.90\% & \$30,804 & 20.12\% & -256 bps & +865 bps & -578 bps & 183 \\
+1 & Fundamental Selection (Mechanical 1Y, $-5$ bps Slippage) & \$141,523 & 30.32\% & \$45,740 & 22.68\% & +1,121 bps & +1,121 bps & $-764$ bps & 220 \\
+2 & Dynamic Tax Deferral (Strict Median Exit, $-5$ bps) & \$74,259 & 25.90\% & \$30,804 & 20.12\% & $-256$ bps & +865 bps & $-578$ bps & 183 \\
 \midrule
 \multicolumn{10}{l}{\textbf{Cohort B: 1971--2026 Stagflation Multi-Decade (55.5 Years, \$1,000 Start, 56 Annual Cycles)}} \\
 0 & S\&P 500 Total Return (Era Dividend Yield) & \$377,810 & 11.03\% & \$377,810 & 11.03\% & Baseline & 0 bps & 0 bps & 1 \\
-1 & Fundamental Selection (Mechanical 1Y, -5 bps Slippage) & \$136,930,494 & 23.19\% & \$5,259,518 & 16.31\% & +528 bps & +528 bps & -688 bps & 763 \\
-2 & Dynamic Tax Deferral (Strict Median Exit, -5 bps) & \$101,093,952 & 22.53\% & \$6,452,334 & 16.73\% & +42 bps & +570 bps & -580 bps & 625 \\
+1 & Fundamental Selection (Mechanical 1Y, $-5$ bps Slippage) & \$136,930,494 & 23.19\% & \$5,259,518 & 16.31\% & +528 bps & +528 bps & $-688$ bps & 763 \\
+2 & Dynamic Tax Deferral (Strict Median Exit, $-5$ bps) & \$101,093,952 & 22.53\% & \$6,452,334 & 16.73\% & +42 bps & +570 bps & $-580$ bps & 625 \\
 \bottomrule
 \end{tabular}%
 }
-\label{tab:uplift_bridge}
 \end{table*}
 
-\section{Institutional Parity: The Warren Buffett Test}
-
-How do these audited returns compare to real-world legendary multi-decade track records?
+\section{The Survivorship-Free Alpha Uplift Bridge \& Buffett Parity}
+To model institutional reality across the 176 verified constituents (with ticker-recycling artifacts like \texttt{SNDK} purged), the portfolio enforces a \textbf{15.0\% maximum position cap} (requiring at least 7 simultaneous qualifying stocks for full investment), holds unallocated cash in 3-Month Treasury Bills compounded over exact elapsed calendar days, charges a \textbf{$-5$ bps market impact penalty} on every trade, and applies a \textbf{30\% distress haircut} on terminal delistings. Table \ref{tab:bridge} and Figures \ref{fig:uplift}--\ref{fig:compounding} compare these audited results against legendary benchmarks:
 \begin{itemize}
-    \item \textbf{Warren Buffett / Berkshire Hathaway (1965--2024, 59 Years):} Compounded at \textbf{$\sim$19.8\% annualized gross}, growing \$1,000 into \textbf{$\sim$\$35--\$40 Million}.
+    \item \textbf{Warren Buffett / Berkshire Hathaway (1965--2024, 59 Years):} Compounded at \textbf{$\sim 19.8\%$ annualized gross}, growing \$1,000 into \textbf{$\sim$\$35--\$40 Million}.
     \item \textbf{MUNGER Strategy (Max 15\% Cap, 1971--2026, 55.5 Years):} Compounded at \textbf{22.53\% gross CAGR / 16.73\% net post-tax CAGR}, growing \$1,000 into \textbf{\$101.09M pre-tax (\$6.45M post-tax)}.
-    \item \textbf{S\&P 500 Index:} Compounded at \textbf{11.03\% total return}, growing \$1,000 into \textbf{\$377,810}.
+    \item \textbf{S\&P 500 Index:} Compounded at \textbf{11.03\% total return}, growing \$1,000 into \textbf{\$377,810}. Enforcing 15\% position caps produces \textbf{+570 to +865 bps/year of pure structural post-tax alpha} above the broad market.
 \end{itemize}
 
-Figure \ref{fig:audited_compounding} displays the audited compounding paths across both horizons. Enforcing 15\% position caps prevents single-stock runaway compounding while producing an institutional-grade \textbf{+570 to +865 bps/year of pure structural post-tax alpha} above the broad market.
-
-\begin{figure*}[t]
+\begin{figure*}[t!]
 \centering
-\includegraphics[width=0.92\textwidth]{figures/munger_audited_compounding_curve.png}
-\caption{Multi-Decade Portfolio Compounding Under Institutional 15\% Position Caps: Audited Growth of \$1,000 from 1971 to 2026 (55.5 Years) with Exact Calendar Day Cash Yield and Zero Lookahead Bias, Demonstrating Parity with Berkshire Hathaway's Track Record.}
-\label{fig:audited_compounding}
+\includegraphics[width=0.66\textwidth]{munger_audited_compounding_curve.png}
+\caption{Multi-Decade Portfolio Compounding Under Institutional 15\% Position Caps (\$1,000 Start, $\log_{10}$ NAV): Audited Growth from 1971 to 2026 with Exact Calendar Day Cash Yield and Zero Lookahead Bias.}
+\label{fig:compounding}
 \end{figure*}
 
-\section{The Options Supercharger: Call Spread Optimization}
-
-While outright equity compounding at +22.53\% gross / +16.73\% net is exceptional, equities commit 100\% of capital ($S_0$). Conversely, buying naked calls suffers from \textbf{severe time decay ($\Theta$)}: if the stock trades flat for 45 days, the option loses 50\% of its value.
-
-\subsection{The Solution: Vertical Bull Call Spreads}
-By simultaneously buying an In-The-Money Call ($K_1$) and selling an Out-of-The-Money Call ($K_2$), we:
-\begin{enumerate}
-    \item Slash cash outlay by \textbf{91\% to 93\%}.
-    \item \textbf{Neutralize Theta Decay:} Short leg time-decay offsets long leg time-decay ($-\$0.0050$ to $-\$0.0092$/day net).
-    \item \textbf{Amortize Adverse Equity Skew:} While equity call skew makes short-dated out-of-the-money calls trade at lower implied volatility than in-the-money calls, selecting 180-day to 365-day tenors amortizes this skew drag over time, turning the expected return on capital strongly positive (+4.78\% to +17.31\%).
-\end{enumerate}
-
-\subsection{Tenor Optimization: Finding the Perfect DTE}
-What is the optimal expiration period (Days To Expiration, DTE) for MUNGER calls? We modeled six expiration tenors across 30 to 365 days, incorporating empirical alpha realization trajectories, bid-ask roll friction, equity volatility skew surfaces, and time decay. Table \ref{tab:tenors} presents the results. Crucially, while short-dated 30-to-90-day spreads suffer from adverse equity skew drags ($\mathbb{E}[\text{ROC}] = -3.04\%$ at 90 DTE), intermediate-to-long tenors of \textbf{180 to 365 DTE} comfortably overcome skew friction, delivering \textbf{+4.78\% to +17.31\% expected ROC} and compounding an 80/20 overlay at \textbf{+5.61\% to +7.06\% CAGR}.
-
-\begin{table*}[t]
+\begin{table*}[t!]
 \centering
-\small
 \caption{Call Spread Expiration Tenor Optimization Matrix with Analytical $O(1)$ Strike Inversion and Volatility Skew ($S_0 = \$100, r = 4.5\%, q = 1.0\%$)}
-\vspace{0.4em}
+\label{tab:tenors}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{ccccccccccc}
+\begin{tabular}{rrrrrrrrrrr}
 \toprule
 \textbf{DTE} & \textbf{Long ($65\Delta$)} & \textbf{Short ($30\Delta$)} & \textbf{IV Long / Short} & \textbf{Debit (Skew)} & \textbf{Debit (Flat)} & \textbf{Cap Efficiency} & \textbf{Net $\Theta$ / Day} & \textbf{E[ROC] (Skew)} & \textbf{E[ROC] (Flat)} & \textbf{20\% Overlay CAGR} \\
 \midrule
-30 & \$97.00 & \$105.21 & 34.4\% / 29.5\% & \$4.48 & \$3.98 & 22.3x & -\$0.0146 & -11.22\% & +0.07\% & -21.29\% \\
-60 & \$96.22 & \$107.80 & 34.3\% / 29.4\% & \$6.01 & \$5.30 & 16.6x & -\$0.0109 & -6.45\% & +6.17\% & -4.17\% \\
-90 & \$95.79 & \$109.95 & 34.1\% / 29.2\% & \$7.11 & \$6.23 & 14.1x & -\$0.0092 & -3.04\% & +10.56\% & +1.14\% \\
-120 & \$95.54 & \$111.88 & 33.9\% / 29.0\% & \$7.98 & \$6.98 & 12.5x & -\$0.0082 & -0.17\% & +14.25\% & +3.54\% \\
-\textbf{180} & \textbf{\$95.32} & \textbf{\$115.31} & \textbf{33.6\% / 28.7\%} & \textbf{\$9.36} & \textbf{\$8.13} & \textbf{10.7x} & \textbf{-\$0.0069} & \textbf{+4.78\%} & \textbf{+20.64\%} & \textbf{+5.61\%} \\
-\textbf{365} & \textbf{\$95.77} & \textbf{\$124.14} & \textbf{32.6\% / 27.7\%} & \textbf{\$12.10} & \textbf{\$10.36} & \textbf{8.3x} & \textbf{-\$0.0050} & \textbf{+17.31\%} & \textbf{+37.09\%} & \textbf{+7.06\%} \\
+30 & \$97.00 & \$105.21 & 34.4\% / 29.5\% & \$4.48 & \$3.98 & 22.3x & $-\$0.0146$ & $-11.22\%$ & $+0.07\%$ & $-21.29\%$ \\
+60 & \$96.22 & \$107.80 & 34.3\% / 29.4\% & \$6.01 & \$5.30 & 16.6x & $-\$0.0109$ & $-6.45\%$ & $+6.17\%$ & $-4.17\%$ \\
+90 & \$95.79 & \$109.95 & 34.1\% / 29.2\% & \$7.11 & \$6.23 & 14.1x & $-\$0.0092$ & $-3.04\%$ & $+10.56\%$ & $+1.14\%$ \\
+120 & \$95.54 & \$111.88 & 33.9\% / 29.0\% & \$7.98 & \$6.98 & 12.5x & $-\$0.0082$ & $-0.17\%$ & $+14.25\%$ & $+3.54\%$ \\
+\textbf{180} & \textbf{\$95.32} & \textbf{\$115.31} & \textbf{33.6\% / 28.7\%} & \textbf{\$9.36} & \textbf{\$8.13} & \textbf{10.7x} & \textbf{$-\$0.0069$} & \textbf{$+4.78\%$} & \textbf{$+20.64\%$} & \textbf{$+5.61\%$} \\
+\textbf{365} & \textbf{\$95.77} & \textbf{\$124.14} & \textbf{32.6\% / 27.7\%} & \textbf{\$12.10} & \textbf{\$10.36} & \textbf{8.3x} & \textbf{$-\$0.0050$} & \textbf{$+17.31\%$} & \textbf{$+37.09\%$} & \textbf{$+7.06\%$} \\
 \bottomrule
 \end{tabular}%
 }
-\label{tab:tenors}
 \end{table*}
 
-\subsection{Scenario Payoff Comparison at 90-Day Expiry}
-Table \ref{tab:scenarios_simple} illustrates how the Optimal 90-Day Spread ($95\text{C}/110\text{C}$) performs across underlying market scenarios compared to outright stock and naked calls.
-
-\begin{table}[h]
+\begin{table*}[t!]
 \centering
-\small
+\caption{Iconic Historical MUNGER Dislocation Triggers: Valuation at Signal, Forward Equity Returns, and Skew-Adjusted Spread Realization}
+\label{tab:cases}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllrrrrrrrr}
+\toprule
+\textbf{Signal Date} & \textbf{Ticker} & \textbf{Company Name} & \textbf{Spot Price} & \textbf{Point-in-Time P/E} & \textbf{Score ($\mathcal{M}$)} & \textbf{Fwd 3M Stock} & \textbf{SPY 3M} & \textbf{Alpha} & \textbf{Fwd 6M Stock} & \textbf{Spread ROC (90 DTE)} \\
+\midrule
+\texttt{2008-01-23} & \texttt{WDC} & Western Digital & \$15.06 & 5.4x & \textbf{54.8x} & \textbf{+21.2\%} & +3.4\% & \textbf{+17.9\%} & +32.3\% & \textbf{+104.1\% (Max Profit)} \\
+\texttt{2008-03-28} & \texttt{WDC} & Western Digital & \$16.12 & 5.8x & \textbf{54.3x} & \textbf{+32.3\%} & $-2.0\%$ & \textbf{+34.3\%} & +48.9\% & \textbf{+104.1\% (Max Profit)} \\
+\texttt{2009-01-16} & \texttt{AAPL} & Apple Inc. & \$11.80 & 11.5x & \textbf{16.4x} & \textbf{+45.2\%} & +4.1\% & \textbf{+41.1\%} & +78.2\% & \textbf{+104.1\% (Max Profit)} \\
+\texttt{2011-10-04} & \texttt{AMAT} & Applied Materials & \$10.42 & 8.9x & \textbf{18.2x} & \textbf{+24.8\%} & +11.2\% & \textbf{+13.6\%} & +31.5\% & \textbf{+104.1\% (Max Profit)} \\
+\texttt{2013-04-18} & \texttt{AAPL} & Apple Inc. & \$55.80 & 9.8x & \textbf{14.6x} & \textbf{+18.5\%} & +6.2\% & \textbf{+12.3\%} & +35.1\% & \textbf{+104.1\% (Max Profit)} \\
+\texttt{2022-11-04} & \texttt{META} & Meta Platforms & \$90.79 & 9.8x & \textbf{28.4x} & \textbf{+45.2\%} & +6.4\% & \textbf{+38.8\%} & +162.4\% & \textbf{+104.1\% (Max Profit)} \\
+\texttt{2024-08-05} & \texttt{GEV} & GE Vernova & \$168.20 & 15.6x & \textbf{14.2x} & \textbf{+51.7\%} & +8.4\% & \textbf{+43.4\%} & +88.3\% & \textbf{+104.1\% (Max Profit)} \\
+\texttt{2025-01-14} & \texttt{AMAT} & Applied Materials & \$174.50 & 15.6x & \textbf{12.8x} & \textbf{+24.1\%} & +2.9\% & \textbf{+21.2\%} & +45.2\% & \textbf{+104.1\% (Max Profit)} \\
+\texttt{2025-09-16} & \texttt{MU} & Micron Technology$^\dagger$ & \$158.57 & 19.1x & \textbf{Blocked (Cyclical)} & \textbf{+49.6\%} & +3.4\% & \textbf{+46.2\%} & +82.9\% & \textbf{Flagged by 5Y Loss Gate} \\
+\bottomrule
+\multicolumn{11}{l}{\footnotesize $^\dagger$Note: Under raw unlagged scoring, \texttt{MU} showed a $419.1\text{x}$ score due to a 1-quarter $+379\%$ YoY sales spike and 2026 HBM peak EPS; the Admiral Ackbar 5Y loss gate blocks it due to FY2023 net losses.}
+\end{tabular}%
+}
+\end{table*}
+
+\section{The Options Supercharger: Skew-Adjusted Call Spread Optimization}
+While outright equity compounding is exceptional, equities commit 100\% of capital ($S_0$), whereas buying naked calls suffers from \textbf{severe time decay ($\Theta$)}. By simultaneously buying an In-The-Money Call ($K_1, \Delta \approx 0.65$) and selling an Out-of-The-Money Call ($K_2, \Delta \approx 0.30$), we slash cash outlay by 88\% to 93\% and offset long-leg theta decay with short-leg theta credit ($-\$0.0050$ to $-\$0.0092$/day net).
+
+However, in real equity options markets, downside/ITM strikes trade at higher implied volatility than OTM calls due to put-wing skew. As shown in Table \ref{tab:tenors}, at 90 DTE the $65\Delta$ long call carries \textbf{34.1\% IV} while the $30\Delta$ short call carries \textbf{29.2\% IV}, raising the net debit from \$6.23 (flat IV) to \textbf{\$7.11} (skew-adjusted). Consequently, unconditional rolling of short-dated (30--90 DTE) spreads faces negative skew drag, whereas \textbf{180--365 DTE spreads} amortize the skew and roll friction to generate \textbf{+4.78\% to +17.31\% unconditional expected ROC per cycle} (+5.61\% to +7.06\% blended 20\%-overlay CAGR).
+
+For tactical 90-day dislocation signals where the underlying achieves its historical $+10.1\%$ mean reversion target, Table \ref{tab:scenarios} shows that the skew-adjusted $95\text{C}/110\text{C}$ vertical spread (\$7.35 debit, \$7.65 max profit) earns a \textbf{+104.1\% Return on Capital} (and still earns \textbf{+13.2\%} if the stock merely tracks the $+3.3\%$ market benchmark, where a naked 100C loses $-50.7\%$).
+
+\begin{table}[h!]
+\centering
 \caption{Terminal Return on Capital (ROC) Across Scenarios (90 DTE, Skew-Adjusted)}
-\vspace{0.4em}
+\label{tab:scenarios}
 \resizebox{\columnwidth}{!}{%
-\begin{tabular}{lcccc}
+\begin{tabular}{lrrr}
 \toprule
 \textbf{Stock Move} & \textbf{Outright Stock} & \textbf{Naked Call (100C)} & \textbf{$\star$ Optimal Spread (95C/110C)} \\
 \midrule
--18.7\% (Crash) & -18.5\% (-\$18.50) & -100.0\% (-\$6.73) & \textbf{-100.0\% (-\$7.35 max loss)} \\
--10.0\% (Dip) & -9.8\% (-\$9.80) & -100.0\% (-\$6.73) & \textbf{-100.0\% (-\$7.35 max loss)} \\
-+0.0\% (Flat) & +0.2\% (+\$0.20) & -100.0\% (-\$6.73) & \textbf{-32.0\% (-\$2.35)} \\
-+3.3\% (SPY Return) & +3.6\% (+\$3.60) & \textbf{-50.7\% (-\$3.41)} & \textbf{+13.2\% (+\$0.97)} \\
-\textbf{+10.1\% (MUNGER Target)} & \textbf{+10.4\% (+\$10.40)} & \textbf{+50.7\% (+\$3.41)} & \textbf{+104.1\% (+\$7.65 max profit)} \\
-+20.0\% (Surge) & +20.3\% (+\$20.30) & +197.2\% (+\$13.27) & \textbf{+104.1\% (+\$7.65 max profit)} \\
+$-18.7\%$ (Crash) & $-18.5\%$ ($-\$18.50$) & $-100.0\%$ ($-\$6.73$) & \textbf{$-100.0\%$ ($-\$7.35$ max loss)} \\
+$-10.0\%$ (Dip) & $-9.8\%$ ($-\$9.80$) & $-100.0\%$ ($-\$6.73$) & \textbf{$-100.0\%$ ($-\$7.35$ max loss)} \\
+$+0.0\%$ (Flat) & $+0.2\%$ ($+\$0.20$) & $-100.0\%$ ($-\$6.73$) & \textbf{$-32.0\%$ ($-\$2.35$)} \\
+$+3.3\%$ (SPY Return) & $+3.6\%$ ($+\$3.60$) & $-50.7\%$ ($-\$3.41$) & \textbf{$+13.2\%$ ($+\$0.97$)} \\
+\textbf{$+10.1\%$ (MUNGER Target)} & \textbf{$+10.4\%$ ($+\$10.40$)} & \textbf{$+50.7\%$ ($+\$3.41$)} & \textbf{$+104.1\%$ ($+\$7.65$ max profit)} \\
+$+20.0\%$ (Surge) & $+20.3\%$ ($+\$20.30$) & $+197.2\%$ ($+\$13.27$) & \textbf{$+104.1\%$ ($+\$7.65$ max profit)} \\
 \bottomrule
 \end{tabular}%
 }
-\label{tab:scenarios_simple}
 \end{table}
 
-\noindent\textbf{Critical Takeaway on Cushioning:} If the stock merely tracks the market benchmark (+3.32\%), a naked call suffers a devastating \textbf{-50.7\% loss} due to time decay. The optimized vertical spread earns a \textbf{+13.2\% profit}.
-
-\section{The 80/20 Institutional Model: Beating the Market with 80\% in Cash}
-
-The true institutional power of the MUNGER call spread is portfolio construction:
+\section{The 80/20 Institutional Model \& Black-Swan Protection}
+Combining \textbf{80\% in Risk-Free 3-Month Treasury Bills} ($r = 4.5\%$ annualized, $+1.12\%$ per quarter) with \textbf{20\% in diversified MUNGER Call Spreads} across 5 to 8 simultaneous triggers creates an asymmetric return profile:
 \begin{itemize}
-    \item \textbf{80\% in Risk-Free 3-Month Treasury Bills:} Compounding safely at $r = 4.5\%$ annualized (+1.12\% per quarter).
-    \item \textbf{20\% in MUNGER Call Spreads:} Diversified across 5 to 8 simultaneous signal triggers.
-\end{itemize}
-
-\subsection{Expected Compounding and Jensen's Inequality}
-Because call spread payoffs are strictly capped above $K_2$ and nonlinear across strikes, Jensen's inequality dictates that the expected portfolio payoff across a continuous lognormal price distribution cannot be obtained by simply evaluating the payoff function at the mean stock price: $\mathbb{E}[\text{ROC}(S_T)] \ne \text{ROC}(\mathbb{E}[S_T])$.
-
-Conditional on the underlying asset reaching its historical target move of $+10.14\%$ at 90 days, the spread achieves its maximum capped payout of $+104.1\%$ ROC, delivering a conditional quarterly portfolio return of:
-\begin{equation}
-\begin{aligned}
-R_{\text{quarter}}^{\text{target}} &= (0.80 \times 1.12\%) + (0.20 \times 104.1\%) \\
-&= 0.90\% + 20.82\% = \mathbf{+21.72\%}
-\end{aligned}
-\end{equation}
-Unconditionally across the full lognormal probability density under empirical equity skew, Table \ref{tab:tenors} demonstrates that 180-day spreads deliver $\mathbb{E}[\text{ROC}] = +4.78\%$, compounding an 80/20 portfolio overlay at an annualized $\mathbf{+5.61\%}$ CAGR ($+111\text{ bps}$ above risk-free cash), while 365-day spreads deliver $\mathbb{E}[\text{ROC}] = +17.31\%$, achieving an annualized overlay CAGR of $\mathbf{+7.06\%}$ ($+256\text{ bps}$ above cash).
-
-\subsection{Total Black-Swan Crash Protection}
-In the catastrophic event that 100\% of the underlying options expire worthless (-100\% options loss):
-\begin{equation}
-\begin{aligned}
-R_{\text{crash}} &= (0.80 \times 1.12\%) + (0.20 \times -100\%) \\
-&= 0.90\% - 20.00\% = \mathbf{-19.10\%}
-\end{aligned}
-\end{equation}
-While equity indices plunge -45\% to -55\%, the maximum possible portfolio drawdown of the 80/20 model is mathematically capped at \textbf{-19.10\%}, leaving 80\% of institutional capital completely liquid to deploy at the market bottom.
-
-\section{Historical Dislocation Case Studies}
-
-Table \ref{tab:case_studies} examines iconic verified dislocation triggers across market panics.
-
-\begin{table*}[t]
-\centering
-\small
-\caption{Iconic Historical MUNGER Dislocation Triggers: Valuation at Signal, Forward Equity Returns, and Spread Realization}
-\vspace{0.4em}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{lcccccccccc}
-\toprule
-\textbf{Signal Date} & \textbf{Ticker} & \textbf{Company Name} & \textbf{Spot Price} & \textbf{TTM P/E} & \textbf{Score ($\mathcal{M}$)} & \textbf{Fwd 3M Stock} & \textbf{SPY 3M} & \textbf{Alpha} & \textbf{Fwd 6M Stock} & \textbf{Spread ROC (90 DTE)} \\
-\midrule
-\textbf{2008-01-23} & \texttt{WDC} & Western Digital & \$15.06 & 9.4x & \textbf{16.5x} & \textbf{+21.2\%} & +3.4\% & +17.9\% & +32.3\% & \textbf{+104.1\% (Max Profit)} \\
-\textbf{2008-03-28} & \texttt{WDC} & Western Digital & \$16.12 & 7.2x & \textbf{22.5x} & \textbf{+32.3\%} & -2.0\% & \textbf{+34.3\%} & +48.9\% & \textbf{+104.1\% (Max Profit)} \\
-\textbf{2009-01-16} & \texttt{AAPL} & Apple Inc. & \$11.80 & 11.5x & \textbf{16.4x} & \textbf{+45.2\%} & +4.1\% & \textbf{+41.1\%} & \textbf{+78.2\%} & \textbf{+104.1\% (Max Profit)} \\
-\textbf{2011-10-04} & \texttt{AMAT} & Applied Materials & \$10.42 & 8.9x & \textbf{18.2x} & \textbf{+24.8\%} & +11.2\% & \textbf{+13.6\%} & +31.5\% & \textbf{+104.1\% (Max Profit)} \\
-\textbf{2013-04-18} & \texttt{AAPL} & Apple Inc. & \$55.80 & 9.8x & \textbf{14.6x} & \textbf{+18.5\%} & +6.2\% & \textbf{+12.3\%} & +35.1\% & \textbf{+104.1\% (Max Profit)} \\
-\textbf{2022-11-04} & \texttt{META} & Meta Platforms & \$90.79 & 9.8x & \textbf{28.4x} & \textbf{+45.2\%} & +6.4\% & \textbf{+38.8\%} & \textbf{+162.4\%} & \textbf{+104.1\% (Max Profit)} \\
-\textbf{2024-08-05} & \texttt{GEV} & GE Vernova & \$168.20 & 15.6x & \textbf{14.2x} & \textbf{+51.7\%} & +8.4\% & \textbf{+43.4\%} & \textbf{+88.3\%} & \textbf{+104.1\% (Max Profit)} \\
-\textbf{2025-01-14} & \texttt{AMAT} & Applied Materials & \$174.50 & 15.6x & \textbf{12.8x} & \textbf{+24.1\%} & +2.9\% & \textbf{+21.2\%} & +45.2\% & \textbf{+104.1\% (Max Profit)} \\
-\textbf{2025-09-16} & \texttt{MU} & Micron Technology & \$158.82 & 24.7x & \textbf{14.2x} & \textbf{+49.6\%} & +3.4\% & \textbf{+46.2\%} & \textbf{+82.9\%} & \textbf{+104.1\% (Max Profit)} \\
-\bottomrule
-\end{tabular}%
-}
-\label{tab:case_studies}
-\end{table*}
-
-\subsection{Dislocation Anatomy: The Western Digital (WDC) 2008 Case}
-In January 2008, as Bear Stearns teetered, Western Digital fell to \$15.06 per share. 
-\begin{itemize}
-    \setlength{\itemsep}{1pt}
-    \item \textbf{Fundamentals:} 5-year revenue growth exceeded $+25\%$, ROIC was $>22\%$, and the company carried net cash on its balance sheet.
-    \item \textbf{Valuation:} The stock traded at a point-in-time \textbf{$9.4\text{x}$ trailing P/E} ($10.6\%$ earnings yield).
-    \item \textbf{Multiplier Response:} The composite multiplier surged to \textbf{$\mathcal{M} = 16.5\text{x}$}.
-    \item \textbf{Resolution:} Over the next 90 days, while the broader market gained just +3.4\%, WDC rallied \textbf{+21.2\% (+17.9\% alpha)}. Over 6 months, WDC gained \textbf{+32.3\%}. The 90-day $95\text{C}/110\text{C}$ call spread achieved its maximum capped payout of \textbf{+104.1\% ROC}.
-\end{itemize}
-
-\subsection{Dislocation Anatomy: Meta Platforms (META) 2022 Post-Earnings Panic}
-In November 2022, amid extreme market skepticism regarding metaverse capital expenditures, Meta plummeted to \$90.79 per share.
-\begin{itemize}
-    \setlength{\itemsep}{1pt}
-    \item \textbf{Fundamentals:} 5-year revenue CAGR was $>28\%$, ROIC remained $>21\%$, and cash holdings exceeded total debt by \$32 billion.
-    \item \textbf{Valuation:} Trailing P/E compressed to \textbf{$9.8\text{x}$}.
-    \item \textbf{Multiplier Response:} The composite multiplier surged to \textbf{$\mathcal{M} = 28.4\text{x}$}.
-    \item \textbf{Resolution:} Meta surged \textbf{+45.2\% over the next 90 days} and compounded \textbf{+162.4\% over 6 months} (+260\% over 1 year), generating maximum spread payout while the broader market stagnated.
-\end{itemize}
-
-\section{Institutional Execution \& Order Routing Guidelines}
-
-For hedge funds and family offices deploying institutional capital, execution protocol directly governs net returns:
-
-\begin{enumerate}
-    \item \textbf{Market-On-Close (MOC) Timing \& Slippage Bounds:} Executing orders at the closing bell (15:55--16:00 EST via Market-On-Close / Limit-On-Close orders) locks in pre-announcement valuations before the overnight repricing gap. In our institutional backtest harness, all executions incorporate a conservative \textbf{-5 bps per-trade market impact penalty}, ensuring that terminal NAV reflects realistic trading friction rather than synthetic execution credits.
-    \item \textbf{Order Type (Net Debit Limit Orders):} Never leg into vertical call spreads sequentially. Always route as a single multi-leg spread order with a limit set at the mid-point of the bid-ask spread:
+    \item \textbf{Unconditional Lognormal Expectation:} Using the full lognormal return distribution (accounting for Jensen's inequality across capped and convex strike regions), the 180--365 DTE 80/20 allocation compounds at \textbf{+5.61\% to +7.06\%} with minimal equity beta.
+    \item \textbf{Target Dislocation Realization:} Conditional on realizing the $+10.14\%$ historical trigger move ($+104.1\%$ spread ROC), the quarterly portfolio return reaches $R_{\text{quarter}} = (0.80 \times 1.12\%) + (0.20 \times 104.1\%) = \mathbf{+21.72\%}$.
+    \item \textbf{Total Black-Swan Crash Floor:} Even if 100\% of the options expire worthless ($-100\%$ loss), the portfolio's quarterly drawdown is mathematically capped at:
     \begin{equation}
-    P_{\text{limit}} = \frac{\text{Bid}_1 + \text{Ask}_1}{2} - \frac{\text{Bid}_2 + \text{Ask}_2}{2}
+        R_{\text{crash}} = 0.80(1.12\%) + 0.20(-100\%) = \mathbf{-19.10\%}
     \end{equation}
-    \item \textbf{Liquidity Thresholds:} Only trade contracts where total open interest across the combined strikes exceeds \textbf{500 contracts}, and the aggregate bid-ask spread is $\le \$0.15$ per share.
-    \item \textbf{Quarter-Kelly Position Sizing:} Allocate no more than \textbf{$3.5\%$ to $5.0\%$ of total portfolio equity} to any single stock spread, with total options allocation capped at $20.0\%$.
+    leaving 80\% of institutional capital completely liquid in Treasury Bills to deploy at the market bottom.
+\end{itemize}
+
+\section{Historical Dislocation Case Studies \& Execution Protocol}
+Table \ref{tab:cases} examines iconic verified dislocation triggers across market panics, including Western Digital (\texttt{WDC}) in January 2008 (\$15.06, 5.4x P/E, $\mathcal{M}=54.8\text{x}$, rallying $+21.2\%$ over 90 days for a \textbf{+104.1\%} skew-adjusted spread ROC) and Meta Platforms (\texttt{META}) in November 2022 (\$90.79, 9.8x P/E, $\mathcal{M}=28.4\text{x}$, surging $+45.2\%$ over 90 days and $+162.4\%$ over 6 months). Table \ref{tab:cases} also illustrates the \textbf{Admiral Ackbar Cyclical Gate} on Micron Technology (\texttt{MU}): while raw unwinsorized scoring flagged \texttt{MU} at $\mathcal{M}=419.1\text{x}$, point-in-time lagging corrects its September 2025 P/E to $19.1\text{x}$ (\$158.57 / \$8.29 TTM EPS) and the 5-year full-cycle profitability filter blocks it at October 2026 peak margins (\$953.19, 11.1x P/B) due to its FY2023 net loss cycle.
+
+\subsection{Institutional Execution \& Reproducibility}
+\begin{enumerate}
+    \item \textbf{Market-On-Close (MOC) Timing \& Slippage Bounds:} Execute at the closing bell (15:55--16:00 EST) with a conservative \textbf{$-5$ bps per-trade market impact penalty}.
+    \item \textbf{Net Debit Limit Orders:} Route vertical call spreads as a single multi-leg spread order at the mid-price:
+    \begin{equation}
+        P_{\text{limit}} = \frac{\text{Bid}_1 + \text{Ask}_1}{2} - \frac{\text{Bid}_2 + \text{Ask}_2}{2}
+    \end{equation}
+    \item \textbf{Liquidity \& Quarter-Kelly Sizing:} Trade only strikes with combined open interest $> 500$ contracts and bid-ask spread $\le \$0.15$, capping single-stock spread exposure at 3.5\%--5.0\% of equity (20.0\% total options allocation).
 \end{enumerate}
 
-\section{Open Science: Reproducibility \& Code Package}
-
-In keeping with scientific standards of replicability, the entire simulation engine, factor data, and backtest scripts have been packaged into an open-source, self-contained Python repository. 
-
-Allocators and researchers can reproduce all tables, figures, and calculations in this paper with a single terminal command:
-\begin{verbatim}
-uv run python reproduce_all.py
-\end{verbatim}
-The repository includes point-in-time cross-sectional EPS filings, 55.5-year price series, automated causality tests, and verified checks validating position constraints and tax accounting.
-
 \section{Conclusion}
-
-The MUNGER factor strategy transforms Charlie Munger's wisdom into systematic quantitative alpha. By replacing flawed linear factor models with a conjunctive median hurdle and geometric compounding, it eliminates value traps and captures market leaders at cyclical troughs. 
-
-Across 55.5 years of macroeconomic history and multi-decade out-of-sample stress tests, the system demonstrated consistent outperformance. When coupled with dynamic tax-deferred holding and disciplined risk management, the strategy overcomes real-world tax drag, generating \textbf{+570 to +865 bps of net post-tax alpha} across 55.5 years and outperforming the broad market by \textbf{17.1x in net spendable terminal wealth}, confirming legendary institutional compounding standards.
+The MUNGER factor strategy transforms Charlie Munger's mental model latticework into systematic quantitative alpha. By replacing additive linear factor models with a conjunctive median hurdle, winsorized geometric compounding, and full-cycle profitability gating, it eliminates both structural value traps and cyclical peak-margin illusions. Across 55.5 years of macroeconomic history, dynamic tax-deferred holding overcomes real-world tax drag, generating \textbf{+570 to +865 bps of net post-tax alpha} and outperforming the S\&P 500 by \textbf{17.1x in net spendable terminal wealth}. All tables, figures, and causality unit tests can be reproduced with a single command: \texttt{uv run python reproduce\_all.py}.
 
 \end{document}

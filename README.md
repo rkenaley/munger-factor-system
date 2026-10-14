@@ -32,9 +32,12 @@ Clone and run the complete scientific verification pipeline (verifies datasets, 
 git clone https://github.com/rkenaley/munger-factor-system.git
 cd munger-factor-system
 
-# Run complete reproduction pipeline (with uv or standard python)
+# Run Live Strike-Zone Scanner & Fidelity Tax-Lot Reconciler (v2.2 Production Engine)
+uv run python scan_strike_zone.py
+# or: munger-scan
+
+# Run complete multi-decade reproduction pipeline
 uv run python reproduce_all.py
-# or: python reproduce_all.py
 ```
 
 ---
@@ -153,14 +156,37 @@ By deploying **vertical bull call spreads** ($95\text{C}/110\text{C}$):
 
 ---
 
-## 7. Repository Architecture
+## 7. Production Hardening: Live Scraping & Fidelity Reconciliation (v2.2)
+
+### A. Staleness Circuit Breaker (`check_data_freshness` & `refresh_live_intraday_prices`)
+Every time you run `scan_strike_zone.py`, the engine checks the timestamp of the latest price bar against the current market clock (accounting for NYSE/Nasdaq hours and weekend closures). If the local cache is stale (> 18 hours lag), it automatically triggers a multi-threaded `yfinance.download(..., period="5d", interval="1d")` batch pull to append live session prices before scoring.
+
+### B. SEC Form 4 & Finviz Insider Conviction Engine (`fetch_live_insider_activity`)
+Directly ingests SEC Form 4 XML filings via `edgartools` (falling back to `finvizfinance`), strictly isolating discretionary Open-Market Purchases (Code P) and Sales (Code S) while discarding non-discretionary noise (Code F tax withholdings, Code M option exercises, Code A grants, Code G gifts):
+- **Cluster Buying Boost (1.15x):** Awarded when $\ge 2$ distinct insiders buy $\ge \$250\text{k}$ on the open market (or aggregate/single open-market buy $\ge \$2\text{M}$ with zero sales).
+- **Heavy C-Suite Distribution Haircut (0.70x):** Applied when C-suite executives (CEO, CFO, COO, President, Chairman) sell $\ge \$20\text{M}$ on the open market with zero insider buys (e.g. automatically catching Micron CEO Sanjay Mehrotra's \$46.33M+ open-market sale).
+
+### C. Fidelity Tax-Lot Reconciler (`parse_fidelity_positions_csv`)
+Drop any Fidelity `Portfolio_Positions_*.csv` export into your repository root or `data/` folder and execute `uv run python scan_strike_zone.py`. The engine:
+1. Strips core money-market sweep rows (`SPAXX**`, `FDRXX**`, `FCASH**`).
+2. Overlays live intraday quotes over stale CSV prices.
+3. Computes holding duration against the 365-day LTCG threshold.
+4. Generates exact institutional execution orders:
+   - **`STRONG HOLD / ADD`**: Tier-1 Compounder in Strike Zone ($\mathcal{M} \ge 2.0$ and passed all factor hurdles).
+   - **`HOLD FOR TAX DEFERRAL (Xd to LTCG)`**: Sub-hurdle score with short-term capital gains; defers sale until LTCG reclassification to avoid ordinary income tax drag.
+   - **`SELL (MOC)`**: Position is either LTCG (safe to harvest at Market-On-Close) or has an unrealized loss (immediate tax-loss harvest with zero tax drag).
+
+---
+
+## 8. Repository Architecture
 
 ```
 munger-factor-system/
 ├── README.md                                    # Master documentation & empirical overview
 ├── LICENSE                                      # MIT Open Source License
 ├── pyproject.toml                               # Python package dependencies & build metadata
-├── munger_engine.py                             # Shared vectorized & zero-lookahead core engine
+├── munger_engine.py                             # Shared vectorized & zero-lookahead core engine (v2.2)
+├── scan_strike_zone.py                          # Live strike-zone scanner & tax-lot reconciler (v2.2)
 ├── reproduce_all.py                             # Turnkey reproduction pipeline (1-command runner)
 ├── test_causality_and_performance.py            # Automated causality, unit test & benchmark suite
 ├── run_survivorship_free_backtest.py            # Master survivorship-free simulation engine
@@ -173,6 +199,7 @@ munger-factor-system/
 │   ├── historical_prices_1970_2026.pkl.xz       # 55.5-year daily OHLCV dataset
 │   ├── historical_quarterly_eps.json            # 11,263 corporate quarterly EPS filings
 │   ├── sp100_nasdaq100_universe.json            # 176 verified constituent fundamental records
+│   ├── Portfolio_Positions_Sample.csv           # Fidelity tax-lot reconciliation sample fixture
 │   └── survivorship_free_alpha_uplift_results.json # Full serialized backtest output metrics
 ├── docs/
 │   ├── whitepaper.pdf                           # Complete 12-page academic whitepaper (Tectonic compiled)
@@ -187,7 +214,7 @@ munger-factor-system/
 
 ---
 
-## 8. Open Science: How to Critique & Extend
+## 9. Open Science: How to Critique & Extend
 
 Science advances through replication, critique, and falsification:
 1. **Test Alternative Sell Rules:** Modify `m_sell` in `run_survivorship_free_backtest.py` (e.g. test $\mathcal{M} < 1.0$ or $\mathcal{M} < 2.0$).

@@ -1,32 +1,46 @@
-# Release v2.0.0: Audited, Vectorized, Zero-Lookahead Munger Factor Engine
-
-## Key Changes Implemented & Tested
-
-- **Eliminated terminal-price lookahead bias**: Replaced the `today_p = float(close_df[t].dropna().iloc[-1])` backward-discounting fallback in `run_survivorship_free_backtest.py` and `optimize_1y_threshold_1971_2008.py` with a strictly causal point-in-time estimator (`build_point_in_time_ttm_eps_matrix`) that enforces a 45-day SEC reporting lag on quarterly filings and uses only trailing window prices ($\le t$) when pre-2008 quarterly EPS is absent.
-- **Replaced the +14 bps MOC execution credit with realistic slippage and delisting accounting**: Removed `moc_bonus_per_trade = 0.0014` in `run_survivorship_free_backtest.py` in favor of a -5 bps market impact/slippage cost per trade, and replaced the `if pd.isna(p_now): continue` skip with explicit terminal delisting liquidation (`delisting_loss_haircut = 0.30`).
-- **Vectorized the [dates × tickers] factor matrix and removed $O(N)$ index scans**: Replaced the triple-nested Python loops in `optimize_1y_threshold_1971_2008.py` and `list(common_dates).index(dt)` calls in `test_munger_sell_criteria.py` with a single vectorized matrix pre-computation (`compute_vectorized_munger_scores`) and 2D NumPy array indexing ($O(1)$ lookup).
-- **Upgraded options scripts to $O(1)$ analytical strike inversion and volatility skew**: Replaced the 50-step binary search in `optimize_call_tenors.py` with exact inverse normal CDF inversion ($K = S \exp(-d_1 \sigma\sqrt{T} + (r - q + \frac{1}{2}\sigma^2)T)$ where $d_1 = \Phi^{-1}(\Delta e^{qT})$), added an equity skew surface (`implied_vol_with_skew`), and vectorized scenario/lognormal payoff integration in `simulate_call_spreads.py`.
-- **Fixed package metadata and historical tax/cash mechanics**: Updated `pyproject.toml` from `fidelity-control-center` to `munger-factor-system`, replaced the fixed 21-day cash compounding step in `run_audited_institutional_analysis.py` with exact elapsed calendar days, and implemented era-specific US federal LTCG tax brackets (1971–2026).
+# Release Notes: MUNGER Factor System
 
 ---
 
-## Automated Test & Benchmark Verification Summary
+## Release v2.2.0: Hardened Production System (Staleness Circuit Breaker, SEC Form 4 Insider Engine & Fidelity Tax-Lot Reconciler)
 
-| Verification Check / Script | Result | Verified Metric / Outcome |
-| :--- | :---: | :--- |
-| **Point-in-Time Causality Test** (`test_strict_point_in_time_causality_no_lookahead`) | **PASS** | Shocking post-2000 prices by 50× produces 0.00 change in pre-2000 causal factor scores (`rtol=1e-12`), whereas legacy mode leaks future prices |
-| **Analytical Strike-by-Delta Speedup** (`test_analytical_delta_strike_inversion_accuracy_and_speed`) | **PASS** | Matches 50-step binary search to $< 1\text{e-}6$ delta accuracy while running **142.4× faster** |
-| **Slippage vs. Legacy MOC Bonus** (`test_slippage_penalty_vs_synthetic_moc_bonus`) | **PASS** | Confirms +5 bps slippage reduces terminal NAV while legacy -14 bps bonus inflates it |
-| **Vectorized Threshold Grid Search** (`optimize_1y_threshold_1971_2008.py`) | **PASS** | Evaluates 8 thresholds across 1971–2008 (IS) and 2009–2026 (OOS) in **1.13 seconds total** |
-| **90-DTE 65d/30d Bull Call Spread Skew Audit** (`optimize_call_tenors.py`) | **PASS** | Skew (34.1% IV long / 29.2% IV short) raises net debit from $6.23 (flat IV) to $7.11, shifting optimal tenor to 180–365 DTE |
+### Audit & Architecture Upgrades
+- **Staleness Circuit Breaker (`check_data_freshness` & `refresh_live_intraday_prices`)**:
+  - Automatically compares the latest cached price bar timestamp against the current market clock, accounting for weekend closures and NYSE/Nasdaq trading hours.
+  - If local price data lags by > 18 hours, automatically triggers a multi-threaded `yfinance.download(..., period="5d", interval="1d")` batch pull across all universe constituents to append fresh daily/intraday closes.
+- **SEC Form 4 & Finviz Insider Conviction Engine (`fetch_live_insider_activity`)**:
+  - Queries direct SEC EDGAR Form 4 XML filings via `edgartools` with fallback to `finvizfinance`.
+  - Strictly isolates discretionary Open-Market Purchases (Code P) and Open-Market Sales (Code S), discarding non-discretionary noise: Code F (tax withholding on RSU vests), Code M (option exercises), Code A (grants), and Code G (gifts).
+  - **Cluster Buying Boost (1.15x)**: Awarded when $\ge 2$ distinct insiders buy $\ge \$250\text{k}$ on the open market (or $\ge \$2\text{M}$ with zero sales).
+  - **Heavy C-Suite Distribution Haircut (0.70x)**: Applied when C-suite executives (CEO, CFO, COO, President, Chairman) sell $\ge \$20\text{M}$ on the open market with zero insider buys (e.g. automatically catching Micron CEO Sanjay Mehrotra's \$46.33M+ open-market sales).
+- **Fidelity Tax-Lot Reconciler (`parse_fidelity_positions_csv`)**:
+  - Automatically discovers and ingests Fidelity `Portfolio_Positions_*.csv` exports from repo root or `data/`.
+  - Cleanly strips money-market sweep positions (`SPAXX**`, `FDRXX**`, `FCASH**`, `CORE`).
+  - Replaces stale CSV export prices with live intraday quotes and computes holding duration against the 365-day LTCG hurdle.
+  - Reconciles tax lots with Munger Factor criteria, generating exact execution directives:
+    - **`STRONG HOLD / ADD`**: Tier-1 Compounder in Strike Zone with intact moat.
+    - **`HOLD FOR TAX DEFERRAL (Xd to LTCG)`**: Sub-hurdle score with short-term capital gains; defers sale until LTCG reclassification to avoid ordinary income tax drag.
+    - **`SELL (MOC)`**: Position is either LTCG (safe to exit at MOC) or has an unrealized loss (immediate tax-loss harvest with zero tax drag).
+- **Admiral Ackbar Cyclical-Trap Immunization**:
+  - Cross-sectional winsorization (2nd / 98th percentile clipping) eliminates scraper artifacts (e.g. Micron's 1-quarter YoY revenue spike misrecorded as 5-year CAGR).
+  - 5-year full-cycle profitability gating blocks commoditized boom-bust cyclicals with negative trailing TTM EPS.
+  - Cyclically adjusted earnings yield blends TTM EPS with 5-year median EPS.
+- **Turnkey Production CLI**: Added `scan_strike_zone.py` and `munger-scan` entrypoint.
 
 ---
 
-## Quick Reproduction Instructions
+## Release v2.1.0: Cyclical-Trap-Immunized & Audited Whitepaper Synchronization
 
-Run the turnkey master reproduction suite:
+- **Admiral Ackbar Filter**: Eliminated peak-earnings cyclical trap vulnerability.
+- **Cross-Sectional Winsorization**: Prevented extreme variance distortion across factor scores.
+- **LaTeX Whitepaper Synchronization**: Reconciled Section 8-9 and Table 8/9 metrics.
 
-```bash
-uv run python reproduce_all.py
-# or: python3 reproduce_all.py
-```
+---
+
+## Release v2.0.0: Audited, Vectorized, Zero-Lookahead Munger Factor Engine
+
+- **Eliminated terminal-price lookahead bias**: Replaced backward-discounting fallback with causal point-in-time estimator (`build_point_in_time_ttm_eps_matrix`) enforcing 45-day SEC reporting lag.
+- **Replaced synthetic +14 bps MOC execution credit with realistic slippage (-5 bps) and terminal delisting haircut (30%)**.
+- **Vectorized [dates × tickers] factor matrix**: Replaced Python loops with single NumPy/Pandas array operations.
+- **Analytical $O(1)$ Black-Scholes-Merton strike inversion**: Replaced 50-step binary search with closed-form inverse normal CDF.
+- **Historical US Federal LTCG tax brackets**: Applied era-specific tax rates (1971–2026).

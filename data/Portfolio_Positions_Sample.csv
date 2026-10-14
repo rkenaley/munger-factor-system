@@ -1,0 +1,6 @@
+Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Cost Basis Total,Average Cost Basis,Type,Date Acquired
+"Z89123456","Individual - TOD","AAPL","APPLE INC",100.000,"$225.50","+$1.20","$22,550.00","+$120.00","+0.53%","+$4,550.00","+25.28%","$18,000.00","$180.00","Cash","06/15/2025"
+"Z89123456","Individual - TOD","MSFT","MICROSOFT CORP",50.000,"$520.00","+$3.50","$26,000.00","+$175.00","+0.68%","+$6,000.00","+30.00%","$20,000.00","$400.00","Cash","01/10/2026"
+"Z89123456","Individual - TOD","MU","MICRON TECHNOLOGY INC",150.000,"$95.00","-$2.50","$14,250.00","-$375.00","-2.56%","+$3,750.00","+35.71%","$10,500.00","$70.00","Cash","08/01/2026"
+"Z89123456","Individual - TOD","INTC","INTEL CORP",200.000,"$22.00","-$0.30","$4,400.00","-$60.00","-1.35%","-$1,600.00","-26.67%","$6,000.00","$30.00","Cash","03/15/2026"
+"Z89123456","Individual - TOD","SPAXX**","FIDELITY GOVERNMENT MONEY MARKET",15420.500,"$1.00","$0.00","$15,420.50","$0.00","0.00%","$0.00","0.00%","$15,420.50","$1.00","Cash","--"
