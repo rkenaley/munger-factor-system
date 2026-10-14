@@ -205,7 +205,7 @@ def run_strike_zone_scan() -> pd.DataFrame:
     else:
         print("[FIDELITY RECONCILER] No 'Portfolio_Positions_*.csv' found in workspace root or data/.")
         print("To reconcile personal tax lots, export your Fidelity positions CSV and drop it into:")
-        print("  c:\\AGProj\\Tabs\\fidelity_control_center\\data\\Portfolio_Positions_*.csv")
+        print(f"  {os.path.join(ROOT_DIR, 'data', 'Portfolio_Positions_*.csv')}")
 
     print("\n" + "=" * 96)
     print(" SCAN & AUDIT COMPLETE")
