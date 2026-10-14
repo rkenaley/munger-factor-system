@@ -3,20 +3,44 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "fidelity-control-center"
-version = "1.0.0"
-description = "Quantitative Control Center for Fidelity Investors: Extremizing Indicators, Sentiment, Munger Gating, and Daily Orders"
+name = "munger-factor-system"
+version = "2.0.0"
+description = "Audited, Vectorized, Zero-Lookahead Quantitative Munger Factor Backtesting & Options Overlay System"
 readme = "README.md"
 requires-python = ">=3.10"
+license = {text = "MIT"}
 dependencies = [
-    "yfinance>=0.2.36",
-    "pandas>=2.0.0",
     "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "matplotlib>=3.8.0",
+    "scipy>=1.10.0",
+]
+
+[project.optional-dependencies]
+data = [
+    "yfinance>=0.2.36",
     "requests>=2.31.0",
     "beautifulsoup4>=4.12.0",
     "openpyxl>=3.1.0",
-    "matplotlib>=3.10.9",
+]
+dev = [
+    "pytest>=7.4.0",
+]
+
+[tool.setuptools]
+py-modules = [
+    "munger_engine",
+    "run_survivorship_free_backtest",
+    "run_audited_institutional_analysis",
+    "test_munger_sell_criteria",
+    "optimize_1y_threshold_1971_2008",
+    "optimize_call_tenors",
+    "simulate_call_spreads",
+    "reproduce_all",
+    "test_causality_and_performance",
 ]
 
 [project.scripts]
-fidelity-control = "fidelity_control.cli:main"
+munger-reproduce = "reproduce_all:main"
+munger-backtest = "run_survivorship_free_backtest:main"
+munger-test = "test_causality_and_performance:main"
