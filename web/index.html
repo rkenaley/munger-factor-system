@@ -3,491 +3,826 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fidelity Control Center - Quantitative Portfolio & Execution Terminal</title>
+    <title>MUNGER FACTOR TERMINAL - Quantitative Discovery & Fidelity Order Engine</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .badge-buy { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.35); }
-        .badge-trim { background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.35); }
-        .badge-neutral { background: rgba(100, 116, 139, 0.15); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.35); }
-        .badge-opt { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35); }
-        
-        .ticket-box { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px 14px; margin-top: 10px; }
-        .ticket-code { font-family: 'Courier New', monospace; font-size: 0.83rem; color: #38bdf8; background: rgba(0,0,0,0.35); padding: 8px 10px; border-radius: 4px; display: block; margin: 8px 0; word-break: break-all; }
-        
-        .btn-action { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 500; cursor: pointer; text-decoration: none; transition: all 0.2s; border: none; }
-        .btn-primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3); }
-        .btn-primary:hover { background: linear-gradient(135deg, #1d4ed8, #1e40af); transform: translateY(-1px); }
-        .btn-fidelity { background: linear-gradient(135deg, #059669, #047857); color: white; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3); }
-        .btn-fidelity:hover { background: linear-gradient(135deg, #047857, #065f46); transform: translateY(-1px); }
-        .btn-secondary { background: #1e293b; color: #f8fafc; border: 1px solid #475569; }
-        .btn-secondary:hover { background: #334155; }
-        
-        .gauge-bar-container { background: rgba(255,255,255,0.06); height: 8px; border-radius: 4px; overflow: hidden; width: 100%; margin-top: 4px; }
-        .gauge-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
-        
-        /* Modal Styles */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-overlay.active { display: flex; }
-        .modal-card { background: #0f172a; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; width: 90%; max-width: 600px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
-        .drop-zone { border: 2px dashed #475569; border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s; margin: 16px 0; background: rgba(255,255,255,0.02); }
-        .drop-zone:hover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.05); }
-
-        /* Toast notification */
-        .toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; border: 1px solid #3b82f6; color: #f8fafc; padding: 12px 20px; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); display: none; align-items: center; gap: 10px; z-index: 1000; font-size: 0.85rem; }
-        .toast.show { display: flex; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
-        .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- Main Top Header -->
+        <!-- Main Institutional Header -->
         <header class="app-header">
             <div class="header-content">
                 <div class="brand">
                     <div class="brand-icon">⚡</div>
                     <div>
-                        <h1 class="brand-title">Fidelity Control Center</h1>
-                        <p style="font-size: 0.75rem; color: var(--text-secondary);">Quantitative MPT Engine & Order Terminal</p>
+                        <h1 class="brand-title">MUNGER FACTOR TERMINAL</h1>
+                        <p class="brand-subtitle">Quantitative Compounder Discovery & Fidelity Order Engine (v2.2)</p>
                     </div>
-                </div>
-                
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <button class="btn-action btn-primary" id="btn-run-scan">
-                        <span id="scan-spinner" style="display: none;" class="spinner"></span>
-                        <span id="scan-btn-text">⚡ Run Daily Scan</span>
-                    </button>
-                    <button class="btn-action btn-secondary" id="btn-open-sync-modal">
-                        📁 Sync Fidelity CSV
-                    </button>
                 </div>
 
-                <div class="header-meta">
-                    <div class="meta-item">
-                        <span class="meta-label">Total Liquid Net Worth:</span>
-                        <span class="meta-value" id="net-worth-display" style="color: var(--accent-blue); font-size: 1.15rem; font-weight: bold;">$2,114,528</span>
+                <div class="header-status-group">
+                    <div class="status-pill open" id="market-clock-pill">
+                        <span style="font-size: 0.6rem;">🟢</span>
+                        <span id="market-clock-text">NYSE SESSION ACTIVE</span>
                     </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Primary Broker:</span>
-                        <span class="meta-value" style="color: var(--color-emerald);">Fidelity Investments</span>
+
+                    <div class="status-pill fresh" id="staleness-pill">
+                        <span>⚡</span>
+                        <span id="staleness-text">DATA FRESH (0.2h lag)</span>
                     </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Tax Profile:</span>
-                        <span class="meta-value" style="color: var(--accent-gold);">MFJ ($500k AGI)</span>
+
+                    <button class="btn-action btn-secondary" id="btn-refresh-prices" title="Fetch live 5-day intraday bars via multi-threaded yfinance">
+                        <span id="refresh-spinner" class="spinner" style="display: none;"></span>
+                        <span id="refresh-btn-text">⚡ Refresh Prices</span>
+                    </button>
+
+                    <button class="btn-action btn-secondary" id="btn-open-fidelity-modal">
+                        📁 Import Fidelity CSV
+                    </button>
+
+                    <div class="status-pill" style="background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.25);">
+                        <span style="color: var(--text-secondary);">Portfolio:</span>
+                        <strong id="header-net-worth" style="color: #60a5fa; margin-left: 4px;">$222,482</strong>
                     </div>
                 </div>
             </div>
         </header>
 
-        <!-- Tab Navigations -->
-        <nav class="app-nav">
-            <ul class="nav-links">
-                <li><a class="nav-link active" data-tab="dashboard">Dashboard & SAA</a></li>
-                <li><a class="nav-link" data-tab="trades">Daily Fidelity Orders</a></li>
-                <li><a class="nav-link" data-tab="extremizing">Extremizing Sentiment Radar</a></li>
-                <li><a class="nav-link" data-tab="screener">Screener & Backtester</a></li>
-                <li><a class="nav-link" data-tab="munger">Munger 200w Gating</a></li>
-                <li><a class="nav-link" data-tab="tax-matrix">Tax Matrix & Options</a></li>
-            </ul>
+        <!-- Wizard Stepper Navigation -->
+        <div class="wizard-nav-container">
+            <div class="wizard-stepper">
+                <button class="wizard-step active" data-step="1">
+                    <span class="step-number">1</span>
+                    <span class="step-label">Universe & Clock</span>
+                </button>
+                <div class="step-divider"></div>
+                <button class="wizard-step" data-step="2">
+                    <span class="step-number">2</span>
+                    <span class="step-label">Factor Hurdles</span>
+                </button>
+                <div class="step-divider"></div>
+                <button class="wizard-step" data-step="3">
+                    <span class="step-number">3</span>
+                    <span class="step-label">Insider Conviction</span>
+                </button>
+                <div class="step-divider"></div>
+                <button class="wizard-step" data-step="4">
+                    <span class="step-number">4</span>
+                    <span class="step-label">Strike Zone Matrix</span>
+                </button>
+                <div class="step-divider"></div>
+                <button class="wizard-step" data-step="5">
+                    <span class="step-number">5</span>
+                    <span class="step-label">Fidelity Reconciler</span>
+                </button>
+                <div class="step-divider"></div>
+                <button class="wizard-step" data-step="6">
+                    <span class="step-number">6</span>
+                    <span class="step-label">Order Generator</span>
+                </button>
+                <div class="step-divider"></div>
+                <button class="wizard-step" data-step="7">
+                    <span class="step-number">7</span>
+                    <span class="step-label">Options Collars</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Jump Tab Bar -->
+        <nav class="app-tabs-nav">
+            <span style="font-size: 0.75rem; color: var(--text-muted); align-self: center; margin-right: 8px;">QUICK JUMP:</span>
+            <button class="app-tab-btn active" data-target-step="1">🌐 Overview & Setup</button>
+            <button class="app-tab-btn" data-target-step="2">⚙️ Sliders & Logic</button>
+            <button class="app-tab-btn" data-target-step="4">📊 Screener Matrix</button>
+            <button class="app-tab-btn" data-target-step="5">🏦 Fidelity Tax Lots</button>
+            <button class="app-tab-btn" data-target-step="6">🧾 Order Tickets</button>
+            <button class="app-tab-btn" data-target-step="7">🛡️ Options 80/20</button>
         </nav>
 
         <!-- Main Body Panels -->
         <main class="app-main">
 
-            <!-- 1. Dashboard & Strategic Asset Allocation Panel -->
-            <div class="tab-panel active" id="panel-dashboard">
-                <div class="metrics-row">
-                    <div class="metric-card total">
-                        <span class="metric-label">Total Portfolio Assets</span>
-                        <span class="metric-value" id="metrics-total-val">$2,114,528</span>
-                        <span class="metric-subtext">Multi-account active tracking</span>
+            <!-- =================================================================
+                 STAGE 1: UNIVERSE SELECTION & FRESHNESS CONTROL
+                 ================================================================= -->
+            <section class="stage-panel active" id="stage-1">
+                <div class="panel-card">
+                    <div class="panel-card-header">
+                        <div>
+                            <h2 class="card-title">🌐 Stage 1: Universe Selection & Market Clock Diagnostics</h2>
+                            <p class="card-subtitle">Enforce point-in-time causality, prevent stale snapshots, and define your constituent universe.</p>
+                        </div>
+                        <span class="badge badge-strike">Causality Audited</span>
                     </div>
-                    <div class="metric-card core">
-                        <span class="metric-label">Taxable Brokerage Cash</span>
-                        <span class="metric-value" id="metrics-cash-val">$500,000</span>
-                        <span class="metric-subtext">Ready for Tranche 1 deployment</span>
+
+                    <div class="grid-2">
+                        <!-- Universe Selection Cards -->
+                        <div>
+                            <h3 style="font-size: 0.92rem; margin-bottom: 0.75rem; color: var(--text-secondary);">1. SELECT CONSTITUENT UNIVERSE</h3>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <label class="toggle-card active" id="univ-combined-label">
+                                    <input type="radio" name="universe-choice" value="combined" checked>
+                                    <div class="toggle-card-content">
+                                        <div class="toggle-title">⭐ S&P 100 + NASDAQ 100 Composite (176 Large-Cap Compounders)</div>
+                                        <div class="toggle-desc">The audited institutional universe spanning secular technology, healthcare, and industrial market leaders with survivorship-free history.</div>
+                                    </div>
+                                </label>
+
+                                <label class="toggle-card" id="univ-sp100-label">
+                                    <input type="radio" name="universe-choice" value="sp100">
+                                    <div class="toggle-card-content">
+                                        <div class="toggle-title">🏛️ S&P 100 Only (Established Blue Chips & Moats)</div>
+                                        <div class="toggle-desc">Focus strictly on the 100 largest capitalized US enterprises with high institutional sponsorship and decades of audited cash flows.</div>
+                                    </div>
+                                </label>
+
+                                <label class="toggle-card" id="univ-nasdaq-label">
+                                    <input type="radio" name="universe-choice" value="nasdaq100">
+                                    <div class="toggle-card-content">
+                                        <div class="toggle-title">🚀 NASDAQ 100 Only (Secular Tech & Capital Efficiency)</div>
+                                        <div class="toggle-desc">Screens for pure secular compounders with elevated returns on capital, high FCF margins, and rapid top-line growth.</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Circuit Breaker & Market Status -->
+                        <div>
+                            <h3 style="font-size: 0.92rem; margin-bottom: 0.75rem; color: var(--text-secondary);">2. DATA FRESHNESS & CIRCUIT BREAKER</h3>
+                            <div class="control-group" style="padding: 1.25rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <span style="font-size: 0.85rem; color: var(--text-secondary);">Latest Price Bar in Cache:</span>
+                                    <span class="mono" id="diag-bar-date" style="font-size: 0.9rem; font-weight: 600; color: #38bdf8;">Loading...</span>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <span style="font-size: 0.85rem; color: var(--text-secondary);">Data Lag vs. Market Clock:</span>
+                                    <span class="mono" id="diag-lag-hours" style="font-size: 0.9rem; font-weight: 600; color: #10b981;">0.0 Hours</span>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <span style="font-size: 0.85rem; color: var(--text-secondary);">NYSE/Nasdaq Session State:</span>
+                                    <span class="badge badge-strike" id="diag-session-state">ACTIVE</span>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                    <span style="font-size: 0.85rem; color: var(--text-secondary);">Verified Constituents:</span>
+                                    <span class="mono" id="diag-constituents" style="font-weight: 600;">176 Equities</span>
+                                </div>
+
+                                <p style="font-size: 0.77rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.4;">
+                                    The Staleness Circuit Breaker prevents trading on day-old or frozen snapshot data. If the local cache lags by &gt;18 hours during active trading days, it automatically fetches live quotes via multithreaded Yahoo Finance before scoring.
+                                </p>
+
+                                <button class="btn-action btn-primary" id="btn-diag-refresh" style="width: 100%; justify-content: center;">
+                                    <span>⚡ Download Live Intraday Quotes Now</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="metric-card growth">
-                        <span class="metric-label">Concentrated NVDA</span>
-                        <span class="metric-value" id="metrics-nvda-val">$204,800</span>
-                        <span class="metric-subtext">9.7% of portfolio (Covered call active)</span>
+
+                    <div class="stepper-footer">
+                        <div>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Step 1 of 7: Point-in-Time Data Setup</span>
+                        </div>
+                        <button class="btn-action btn-primary btn-nav-step" data-next-step="2">
+                            <span>Next: Configure Factor Hurdles ➔</span>
+                        </button>
                     </div>
-                    <div class="metric-card satellite">
-                        <span class="metric-label">Roth Tax-Free Capital</span>
-                        <span class="metric-value" id="metrics-roth-val">$200,000</span>
-                        <span class="metric-subtext">AVGO, NOW, LYTE target</span>
+                </div>
+            </section>
+
+
+            <!-- =================================================================
+                 STAGE 2: MUNGER 4-PILLAR HURDLE CONTROLS (SLIDERS & CHECKBOXES)
+                 ================================================================= -->
+            <section class="stage-panel" id="stage-2">
+                <div class="panel-card">
+                    <div class="panel-card-header">
+                        <div>
+                            <h2 class="card-title">⚙️ Stage 2: Munger 4-Pillar Hurdle & Cyclical-Trap Controls</h2>
+                            <p class="card-subtitle">Adjust minimum quality hurdles, enforce multi-factor conjunctivity, and activate the Admiral Ackbar filter.</p>
+                        </div>
+                        <span class="badge badge-boost">Multiplicative Moats</span>
+                    </div>
+
+                    <!-- Preset Strategy Buttons -->
+                    <div style="margin-bottom: 1.25rem;">
+                        <span style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 6px;">STRATEGY PRESETS:</span>
+                        <div class="preset-bar">
+                            <button class="btn-preset active" data-preset="munger-strict">⭐ Classic Munger Strike Zone (M ≥ 2.0, All 4 Hurdles, Ackbar On)</button>
+                            <button class="btn-preset" data-preset="deep-value">💎 Deep Value Dislocation (Low P/E, High ROIC, Ackbar On)</button>
+                            <button class="btn-preset" data-preset="growth-compounder">🚀 Secular High-Growth Compounder (Sales &gt; 18%, ROIC &gt; 25%)</button>
+                            <button class="btn-preset" data-preset="relaxed-screen">🔍 Permissive Screen (M ≥ 1.0, Single Pillar Tolerance)</button>
+                        </div>
+                    </div>
+
+                    <!-- Factor Sliders -->
+                    <div class="grid-2" style="margin-bottom: 1.5rem;">
+                        <!-- Master Multiplier Slider -->
+                        <div class="control-group" style="grid-column: span 2; background: rgba(59, 130, 246, 0.04); border-color: rgba(59, 130, 246, 0.25);">
+                            <div class="control-label-row">
+                                <span class="control-label" style="font-size: 0.95rem; font-weight: 600; color: #93c5fd;">🎯 Minimum Munger Multiplier ($\mathcal{M}_{\text{clean}}$):</span>
+                                <span class="control-value-badge" id="val-min-munger" style="font-size: 1rem; padding: 4px 12px;">2.0x</span>
+                            </div>
+                            <input type="range" class="slider-input" id="slider-min-munger" min="1.0" max="12.0" step="0.1" value="2.0">
+                            <span class="control-hint">The Charlie Munger Strike-Zone threshold. A score of $\ge 2.0\times$ signifies simultaneous elite growth, superior ROIC, fair valuation, and strong solvency.</span>
+                        </div>
+
+                        <!-- Pillar 1: 5Y Sales Growth -->
+                        <div class="control-group">
+                            <div class="control-label-row">
+                                <span class="control-label">📈 Pillar 1: Min 5-Year Revenue CAGR ($g$):</span>
+                                <span class="control-value-badge" id="val-min-sales5y">10.0%</span>
+                            </div>
+                            <input type="range" class="slider-input" id="slider-min-sales5y" min="0" max="35" step="1" value="10">
+                            <span class="control-hint">Enforces real top-line enterprise expansion across a full business cycle.</span>
+                        </div>
+
+                        <!-- Pillar 2: ROIC -->
+                        <div class="control-group">
+                            <div class="control-label-row">
+                                <span class="control-label">🏆 Pillar 2: Min Return on Invested Capital ($r$):</span>
+                                <span class="control-value-badge" id="val-min-roic">15.0%</span>
+                            </div>
+                            <input type="range" class="slider-input" id="slider-min-roic" min="5" max="45" step="1" value="15">
+                            <span class="control-hint">The fundamental engine of compounding: companies that earn high returns on capital reinvested.</span>
+                        </div>
+
+                        <!-- Pillar 3: Max P/E -->
+                        <div class="control-group">
+                            <div class="control-label-row">
+                                <span class="control-label">💵 Pillar 3: Max Price-to-Earnings Ratio ($y$):</span>
+                                <span class="control-value-badge" id="val-max-pe">35.0x</span>
+                            </div>
+                            <input type="range" class="slider-input" id="slider-max-pe" min="12" max="75" step="1" value="35">
+                            <span class="control-hint">Ensures you do not overpay for moats. Guards against euphoric multiples.</span>
+                        </div>
+
+                        <!-- Pillar 4: Max Debt-to-Equity -->
+                        <div class="control-group">
+                            <div class="control-label-row">
+                                <span class="control-label">🛡️ Pillar 4: Max Debt-to-Equity ($s$):</span>
+                                <span class="control-value-badge" id="val-max-de">100.0%</span>
+                            </div>
+                            <input type="range" class="slider-input" id="slider-max-de" min="20" max="250" step="5" value="100">
+                            <span class="control-hint">Solvency guardrail: filters out levered balances that risk dilution during macro liquidity freezes.</span>
+                        </div>
+                    </div>
+
+                    <!-- Gating Checkboxes -->
+                    <h3 style="font-size: 0.92rem; margin-bottom: 0.75rem; color: var(--text-secondary);">LOGIC GATING & CYCLICAL IMMUNIZATION CHECKBOXES</h3>
+                    <div class="grid-3">
+                        <label class="toggle-card active" id="chk-conjunctive-card">
+                            <input type="checkbox" id="chk-conjunctive" checked>
+                            <div class="toggle-card-content">
+                                <div class="toggle-title">⚔️ Strict Conjunctive Hurdle</div>
+                                <div class="toggle-desc">Must beat the cross-sectional median ($Z_k \ge 0$) on <strong>Growth, ROIC, Yield, and Solvency</strong> simultaneously. Failing any single pillar crushes score to 0.0.</div>
+                            </div>
+                        </label>
+
+                        <label class="toggle-card active" id="chk-ackbar-card">
+                            <input type="checkbox" id="chk-ackbar" checked>
+                            <div class="toggle-card-content">
+                                <div class="toggle-title">🪤 Admiral Ackbar Trap Filter</div>
+                                <div class="toggle-desc">Enforces 5-year full-cycle profitability, winsorizes extreme ratios, and blocks peak P/E boom-bust commodity cyclicals (e.g. Micron MU).</div>
+                            </div>
+                        </label>
+
+                        <label class="toggle-card" id="chk-gating200w-card">
+                            <input type="checkbox" id="chk-gating200w">
+                            <div class="toggle-card-content">
+                                <div class="toggle-title">📉 200-Week SMA Pullback Gating</div>
+                                <div class="toggle-desc">Strike Zone entries are gated to stocks trading within 20% of their 200-week moving average (or RSI &lt; 50) to enforce buying on pullbacks.</div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="stepper-footer">
+                        <button class="btn-action btn-secondary btn-nav-step" data-next-step="1">
+                            <span>⬅ Back: Universe Setup</span>
+                        </button>
+                        <button class="btn-action btn-primary btn-nav-step" data-next-step="3">
+                            <span>Next: Insider Conviction Engine ➔</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =================================================================
+                 STAGE 3: SEC FORM 4 INSIDER CONVICTION ENGINE
+                 ================================================================= -->
+            <section class="stage-panel" id="stage-3">
+                <div class="panel-card">
+                    <div class="panel-card-header">
+                        <div>
+                            <h2 class="card-title">🕵️ Stage 3: SEC Form 4 & Finviz Insider Conviction Engine</h2>
+                            <p class="card-subtitle">Direct XML querying of regulatory Form 4 filings, filtering noise from discretionary open-market conviction.</p>
+                        </div>
+                        <span class="badge badge-boost">Real-Time EDGAR</span>
+                    </div>
+
+                    <div class="grid-2" style="margin-bottom: 1.5rem;">
+                        <div class="toggle-card active" id="chk-cluster-card">
+                            <input type="checkbox" id="chk-cluster-boost" checked>
+                            <div class="toggle-card-content">
+                                <div class="toggle-title">🚀 1.15x Cluster Buying Multiplier Boost</div>
+                                <div class="toggle-desc">
+                                    Awarded when <strong>≥ 2 distinct corporate executives or directors</strong> purchase shares on the open market (Transaction Code P) totaling <strong>≥ $250,000</strong> within the recent reporting window. Signifies high collective confidence from informed insiders.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="toggle-card active" id="chk-csuite-card">
+                            <input type="checkbox" id="chk-csuite-haircut" checked>
+                            <div class="toggle-card-content">
+                                <div class="toggle-title">⚠️ 0.70x Heavy C-Suite Distribution Haircut</div>
+                                <div class="toggle-desc">
+                                    Applied when C-suite executives (CEO, CFO, COO, Chairman) sell <strong>≥ $20,000,000</strong> on the open market (Transaction Code S) with <strong>zero</strong> insider buying. Automatically caught Micron CEO Sanjay Mehrotra's $182.28M liquidation.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <!-- Noise Filter Card -->
+                        <div class="toggle-card active" style="cursor: default;">
+                            <input type="checkbox" checked disabled>
+                            <div class="toggle-card-content">
+                                <div class="toggle-title">🛡️ Automatic SEC Form 4 Noise Discard</div>
+                                <div class="toggle-desc">
+                                    Filters out 70%+ of misleading filings: strips <strong>Code F</strong> (mandatory RSU tax withholding), <strong>Code M</strong> (routine option exercises), <strong>Code A</strong> (annual board equity awards), and <strong>Code G</strong> (charitable gifts). Focuses strictly on discretionary open-market transactions.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Minimum Insider Buying Volume Slider -->
+                        <div class="control-group">
+                            <div class="control-label-row">
+                                <span class="control-label">💵 Minimum Open-Market Insider Purchase Volume:</span>
+                                <span class="control-value-badge" id="val-min-insider">$0</span>
+                            </div>
+                            <input type="range" class="slider-input" id="slider-min-insider" min="0" max="1000000" step="50000" value="0">
+                            <span class="control-hint">Optionally filter the strike zone to only include companies where insiders have committed substantial personal capital.</span>
+                        </div>
+                    </div>
+
+                    <div class="stepper-footer">
+                        <button class="btn-action btn-secondary btn-nav-step" data-next-step="2">
+                            <span>⬅ Back: Factor Hurdles</span>
+                        </button>
+                        <button class="btn-action btn-emerald btn-nav-step" id="btn-trigger-scan" data-next-step="4">
+                            <span>⚡ Execute Live Munger Screener ➔</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =================================================================
+                 STAGE 4: STRIKE ZONE MATRIX & INTERACTIVE HEATMAP
+                 ================================================================= -->
+            <section class="stage-panel" id="stage-4">
+                <!-- Summary KPI Cards -->
+                <div class="grid-4" style="margin-bottom: 1.5rem;">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Total Screened</div>
+                        <div class="kpi-value" id="kpi-total-screened">176</div>
+                        <div class="kpi-desc">Verified Universe Constituents</div>
+                    </div>
+
+                    <div class="kpi-card emerald">
+                        <div class="kpi-label">Strike Zone Quality</div>
+                        <div class="kpi-value" id="kpi-strike-zone" style="color: #34d399;">2</div>
+                        <div class="kpi-desc">$\mathcal{M}_{\text{clean}} \ge 2.0$ &amp; All 4 Hurdles</div>
+                    </div>
+
+                    <div class="kpi-card rose">
+                        <div class="kpi-label">Blocked Cyclical Traps</div>
+                        <div class="kpi-value" id="kpi-cyclical-traps" style="color: #f87171;">12</div>
+                        <div class="kpi-desc">Admiral Ackbar Filter Blocked</div>
+                    </div>
+
+                    <div class="kpi-card gold">
+                        <div class="kpi-label">Insider Conviction</div>
+                        <div class="kpi-value" id="kpi-insider-flagged" style="color: #fbbf24;">4</div>
+                        <div class="kpi-desc">Cluster Buys &amp; C-Suite Flags</div>
                     </div>
                 </div>
 
-                <div class="dashboard-grid">
-                    <!-- Balance Sheet Table -->
-                    <div class="card col-8">
-                        <div class="card-title">
-                            <span>Account Architecture & Strategic Mandate</span>
-                            <span class="badge badge-info">Fidelity Unified</span>
+                <!-- Screener Panel Card -->
+                <div class="panel-card">
+                    <div class="panel-card-header">
+                        <div>
+                            <h2 class="card-title">📊 Stage 4: Cross-Sectional Strike-Zone Matrix</h2>
+                            <p class="card-subtitle">Real-time ranking of candidates based on Munger Multipliers and SEC Form 4 conviction.</p>
                         </div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Account Name</th>
-                                        <th>Tax Status</th>
-                                        <th>Cash ($)</th>
-                                        <th>Holdings ($)</th>
-                                        <th>Total ($)</th>
-                                        <th>Strategic Function</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="account-balance-body">
-                                    <!-- Populated dynamically -->
-                                </tbody>
-                            </table>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-action btn-secondary" id="btn-select-all-strike">
+                                ☑️ Select All Strike Zone
+                            </button>
+                            <button class="btn-action btn-primary" id="btn-rescan-now">
+                                🔄 Re-Scan
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Allocation Donut Chart -->
-                    <div class="card col-4">
-                        <div class="card-title">Strategic Asset Allocation (SAA)</div>
-                        <div style="position: relative; height: 210px; margin-bottom: 0.5rem;">
-                            <canvas id="saa-chart"></canvas>
+                    <!-- Filter Bar -->
+                    <div class="filter-bar">
+                        <div class="filter-chips">
+                            <button class="filter-chip active" data-filter="all">All Candidates (<span id="cnt-all">176</span>)</button>
+                            <button class="filter-chip" data-filter="strike">⭐ Strike Zone (<span id="cnt-strike">2</span>)</button>
+                            <button class="filter-chip" data-filter="traps">🪤 Blocked Traps (<span id="cnt-traps">12</span>)</button>
+                            <button class="filter-chip" data-filter="cluster">🚀 Cluster Buys (<span id="cnt-cluster">0</span>)</button>
+                            <button class="filter-chip" data-filter="watchlist">👀 Watchlist (<span id="cnt-watch">162</span>)</button>
                         </div>
-                        <div id="rebalance-status-box" style="padding: 0.75rem; border-radius: 0.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); font-size: 0.8rem;">
-                            <!-- Populated dynamically -->
-                        </div>
+                        <input type="text" class="search-input" id="screener-search" placeholder="Search ticker, company, or sector...">
                     </div>
 
-                    <!-- Policy Drift Alerts -->
-                    <div class="card col-12">
-                        <div class="card-title">
-                            <span>Active Policy Alerts & Risk Monitors</span>
-                            <span class="badge badge-warning" id="alert-count-badge">3 Notices</span>
-                        </div>
-                        <div class="alert-list" id="dashboard-alerts-list">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2. Daily Fidelity Orders Panel -->
-            <div class="tab-panel" id="panel-trades">
-                <div class="card col-12 mb-4" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                    <div>
-                        <h3 style="color: var(--text-primary);">Today's Executable Fidelity Order Tickets</h3>
-                        <p style="font-size: 0.8rem; color: var(--text-secondary);">Direct limits and instructions for your Fidelity mobile or web terminal</p>
-                    </div>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <a href="/output/fidelity_daily_orders.csv" download class="btn-action btn-primary">Download Orders CSV</a>
-                        <a href="/output/fidelity_alerts.csv" download class="btn-action btn-secondary">Download Alerts CSV</a>
-                    </div>
-                </div>
-
-                <div class="dashboard-grid" id="orders-grid-container">
-                    <!-- Populated dynamically -->
-                </div>
-            </div>
-
-            <!-- 3. Extremizing Sentiment Radar Panel -->
-            <div class="tab-panel" id="panel-extremizing">
-                <div class="card col-12">
-                    <div class="card-title">
-                        <span>Extremizing Sentiment & Momentum Radar</span>
-                        <span class="badge badge-info">14-Day RSI + 12-1 Residual Momentum + Munger Gating</span>
-                    </div>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                        Combines short-term oversold mean-reversion with secular 12-1 residual momentum. 
-                        <strong>Extremizing Index &le; -50</strong> signals maximum margin of safety for entry.
-                    </p>
-                    <div class="table-container">
-                        <table>
+                    <!-- Screener Table -->
+                    <div class="table-responsive">
+                        <table class="terminal-table" id="screener-table">
                             <thead>
                                 <tr>
-                                    <th>Ticker</th>
-                                    <th>Company / Theme</th>
-                                    <th>Price</th>
-                                    <th>RSI (14d)</th>
-                                    <th>Residual Mom (12-1)</th>
-                                    <th>Extremizing Gauge</th>
-                                    <th>Munger 200w Status</th>
-                                    <th>Buy Below ($)</th>
-                                    <th>Trim Above ($)</th>
-                                    <th>Action Signal</th>
+                                    <th style="width: 40px; text-align: center;">Pick</th>
+                                    <th data-sort="ticker">Ticker</th>
+                                    <th data-sort="name">Company Name</th>
+                                    <th data-sort="spot" style="text-align: right;">Spot ($)</th>
+                                    <th data-sort="sales5y" style="text-align: right;">5Y Sales %</th>
+                                    <th data-sort="roic" style="text-align: right;">ROIC %</th>
+                                    <th data-sort="pe" style="text-align: right;">P/E</th>
+                                    <th data-sort="raw_m" style="text-align: right;">Raw M</th>
+                                    <th data-sort="clean_m" style="text-align: right;">Ackbar M</th>
+                                    <th data-sort="insider_mult" style="text-align: center;">Insider</th>
+                                    <th data-sort="conviction_m" style="text-align: right;">Conviction M</th>
+                                    <th style="text-align: center;">Status</th>
+                                    <th style="text-align: center;">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="extremizing-table-body">
-                                <!-- Populated dynamically -->
+                            <tbody id="screener-table-body">
+                                <tr>
+                                    <td colspan="13" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                        Click "Execute Live Munger Screener" above to populate candidates.
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </div>
 
-            <!-- 4. Munger 200w Gating Panel -->
-            <div class="tab-panel" id="panel-munger">
-                <div class="dashboard-grid">
-                    <div class="card col-4">
-                        <div class="card-title">Munger Institutional Gating Rules</div>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
-                            Capital deployment into secular compounders is restricted to opportunities where:
-                            $$\text{Price } (P) \le 1.05 \times SMA_{200w}$$
-                            This prevents purchasing at euphoric cycle peaks and ensures accumulation near institutional support lines.
-                        </p>
-                        <div style="margin-top: 1.5rem; border-radius: 0.5rem; padding: 1rem; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.15);">
-                            <h4 style="font-size: 0.9rem; color: var(--text-primary); margin-bottom: 0.5rem;">Fidelity Cash Management Strategy</h4>
-                            <p style="font-size: 0.75rem; color: var(--text-secondary);">
-                                When securities are flagged <strong>HOLD / EXTENDED</strong>, retain funds in Fidelity Government / Treasury Cash wrappers (SPAXX / FDLXX) to earn state-tax-exempt yields while waiting for pullbacks.
+                    <div class="stepper-footer">
+                        <button class="btn-action btn-secondary btn-nav-step" data-next-step="3">
+                            <span>⬅ Back: Insider Settings</span>
+                        </button>
+                        <button class="btn-action btn-primary btn-nav-step" data-next-step="5">
+                            <span>Next: Reconcile Fidelity Portfolio ➔</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =================================================================
+                 STAGE 5: FIDELITY PORTFOLIO RECONCILIATION & TAX DEFERRAL
+                 ================================================================= -->
+            <section class="stage-panel" id="stage-5">
+                <div class="panel-card">
+                    <div class="panel-card-header">
+                        <div>
+                            <h2 class="card-title">🏦 Stage 5: Fidelity Portfolio Reconciliation & Tax Deferral Analyzer</h2>
+                            <p class="card-subtitle">Overlay live intraday quotes onto personal tax lots, calculate holding periods, and avoid short-term tax drag.</p>
+                        </div>
+                        <span class="badge badge-strike">Tax Drag Shield</span>
+                    </div>
+
+                    <!-- Drop Zone & Actions -->
+                    <div class="grid-2" style="margin-bottom: 1.5rem;">
+                        <div class="drop-zone" id="csv-drop-zone">
+                            <div style="font-size: 2rem; margin-bottom: 8px;">📁</div>
+                            <h4 style="font-size: 0.95rem; margin-bottom: 4px;">Drag &amp; Drop Fidelity Positions CSV Here</h4>
+                            <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 12px;">Export from Fidelity.com → Accounts &amp; Trade → Positions → Download CSV</p>
+                            <div style="display: flex; justify-content: center; gap: 8px;">
+                                <input type="file" id="file-csv-input" accept=".csv" style="display: none;">
+                                <button class="btn-action btn-secondary" onclick="document.getElementById('file-csv-input').click()">
+                                    Browse Files...
+                                </button>
+                                <button class="btn-action btn-emerald" id="btn-load-sample-csv">
+                                    Load Sample Portfolio
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Portfolio Summary Card -->
+                        <div class="control-group" style="padding: 1.25rem;">
+                            <h3 style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase;">PORTFOLIO AGGREGATES</h3>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="color: var(--text-secondary); font-size: 0.85rem;">Total Market Value:</span>
+                                <strong class="mono" id="port-total-val" style="font-size: 1rem; color: #38bdf8;">$0.00</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="color: var(--text-secondary); font-size: 0.85rem;">Total Cost Basis:</span>
+                                <span class="mono" id="port-total-basis" style="font-size: 0.9rem;">$0.00</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="color: var(--text-secondary); font-size: 0.85rem;">Unrealized Gain / Loss:</span>
+                                <strong class="mono" id="port-total-gain" style="font-size: 0.95rem; color: #34d399;">$0.00 (0.0%)</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-top: 8px; border-top: 1px solid var(--border-color);">
+                                <span style="color: var(--text-secondary); font-size: 0.85rem;">Potential Tax Drag Avoided:</span>
+                                <strong class="mono" id="port-tax-savings" style="font-size: 1rem; color: #fbbf24;">$0.00</strong>
+                            </div>
+                            <p style="font-size: 0.74rem; color: var(--text-muted); line-height: 1.4;">
+                                💡 <strong>The Tax Deferral Paradox:</strong> Holding winning compounders until they qualify for LTCG (≥ 365 days) saves 108 bps/year in tax drag, yielding +22.7% more spendable wealth than mechanical annual rebalancing.
                             </p>
                         </div>
                     </div>
 
-                    <div class="card col-8">
-                        <div class="card-title">Secular Compounders Gating Matrix</div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Ticker</th>
-                                        <th>Theme</th>
-                                        <th>Current Price</th>
-                                        <th>200w SMA</th>
-                                        <th>Buy Threshold (1.05x)</th>
-                                        <th>Distance (%)</th>
-                                        <th>Gating Policy</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="munger-table-body">
-                                    <!-- Populated dynamically -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 5. Tax Matrix & Options Panel -->
-            <div class="tab-panel" id="panel-tax-matrix">
-                <div class="dashboard-grid">
-                    <div class="card col-12">
-                        <div class="card-title">
-                            <span>Tax Placement Audit ($500k MFJ Bracket)</span>
-                            <span class="badge badge-success">Tax Alpha Optimizer</span>
-                        </div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Asset / Holding</th>
-                                        <th>Current Account</th>
-                                        <th>Account Tax Status</th>
-                                        <th>Audit Status</th>
-                                        <th>Target Optimal Account</th>
-                                        <th>Tax Drag Rationale</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tax-audit-body">
-                                    <!-- Populated dynamically -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div class="card col-12">
-                        <div class="card-title">
-                            <span>NVDA Risk Management & Covered Call Collar Simulator</span>
-                            <span class="badge badge-purple">Concentration Hedge</span>
-                        </div>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                            Holding $200k in NVDA (1,600 shares) exposes the portfolio to single-stock volatility. 
-                            Selling 30–45 day out-of-the-money covered calls on 400 shares (4 contracts) harvests premium while establishing a disciplined tax-aware exit if assigned.
-                        </p>
-                        <div class="grid-3-col mb-4">
-                            <div class="payoff-summary-card">
-                                <div class="payoff-label">Target Covered Call Strike</div>
-                                <div class="payoff-value" style="color: var(--accent-blue);" id="nvda-call-strike">$261.00 (+15% OTM)</div>
-                            </div>
-                            <div class="payoff-summary-card">
-                                <div class="payoff-label">Est. Annualized Premium Yield</div>
-                                <div class="payoff-value" style="color: var(--color-emerald);">5.5% – 7.2%</div>
-                            </div>
-                            <div class="payoff-summary-card">
-                                <div class="payoff-label">Quarterly Cash Flow Harvested</div>
-                                <div class="payoff-value" style="color: var(--color-emerald); font-weight: bold;">$1,400 – $2,200</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Options Alpha Desk: Calls & Inverted Put Strategies -->
-                    <div class="card col-12">
-                        <div class="card-title">
-                            <span>Quantitative Options Alpha Desk & Inverted Put Hedges</span>
-                            <span class="badge badge-purple">Fidelity Level 2/3 Options</span>
-                        </div>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                            Leveraging extreme long alpha with <strong>Deep ITM 80-Delta LEAPS</strong> (capital-efficient stock replacement in Roth IRA) and <strong>Bull Call Spreads</strong>, plus hedging overbought fragile assets with <strong>Bear Put Vertical Spreads</strong> and <strong>Zero-Cost Collars</strong>.
-                        </p>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Ticket ID</th>
-                                        <th>Ticker</th>
-                                        <th>Strategy</th>
-                                        <th>Account Allocation</th>
-                                        <th>Sentiment / Fragility Trigger</th>
-                                        <th>Max Risk</th>
-                                        <th>Max Reward</th>
-                                        <th>Breakeven</th>
-                                        <th>Fidelity Order Syntax</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="options-table-body">
-                                    <!-- Populated dynamically via /api/options -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 6. Screener & Historical Backtest Panel -->
-            <div class="tab-panel" id="panel-screener">
-                <div class="card col-12 mb-4" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                    <div>
-                        <h3 style="color: var(--text-primary); margin-bottom: 4px;">Extremizing Screener & Empirical Backtester</h3>
-                        <p style="font-size: 0.8rem; color: var(--text-secondary);">Empirical forward return tracking across Strict, Median-Relaxed, and Dislocation Quality parameters.</p>
-                        <div style="display: flex; gap: 12px; margin-top: 8px; align-items: center; flex-wrap: wrap;">
-                            <div style="display: flex; gap: 6px; align-items: center;">
-                                <span style="font-size: 0.75rem; color: var(--text-muted);">Period:</span>
-                                <button class="btn-action btn-primary period-btn" data-period="2008" id="btn-period-2008">📅 Since 2008 (18.8 Yrs, All Cycles)</button>
-                                <button class="btn-action btn-secondary period-btn" data-period="2y" id="btn-period-2y">⚡ Recent 2 Years</button>
-                            </div>
-                            <div style="display: flex; gap: 6px; align-items: center;">
-                                <span style="font-size: 0.75rem; color: var(--text-muted);">Universe:</span>
-                                <button class="btn-action btn-primary univ-btn" data-univ="expanded" id="btn-univ-expanded">🌐 S&P 100 + Nasdaq 100 (177)</button>
-                                <button class="btn-action btn-secondary univ-btn" data-univ="core" id="btn-univ-core">⭐ Core (31)</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <button class="btn-action btn-secondary mode-btn" data-mode="strict" id="btn-mode-strict">Strict (Q1)</button>
-                        <button class="btn-action btn-secondary mode-btn" data-mode="relaxed" id="btn-mode-relaxed">Relaxed (Median)</button>
-                        <button class="btn-action btn-secondary mode-btn" data-mode="dislocation" id="btn-mode-dislocation">Dislocation</button>
-                        <button class="btn-action btn-secondary mode-btn" data-mode="1sd" id="btn-mode-1sd">+1 SD Quality</button>
-                        <button class="btn-action btn-secondary mode-btn" data-mode="2sd" id="btn-mode-2sd">+2 SD Outlier</button>
-                        <button class="btn-action btn-primary mode-btn" data-mode="multiplier" id="btn-mode-multiplier">⚡ Multiplier (1+STDEV)</button>
-                    </div>
-                </div>
-
-                <!-- Sub-bar for Multiplier Cutoff Thresholds -->
-                <div class="card col-12 mb-4" id="cutoff-selector-row" style="display: flex; justify-content: space-between; align-items: center; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); padding: 10px 16px;">
-                    <div>
-                        <strong style="color: #38bdf8; font-size: 0.85rem;">Multiplier Buy Signal Cutoff:</strong>
-                        <span style="font-size: 0.75rem; color: var(--text-secondary); margin-left: 6px;">Select minimum composite multiplier hurdle</span>
-                    </div>
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                        <button class="btn-action btn-secondary cutoff-btn" data-cutoff="6.0">&ge; 6x</button>
-                        <button class="btn-action btn-secondary cutoff-btn" data-cutoff="10.0">&ge; 10x</button>
-                        <button class="btn-action btn-primary cutoff-btn" data-cutoff="12.0">⭐ &ge; 12x (Optimal)</button>
-                        <button class="btn-action btn-secondary cutoff-btn" data-cutoff="16.0">&ge; 16x (100% Win)</button>
-                        <button class="btn-action btn-secondary cutoff-btn" data-cutoff="18.0">🚀 &ge; 18x (Generational)</button>
-                    </div>
-                </div>
-
-                <!-- Backtest KPI Cards -->
-                <div class="metrics-row mb-4">
-                    <div class="metric-card core">
-                        <span class="metric-label">Signals / Unique Tickers</span>
-                        <span class="metric-value" id="bt-signals-val">183 / 6</span>
-                        <span class="metric-subtext" id="bt-tickers-list">NEE, GRID, ARE, DTCR, TSM, AMD</span>
-                    </div>
-                    <div class="metric-card growth">
-                        <span class="metric-label">Forward 3-Month Win Rate</span>
-                        <span class="metric-value" id="bt-winrate-val" style="color: var(--color-emerald);">67.1%</span>
-                        <span class="metric-subtext" id="bt-beatspy-val">Beats S&P 500: 57.9% of time</span>
-                    </div>
-                    <div class="metric-card total">
-                        <span class="metric-label">Forward 3M Return (vs SPY)</span>
-                        <span class="metric-value" id="bt-ret3m-val">+15.36%</span>
-                        <span class="metric-subtext" id="bt-alpha-val" style="color: var(--accent-gold);">Alpha: +9.97% over SPY</span>
-                    </div>
-                    <div class="metric-card satellite">
-                        <span class="metric-label">Forward 6-Month Return</span>
-                        <span class="metric-value" id="bt-ret6m-val" style="color: var(--accent-blue);">+35.58%</span>
-                        <span class="metric-subtext" id="bt-maxdd-val">Avg Max Drawdown: -15.8%</span>
-                    </div>
-                </div>
-
-                <!-- Analytical Synthesis / Rationale Card -->
-                <div class="card col-12 mb-4" id="bt-synthesis-box">
-                    <div class="card-title">
-                        <span id="bt-synthesis-title">Relaxed Constraints Analysis (Closer to Median)</span>
-                        <span class="badge badge-info" id="bt-mode-badge">Mode: Relaxed</span>
-                    </div>
-                    <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;" id="bt-synthesis-content">
-                        Loading analysis...
-                    </div>
-                </div>
-
-                <!-- Historical Trigger Events Table -->
-                <div class="card col-12">
-                    <div class="card-title">
-                        <span>Historical Screener Qualifiers & Subsequent Forward Performance</span>
-                        <span class="badge badge-purple">Empirical Evidence</span>
-                    </div>
-                    <div class="table-container">
-                        <table>
+                    <!-- Tax Lot Table -->
+                    <h3 style="font-size: 0.92rem; margin-bottom: 0.75rem; color: var(--text-secondary);">INDIVIDUAL TAX LOTS & ACTION DIRECTIVES</h3>
+                    <div class="table-responsive">
+                        <table class="terminal-table" id="fidelity-lots-table">
                             <thead>
                                 <tr>
-                                    <th>Trigger Date</th>
-                                    <th>Ticker</th>
-                                    <th>Company Name</th>
-                                    <th>Signal Price</th>
-                                    <th>Signal P/E</th>
-                                    <th id="th-score-col">Signal P/B</th>
-                                    <th>Forward 1M</th>
-                                    <th>Forward 3M</th>
-                                    <th>SPY 3M</th>
-                                    <th>3M Alpha</th>
-                                    <th>Max DD (3M)</th>
+                                    <th>Symbol</th>
+                                    <th style="text-align: right;">Shares</th>
+                                    <th style="text-align: right;">Cost Basis</th>
+                                    <th style="text-align: right;">Live Price</th>
+                                    <th style="text-align: right;">Live Value</th>
+                                    <th style="text-align: right;">Gain / Loss</th>
+                                    <th style="text-align: center;">Days Held</th>
+                                    <th style="text-align: center;">Tax Status</th>
+                                    <th style="text-align: center;">Action Directive</th>
+                                    <th>Rationale</th>
+                                    <th style="text-align: center;">Execute</th>
                                 </tr>
                             </thead>
-                            <tbody id="backtest-table-body">
-                                <!-- Populated dynamically -->
+                            <tbody id="fidelity-lots-body">
+                                <tr>
+                                    <td colspan="11" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                        No Fidelity CSV loaded. Click "Load Sample Portfolio" or upload your CSV above.
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
+
+                    <div class="stepper-footer">
+                        <button class="btn-action btn-secondary btn-nav-step" data-next-step="4">
+                            <span>⬅ Back: Screener Matrix</span>
+                        </button>
+                        <button class="btn-action btn-primary btn-nav-step" data-next-step="6">
+                            <span>Next: Generate Fidelity Orders ➔</span>
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </section>
+
+
+            <!-- =================================================================
+                 STAGE 6: ORDER TICKET GENERATOR & EXECUTION
+                 ================================================================= -->
+            <section class="stage-panel" id="stage-6">
+                <div class="panel-card">
+                    <div class="panel-card-header">
+                        <div>
+                            <h2 class="card-title">🧾 Stage 6: Fidelity Order Ticket Generator</h2>
+                            <p class="card-subtitle">Automate portfolio rebalancing, calculate exact share quantities, and generate Fidelity execution tickets.</p>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-action btn-secondary" id="btn-copy-all-orders">
+                                📋 Copy All Orders
+                            </button>
+                            <button class="btn-action btn-emerald" id="btn-export-orders-csv">
+                                📥 Download Fidelity CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Capital Allocation Controls -->
+                    <div class="grid-3" style="margin-bottom: 1.5rem;">
+                        <div class="control-group">
+                            <div class="control-label-row">
+                                <span class="control-label">💵 Deployable Cash ($):</span>
+                            </div>
+                            <input type="number" class="search-input" id="order-avail-cash" value="100000" style="width: 100%;">
+                            <span class="control-hint">Cash available in brokerage account for new buys.</span>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="control-label-row">
+                                <span class="control-label">⚖️ Max Allocation Per Position:</span>
+                                <span class="control-value-badge" id="val-max-alloc">15.0%</span>
+                            </div>
+                            <input type="range" class="slider-input" id="slider-max-alloc" min="5" max="30" step="1" value="15">
+                            <span class="control-hint">Maximum percentage of total portfolio in any single compounder.</span>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="control-label-row">
+                                <span class="control-label">🛡️ Cash Reserve Buffer:</span>
+                                <span class="control-value-badge" id="val-cash-buffer">5.0%</span>
+                            </div>
+                            <input type="range" class="slider-input" id="slider-cash-buffer" min="0" max="20" step="1" value="5">
+                            <span class="control-hint">Safety cash cushion left untouched during rebalancing.</span>
+                        </div>
+                    </div>
+
+                    <!-- Generated Orders List -->
+                    <h3 style="font-size: 0.92rem; margin-bottom: 0.75rem; color: var(--text-secondary);">ACTIONABLE FIDELITY TRADE TICKETS</h3>
+                    <div id="generated-orders-container">
+                        <div style="text-align: center; padding: 2.5rem; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px dashed var(--border-color); color: var(--text-muted);">
+                            Select Strike Zone candidates in Stage 4 or import a Fidelity CSV in Stage 5 to generate execution orders.
+                        </div>
+                    </div>
+
+                    <div class="stepper-footer">
+                        <button class="btn-action btn-secondary btn-nav-step" data-next-step="5">
+                            <span>⬅ Back: Fidelity Tax Lots</span>
+                        </button>
+                        <button class="btn-action btn-primary btn-nav-step" data-next-step="7">
+                            <span>Next: Options 80/20 Collars ➔</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =================================================================
+                 STAGE 7: OPTIONS 80/20 COLLAR OVERLAY
+                 ================================================================= -->
+            <section class="stage-panel" id="stage-7">
+                <div class="panel-card">
+                    <div class="panel-card-header">
+                        <div>
+                            <h2 class="card-title">🛡️ Stage 7: The 80/20 Options Collar Engine</h2>
+                            <p class="card-subtitle">Zero-cost and credit collars protecting generational gains without triggering taxable capital gains realization.</p>
+                        </div>
+                        <span class="badge badge-boost">180-365 DTE Skew</span>
+                    </div>
+
+                    <div style="background: rgba(139, 92, 246, 0.06); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 0.95rem; font-weight: 600; color: #c084fc; margin-bottom: 4px;">Institutional Collar Architecture (180–365 DTE)</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5;">
+                            When an elite compounder experiences exponential multiple expansion, liquidating triggers federal &amp; state capital gains tax rates up to 40.8%. 
+                            The <strong>80/20 Collar Overlay</strong> buys a 10% OTM protective put funded entirely by selling a 15% OTM covered call using empirical equity volatility skew. 
+                            This locks in a downside floor while leaving substantial upside intact with zero taxable realization.
+                        </p>
+                    </div>
+
+                    <!-- Collars Table -->
+                    <div class="table-responsive">
+                        <table class="terminal-table" id="collars-table">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th style="text-align: right;">Spot ($)</th>
+                                    <th style="text-align: center;">Contracts</th>
+                                    <th style="text-align: center;">DTE</th>
+                                    <th style="text-align: right;">Protective Put</th>
+                                    <th style="text-align: right;">Covered Call</th>
+                                    <th style="text-align: center;">Net Premium</th>
+                                    <th style="text-align: center;">Downside Floor</th>
+                                    <th style="text-align: center;">Upside Cap</th>
+                                    <th>Fidelity Execution Ticket</th>
+                                    <th style="text-align: center;">Trade</th>
+                                </tr>
+                            </thead>
+                            <tbody id="collars-table-body">
+                                <tr>
+                                    <td colspan="11" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                        Loading options collar recommendations...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="stepper-footer">
+                        <button class="btn-action btn-secondary btn-nav-step" data-next-step="6">
+                            <span>⬅ Back: Order Generator</span>
+                        </button>
+                        <button class="btn-action btn-emerald btn-nav-step" data-next-step="4">
+                            <span>Return to Strike Zone Matrix 🔄</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
 
         </main>
     </div>
 
-    <!-- Modal for Syncing Fidelity CSV -->
-    <div class="modal-overlay" id="sync-modal">
+    <!-- =================================================================
+         MODALS & OVERLAYS
+         ================================================================= -->
+
+    <!-- 1. Stock Moat Deep Dive Modal -->
+    <div class="modal-overlay" id="stock-modal">
+        <div class="modal-card" style="max-width: 850px;">
+            <div class="modal-header">
+                <div>
+                    <h3 style="font-size: 1.25rem; font-weight: 700;" id="modal-stock-title">NVIDIA Corp (NVDA)</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary);" id="modal-stock-subtitle">Semiconductors &bull; Technology &bull; Spot: $140.25</p>
+                </div>
+                <button class="modal-close-btn" id="btn-close-modal">&times;</button>
+            </div>
+
+            <!-- Modal Content Grid -->
+            <div class="grid-2" style="margin-bottom: 1.25rem;">
+                <!-- Radar Chart -->
+                <div style="background: rgba(0,0,0,0.25); border-radius: 10px; padding: 1rem; border: 1px solid var(--border-color); text-align: center;">
+                    <h4 style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase;">4-PILLAR RADAR VS. S&amp;P 100 MEDIAN</h4>
+                    <div style="height: 240px; position: relative;">
+                        <canvas id="stock-radar-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Fundamental Pillars Breakdown -->
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <span class="control-label">📈 5-Year Revenue CAGR:</span>
+                            <strong class="mono" id="modal-sales5y">45.2%</strong>
+                        </div>
+                        <span class="control-hint">Compound annual growth across 20 quarters.</span>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <span class="control-label">🏆 Return on Invested Capital:</span>
+                            <strong class="mono" id="modal-roic">68.4%</strong>
+                        </div>
+                        <span class="control-hint">Operational cash yield on total capital deployed.</span>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <span class="control-label">💵 Valuation (P/E &amp; P/B):</span>
+                            <strong class="mono" id="modal-valuation">38.2x / 24.1x</strong>
+                        </div>
+                        <span class="control-hint">Earnings multiple relative to historical growth.</span>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <span class="control-label">🛡️ Solvency (Debt/Equity):</span>
+                            <strong class="mono" id="modal-solvency">22.4%</strong>
+                        </div>
+                        <span class="control-hint">Prudent capital structure with ample cash cushion.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEC Form 4 Insider Summary -->
+            <div style="background: rgba(0,0,0,0.3); border-radius: 10px; padding: 1.25rem; border: 1px solid var(--border-color); margin-bottom: 1.25rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h4 style="font-size: 0.85rem; font-weight: 600; color: #fbbf24;">🕵️ SEC FORM 4 INSIDER ACTIVITY</h4>
+                    <span class="badge badge-boost" id="modal-insider-badge">NEUTRAL (1.00x)</span>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-primary); margin-bottom: 6px;" id="modal-insider-notes">
+                    No open-market C-suite distribution detected.
+                </p>
+                <div style="display: flex; gap: 16px; font-size: 0.76rem; color: var(--text-secondary);">
+                    <span>Buys: <strong class="mono" id="modal-insider-buys" style="color: #34d399;">$0</strong></span>
+                    <span>C-Suite Sales: <strong class="mono" id="modal-insider-sales" style="color: #f87171;">$0</strong></span>
+                </div>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <a href="#" target="_blank" class="btn-action btn-secondary" id="modal-link-edgar">
+                    SEC EDGAR ↗
+                </a>
+                <a href="#" target="_blank" class="btn-action btn-secondary" id="modal-link-research">
+                    Fidelity Research ↗
+                </a>
+                <a href="#" target="_blank" class="btn-action btn-emerald" id="modal-link-trade">
+                    Trade on Fidelity ↗
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Fidelity CSV Paste Modal -->
+    <div class="modal-overlay" id="fidelity-modal">
         <div class="modal-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 style="color: var(--text-primary); font-size: 1.1rem;">Sync Real Fidelity Account Positions</h3>
-                <button id="btn-close-modal" style="background: none; border: none; color: #94a3b8; font-size: 1.25rem; cursor: pointer;">&times;</button>
+            <div class="modal-header">
+                <div>
+                    <h3 style="font-size: 1.15rem; font-weight: 700;">📁 Import Fidelity Positions CSV</h3>
+                    <p style="font-size: 0.78rem; color: var(--text-secondary);">Paste raw CSV text exported from your Fidelity account.</p>
+                </div>
+                <button class="modal-close-btn" id="btn-close-fidelity-modal">&times;</button>
             </div>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
-                Log into Fidelity, navigate to <strong>Accounts & Trade &rarr; Portfolio</strong>, click the <strong>Download CSV</strong> icon, and drag the file here or paste the contents below.
-            </p>
-            <div class="drop-zone" id="file-drop-zone">
-                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📄</div>
-                <strong style="color: #f8fafc;">Drag & Drop Fidelity CSV here</strong>
-                <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">or click to browse from computer</p>
-                <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
-            </div>
-            <div style="margin-top: 1rem;">
-                <label style="font-size: 0.75rem; color: #94a3b8;">Or Paste CSV Content Directly:</label>
-                <textarea id="csv-paste-area" rows="4" style="width: 100%; background: #070b12; border: 1px solid #334155; border-radius: 6px; color: #38bdf8; font-family: monospace; font-size: 0.75rem; padding: 8px; margin-top: 4px;" placeholder="Account Number,Account Name,Symbol,Current Value..."></textarea>
-            </div>
-            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 1rem;">
-                <button class="btn-action btn-secondary" id="btn-cancel-modal">Cancel</button>
-                <button class="btn-action btn-primary" id="btn-submit-csv">Ingest & Sync Portfolio</button>
+
+            <textarea id="fidelity-csv-textarea" style="width: 100%; height: 220px; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: var(--font-mono); font-size: 0.78rem; padding: 12px; outline: none; margin-bottom: 1rem;" placeholder="Account Number,Account Name,Symbol,Description,Quantity,Last Price,Current Value,Cost Basis..."></textarea>
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <button class="btn-action btn-secondary" id="btn-modal-load-sample">
+                    Load Sample Test CSV
+                </button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-action btn-secondary" id="btn-cancel-fidelity-modal">Cancel</button>
+                    <button class="btn-action btn-primary" id="btn-submit-fidelity-csv">Import &amp; Reconcile</button>
+                </div>
             </div>
         </div>
     </div>
@@ -495,9 +830,10 @@
     <!-- Toast Notification -->
     <div class="toast" id="toast-notification">
         <span id="toast-icon">✅</span>
-        <span id="toast-message">Pipeline scan completed!</span>
+        <span id="toast-message">Action successful!</span>
     </div>
 
+    <!-- Scripts -->
     <script src="app.js"></script>
 </body>
 </html>

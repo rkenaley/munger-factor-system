@@ -121,18 +121,101 @@ class ControlCenterHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(res).encode("utf-8"))
             return
 
+        # API: Munger System Status & Freshness
+        if self.path.startswith("/api/munger/status"):
+            from .munger_api import get_munger_status_api
+            res = get_munger_status_api()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(res).encode("utf-8"))
+            return
+
+        # API: Munger Options Collars
+        if self.path.startswith("/api/munger/options-collars"):
+            from .munger_api import get_options_collars_api
+            res = get_options_collars_api()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(res).encode("utf-8"))
+            return
+
         # API: Health check
         if self.path == "/api/health":
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.end_headers()
-            self.wfile.write(json.dumps({"status": "ONLINE", "port": PORT, "version": "1.0.0"}).encode("utf-8"))
+            self.wfile.write(json.dumps({"status": "ONLINE", "port": PORT, "version": "2.2.0"}).encode("utf-8"))
             return
 
         # Default static file serving from web/
         return super().do_GET()
 
     def do_POST(self):
+        # API: Munger Live Screener Scan
+        if self.path == "/api/munger/scan":
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(content_length) if content_length > 0 else b"{}"
+            try:
+                params = json.loads(body.decode("utf-8", errors="replace")) if body.strip() else {}
+            except Exception:
+                params = {}
+            from .munger_api import run_munger_scan_api
+            res = run_munger_scan_api(params)
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(res).encode("utf-8"))
+            return
+
+        # API: Munger Refresh Live Prices via yfinance
+        if self.path == "/api/munger/refresh-prices":
+            from .munger_api import refresh_prices_api
+            res = refresh_prices_api()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(res).encode("utf-8"))
+            return
+
+        # API: Munger Fidelity Tax-Lot Reconciliation
+        if self.path == "/api/munger/reconcile-fidelity":
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(content_length).decode("utf-8", errors="replace") if content_length > 0 else ""
+            csv_text = None
+            if body.strip().startswith("{"):
+                try:
+                    payload = json.loads(body)
+                    csv_text = payload.get("csv_text")
+                except Exception:
+                    csv_text = body
+            elif body.strip():
+                csv_text = body
+            from .munger_api import reconcile_fidelity_api
+            res = reconcile_fidelity_api(csv_text)
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(res).encode("utf-8"))
+            return
+
+        # API: Munger Fidelity Order Generator
+        if self.path == "/api/munger/generate-orders":
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(content_length) if content_length > 0 else b"{}"
+            try:
+                params = json.loads(body.decode("utf-8", errors="replace")) if body.strip() else {}
+            except Exception:
+                params = {}
+            from .munger_api import generate_fidelity_orders_api
+            res = generate_fidelity_orders_api(params)
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(res).encode("utf-8"))
+            return
+
         # API: Trigger live quantitative scan
         if self.path == "/api/run":
             content_length = int(self.headers.get("Content-Length", 0))

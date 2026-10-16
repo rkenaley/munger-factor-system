@@ -925,7 +925,7 @@ def fetch_live_insider_activity(
             c = Company(t_clean)
             filings = c.get_filings(form="4")
             if filings and len(filings) > 0:
-                recent_filings = filings[:12]
+                recent_filings = filings[:25]
                 records = []
                 for f in recent_filings:
                     try:
