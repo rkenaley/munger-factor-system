@@ -287,14 +287,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const resp = await fetch('/api/munger/refresh-prices', { method: 'POST' });
             if (resp.ok) {
                 const res = await resp.json();
-                showToast(`Price cache refreshed in ${res.elapsed_seconds}s! Latest: ${res.latest_bar_date}`, "⚡");
+                showToast(`Price cache refreshed in ${res.elapsed_seconds}s! Latest: ${res.latest_bar_date}`, "⚡", 5000);
                 fetchStatus();
                 if (state.candidates.length > 0) triggerScan();
             } else {
-                showToast("Refresh error from server.", "⚠️");
+                const errData = await resp.json().catch(() => ({}));
+                showToast(`Server refresh error: ${errData.message || resp.statusText}`, "⚠️", 5000);
             }
         } catch (e) {
-            showToast("Server refresh endpoint unavailable. (Demo mode)", "ℹ️");
+            if (window.location.protocol === 'file:') {
+                showToast("Running in local file mode. Run '.\\start_server.ps1' in PowerShell to connect to the live price downloader!", "ℹ️", 6500);
+            } else {
+                showToast("Unable to reach backend server on port 8505. Ensure '.\\start_server.ps1' is running.", "⚠️", 5000);
+            }
         } finally {
             if (spinner) spinner.style.display = 'none';
             if (txt) txt.textContent = '⚡ Refresh Prices';
