@@ -60,7 +60,7 @@ Traditional value investing is plagued by the ``value trap'' dilemma: buying che
 \begin{enumerate}
     \item \textbf{Conjunctive Hurdle:} Every qualifying firm must strictly beat the cross-sectional market median across \textit{all 4 factors simultaneously} (Revenue Growth, ROIC, Cyclically Adjusted Earnings Yield, and Solvency).
     \item \textbf{Multiplicative Compounding:} Scores are computed via $\prod (1 + \max(0, Z_k))$, amplifying rare multi-dimensional excellence during temporary cyclical market mispricings.
-    \item \textbf{Cyclical Peak-Earnings Immunization (``Admiral Ackbar Filter''):} Cross-sectional inputs are winsorized at the 2nd/98th percentiles ($\pm 3.5\sigma$ cap), TTM EPS is blended with 5-year median EPS, and firms with any negative TTM EPS window over the trailing 20 quarters (5 years) are disqualified---blocking boom-bust semiconductor and commodity traps.
+    \item \textbf{Cyclical Peak-Earnings Immunization (``Value Trap Filter''):} Cross-sectional inputs are winsorized at the 2nd/98th percentiles ($\pm 3.5\sigma$ cap), TTM EPS is blended with 5-year median EPS, and firms with any negative TTM EPS window over the trailing 20 quarters (5 years) are disqualified---blocking boom-bust semiconductor and commodity traps.
     \item \textbf{Dynamic Tax Deferral:} Positions are held for a minimum of 1 year (securing statutory long-term capital gains rates) and liquidated when fundamental quality deteriorates below median. This cuts annual tax drag by \textbf{108 bps/year} (from $-688$ bps to $-580$ bps), unlocking a \textbf{+\$1.19M} net wealth advantage over mechanical 1-year rebalancing.
     \item \textbf{Institutional Slippage \& Delisting Accounting:} Fills enforce a realistic \textbf{$-5$ bps per-trade market impact cost} (eliminating synthetic execution bonuses) and a \textbf{30\% terminal distress haircut} on abrupt delistings.
     \item \textbf{Skew-Aware Options Overlay:} Incorporating analytical $O(1)$ delta-strike inversion and equity volatility skew ($34.1\%$ IV on $65\Delta$ long calls vs.\ $29.2\%$ IV on $30\Delta$ short calls), 180--365 DTE spreads amortize skew drag to achieve $+4.78\%$ to $+17.31\%$ expected ROC per roll, while 90-DTE $95\text{C}/110\text{C}$ spreads deliver a capped \textbf{$+104.1\%$ max ROC} on $+10.1\%$ stock dislocations with a $-19.10\%$ black-swan portfolio floor in an 80/20 Treasury-backed allocation.
@@ -120,7 +120,7 @@ Because revenue growth is measured in percentages ($+15\%$), ROIC in returns ($+
 \end{equation}
 where $\mu_k$ is the winsorized universe mean and $\sigma_k$ is the standard deviation. Winsorization is essential: without it, a single 1-quarter YoY revenue spike (such as Micron's $+379\%$ Q4 FY26 YoY revenue surge) inflates $\sigma_g$ across the entire universe and artificially suppresses the $Z$-scores of legitimate 15\%--25\% compounders.
 
-\subsection{The ``Admiral Ackbar'' Cyclical Peak Filter}
+\subsection{The ``Value Trap'' Cyclical Peak Filter}
 Commodity and semiconductor manufacturers exhibit inverted P/E multiples: they look cheapest on trailing P/E at the exact peak of their margin cycle. To prevent boom-bust cyclicals from masquerading as Munger compounders, a firm is eligible for entry only if its rolling 4-quarter TTM EPS remained \textbf{strictly positive ($\text{EPS}_{\text{TTM}} > 0$) across all 20 trailing quarters (5 years)}, and its earnings yield $y_i$ blends current TTM EPS with its 5-year median TTM EPS.
 
 \begin{table*}[t!]
@@ -341,7 +341,7 @@ To model institutional reality across the 176 verified constituents (with ticker
 \texttt{2025-01-14} & \texttt{AMAT} & Applied Materials & \$174.50 & 15.6x & \textbf{12.8x} & \textbf{+24.1\%} & +2.9\% & \textbf{+21.2\%} & +45.2\% & \textbf{+104.1\% (Max Profit)} \\
 \texttt{2025-09-16} & \texttt{MU} & Micron Technology$^\dagger$ & \$158.57 & 19.1x & \textbf{Blocked (Cyclical)} & \textbf{+49.6\%} & +3.4\% & \textbf{+46.2\%} & +82.9\% & \textbf{Flagged by 5Y Loss Gate} \\
 \bottomrule
-\multicolumn{11}{l}{\footnotesize $^\dagger$Note: Under raw unlagged scoring, \texttt{MU} showed a $419.1\text{x}$ score due to a 1-quarter $+379\%$ YoY sales spike and 2026 HBM peak EPS; the Admiral Ackbar 5Y loss gate blocks it due to FY2023 net losses.}
+\multicolumn{11}{l}{\footnotesize $^\dagger$Note: Under raw unlagged scoring, \texttt{MU} showed a $419.1\text{x}$ score due to a 1-quarter $+379\%$ YoY sales spike and 2026 HBM peak EPS; the Value Trap 5Y loss gate blocks it due to FY2023 net losses.}
 \end{tabular}%
 }
 \end{table*}
@@ -386,7 +386,7 @@ Combining \textbf{80\% in Risk-Free 3-Month Treasury Bills} ($r = 4.5\%$ annuali
 \end{itemize}
 
 \section{Historical Dislocation Case Studies \& Execution Protocol}
-Table \ref{tab:cases} examines iconic verified dislocation triggers across market panics, including Western Digital (\texttt{WDC}) in January 2008 (\$15.06, 5.4x P/E, $\mathcal{M}=54.8\text{x}$, rallying $+21.2\%$ over 90 days for a \textbf{+104.1\%} skew-adjusted spread ROC) and Meta Platforms (\texttt{META}) in November 2022 (\$90.79, 9.8x P/E, $\mathcal{M}=28.4\text{x}$, surging $+45.2\%$ over 90 days and $+162.4\%$ over 6 months). Table \ref{tab:cases} also illustrates the \textbf{Admiral Ackbar Cyclical Gate} on Micron Technology (\texttt{MU}): while raw unwinsorized scoring flagged \texttt{MU} at $\mathcal{M}=419.1\text{x}$, point-in-time lagging corrects its September 2025 P/E to $19.1\text{x}$ (\$158.57 / \$8.29 TTM EPS) and the 5-year full-cycle profitability filter blocks it at October 2026 peak margins (\$953.19, 11.1x P/B) due to its FY2023 net loss cycle.
+Table \ref{tab:cases} examines iconic verified dislocation triggers across market panics, including Western Digital (\texttt{WDC}) in January 2008 (\$15.06, 5.4x P/E, $\mathcal{M}=54.8\text{x}$, rallying $+21.2\%$ over 90 days for a \textbf{+104.1\%} skew-adjusted spread ROC) and Meta Platforms (\texttt{META}) in November 2022 (\$90.79, 9.8x P/E, $\mathcal{M}=28.4\text{x}$, surging $+45.2\%$ over 90 days and $+162.4\%$ over 6 months). Table \ref{tab:cases} also illustrates the \textbf{Value Trap Cyclical Gate} on Micron Technology (\texttt{MU}): while raw unwinsorized scoring flagged \texttt{MU} at $\mathcal{M}=419.1\text{x}$, point-in-time lagging corrects its September 2025 P/E to $19.1\text{x}$ (\$158.57 / \$8.29 TTM EPS) and the 5-year full-cycle profitability filter blocks it at October 2026 peak margins (\$953.19, 11.1x P/B) due to its FY2023 net loss cycle.
 
 \subsection{Institutional Execution \& Reproducibility}
 \begin{enumerate}

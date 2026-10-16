@@ -28,7 +28,7 @@ The **MUNGER Factor Strategy** translates Charlie Munger’s multi-disciplinary 
 2. **Multiplicative Moat Compounding:** When an elite company clears all four hurdles, its score is computed geometrically:
    $$\mathcal{M}_i = \prod_{k \in \{g, r, y, s\}} \left(1 + \max(0, Z_{i,k})\right)$$
    When temporary market panics dislocate an elite compounder, its earnings yield spikes into deep value territory while its growth and balance sheet remain pristine. The multiplicative formula explodes upward, signaling a generational strike-zone entry.
-3. **The "Admiral Ackbar" Cyclical-Trap Immunization:** Commodities and cyclical semiconductor manufacturers often report astronomical peak-cycle earnings right before demand collapses. Cross-sectional winsorization (clipping at 2nd/98th percentiles), 5-year full-cycle profitability gating, and cyclically adjusted 5-year median earnings yields permanently prevent peak P/E cyclical traps (such as Micron's 2026 cycle).
+3. **The "Value Trap" Cyclical Filter:** Commodities and cyclical semiconductor manufacturers often report astronomical peak-cycle earnings right before demand collapses. Cross-sectional winsorization (clipping at 2nd/98th percentiles), 5-year full-cycle profitability gating, and cyclically adjusted 5-year median earnings yields permanently prevent peak P/E cyclical traps (such as Micron's 2026 cycle).
 4. **The Compounding Paradox of Tax Deferral:** Holding winning compounders for at least one year (qualifying for long-term capital gains) and deferring sales until fundamental quality decays saves **108 bps/year in tax drag**. Over a 55.5-year investment horizon (1971–2026), this generates **+$1.19 Million (+22.7%) more spendable cash in pocket** than mechanical annual rebalancing (\$6.45M vs. \$5.26M starting from \$1,000).
 5. **SEC Form 4 Insider Conviction Multiplier:** Direct XML parsing of SEC Form 4 filings filters out routine RSU withholdings and option exercises, rewarding **Cluster Buying ($\ge 2$ insiders buying $\ge \$250\text{k}$, 1.15x boost)** and penalizing **Heavy C-Suite Distribution ($\ge \$20\text{M}$ open-market sales with zero buys, 0.70x haircut)**.
 6. **Turnkey Fidelity Reconciliation:** Any investor can export their Fidelity `Portfolio_Positions_*.csv`, drop it into the system, and receive immediate tax-aware orders: `STRONG HOLD / ADD`, `HOLD FOR TAX DEFERRAL (Xd to LTCG)`, or `SELL (MOC)`.
@@ -94,9 +94,9 @@ All backtests enforce strict institutional realism: **15.0% maximum allocation p
 
 ---
 
-## 3. The "Admiral Ackbar Filter": Immunizing Peak-Cycle Traps
+## 3. The "Value Trap" Filter: Immunizing Peak-Cycle Traps
 
-> *"It's a trap!"* — **Admiral Ackbar**
+> *"A great business at a fair price is superior to a fair business at a great price."* — **Charlie Munger**
 
 A classic trap in quantitative finance occurs in capital-intensive, highly cyclical industries (e.g., DRAM/NAND memory, commodity shipping, energy exploration). At the euphoric peak of their business cycle, these companies report record quarterly earnings. Naive financial screeners calculate trailing P/E ratios of 3x or 4x, making them appear "impossibly cheap."
 
@@ -105,7 +105,7 @@ In the second half of 2026, Micron reported massive single-quarter revenue accel
 - **Raw Unwinsorized Score:** $\mathcal{M}_{\text{raw}} = 25.54$ (dominating the strike zone).
 - **The Reality:** Micron lost substantial money in **all 4 quarters of FY2023** (`-$1.91, -$1.43, -$1.07, -$0.95` per share).
 
-Under MUNGER v2.2's **Admiral Ackbar Immunization Protocol**:
+Under MUNGER v2.2's **"Value Trap" Filter Protocol**:
 1. **Cross-Sectional Winsorization:** Trims extreme outliers at the 2nd and 98th percentiles, preventing a single distorted ratio from crushing market variance ($\sigma$).
 2. **5-Year Full-Cycle Profitability Gate:** Requires positive aggregate TTM earnings across the full 5-year cycle, disqualifying boom-bust commoditized producers.
 3. **Cyclically Adjusted Earnings Yield:** Blends TTM earnings yield with 5-year median earnings yield, normalizing peak-cycle earnings spikes.

@@ -6,7 +6,7 @@ MUNGER FACTOR SYSTEM: LIVE STRIKE-ZONE SCANNER & TAX-LOT RECONCILER (v2.2)
 Production Strike-Zone Screener integrating:
   1. Staleness Circuit Breaker: Automatically detects data lag > 18h against
      the market clock and fetches live intraday prices via multi-threaded yfinance.
-  2. Admiral Ackbar Cyclical-Trap Immunization: Cross-sectional winsorization,
+  2. Value Trap Filter: Cross-sectional winsorization,
      5-year full-cycle profitability gating, and cyclically-adjusted earnings yield.
   3. SEC Form 4 / Finviz Insider Conviction Engine: Live querying of Form 4 XML
      filings, filtering strictly for open-market Code P buys vs Code S sales,
@@ -57,7 +57,7 @@ def run_strike_zone_scan() -> pd.DataFrame:
     latest_dates = close_df.index[-2:]
     dt_last = latest_dates[-1]
 
-    # 3. Raw vs. Admiral Ackbar Immunized Munger Scoring
+    # 3. Raw vs. Value Trap Immunized Munger Scoring
     scores_raw, med_raw, ey_raw = compute_vectorized_munger_scores(
         close_df=close_df,
         eval_dates=latest_dates,
@@ -138,14 +138,14 @@ def run_strike_zone_scan() -> pd.DataFrame:
             "ROIC_%": round(roic, 1),
             "P/B": round(pb, 2),
             "Raw_M": round(raw_m, 2),
-            "Ackbar_M": round(clean_m, 2),
+            "Trap_Filtered_M": round(clean_m, 2),
             "Insider_Mult": insider_mult,
             "Conviction_M": conviction_m,
             "All_Med": passed_med,
             "Audit_Status": status,
         })
 
-    df = pd.DataFrame(rows).sort_values(by=["Conviction_M", "Ackbar_M", "Raw_M"], ascending=False)
+    df = pd.DataFrame(rows).sort_values(by=["Conviction_M", "Trap_Filtered_M", "Raw_M"], ascending=False)
 
     print(f"\nEvaluation Date: {dt_last.strftime('%Y-%m-%d')} | Top 15 Candidates by Conviction Munger Score:")
     print(df.head(15).to_string(index=False))
@@ -154,7 +154,7 @@ def run_strike_zone_scan() -> pd.DataFrame:
     traps = df[df["Audit_Status"] == "CYCLICAL TRAP BLOCKED"]
     if not traps.empty:
         print("\n" + "=" * 96)
-        print("[ADMIRAL ACKBAR ALERT] Blocked Boom-Bust Cyclical / Outlier Traps:")
+        print("[VALUE TRAP FILTER ALERT] Blocked Boom-Bust Cyclical / Outlier Traps:")
         print("=" * 96)
         print(traps.to_string(index=False))
 

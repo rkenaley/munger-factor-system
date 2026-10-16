@@ -194,7 +194,7 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
         use_cyclically_adjusted_ey=False,
     )
 
-    # Compute clean Ackbar-immunized scores with user parameters
+    # Compute clean Value Trap-immunized scores with user parameters
     scores_clean, med_clean, ey_clean = compute_vectorized_munger_scores(
         close_df=close_df,
         eval_dates=latest_dates,

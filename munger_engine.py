@@ -4,7 +4,7 @@
 MUNGER FACTOR SYSTEM: SHARED VECTORIZED & ZERO-LOOKAHEAD CORE ENGINE (v2.2)
 ================================================================================
 Centralizes data loading, point-in-time (causal) factor matrix construction,
-cyclical peak-earnings trap immunization ("Admiral Ackbar Filter"),
+cyclical peak-earnings trap immunization ("Value Trap" Filter),
 cross-sectional winsorization, portfolio simulation with delisting/slippage/tax
 accounting, analytical O(1) Black-Scholes-Merton option pricing with skew,
 Staleness Circuit Breaker with multi-threaded live quote refresh,
@@ -290,7 +290,7 @@ def _generate_synthetic_fixture(
 
 
 # ==============================================================================
-# VECTORIZED CAUSAL FACTOR MATRIX ENGINE + ADMIRAL ACKBAR CYCLICAL TRAP FILTER
+# VECTORIZED CAUSAL FACTOR MATRIX ENGINE + VALUE TRAP CYCLICAL FILTER
 # ==============================================================================
 
 def build_point_in_time_ttm_eps_matrix(

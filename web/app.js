@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Checkbox toggles card styling
-    ['chk-conjunctive', 'chk-ackbar', 'chk-gating200w', 'chk-cluster-boost', 'chk-csuite-haircut'].forEach(id => {
+    ['chk-conjunctive', 'chk-value-trap', 'chk-gating200w', 'chk-cluster-boost', 'chk-csuite-haircut'].forEach(id => {
         const chk = document.getElementById(id);
         const card = document.getElementById(`${id}-card`) || (chk ? chk.closest('.toggle-card') : null);
         if (chk && card) {
@@ -152,19 +152,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const presets = {
         'munger-strict': {
             min_munger: 2.0, min_sales5y: 10, min_roic: 15, max_pe: 35, max_de: 100,
-            conjunctive: true, ackbar: true, gating200w: false
+            conjunctive: true, value_trap: true, gating200w: false
         },
         'deep-value': {
             min_munger: 1.5, min_sales5y: 5, min_roic: 12, max_pe: 22, max_de: 60,
-            conjunctive: true, ackbar: true, gating200w: false
+            conjunctive: true, value_trap: true, gating200w: false
         },
         'growth-compounder': {
             min_munger: 3.0, min_sales5y: 18, min_roic: 25, max_pe: 45, max_de: 80,
-            conjunctive: true, ackbar: true, gating200w: false
+            conjunctive: true, value_trap: true, gating200w: false
         },
         'relaxed-screen': {
             min_munger: 1.0, min_sales5y: 0, min_roic: 10, max_pe: 55, max_de: 150,
-            conjunctive: false, ackbar: true, gating200w: false
+            conjunctive: false, value_trap: true, gating200w: false
         }
     };
 
@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             setChk('chk-conjunctive', p.conjunctive);
-            setChk('chk-ackbar', p.ackbar);
+            setChk('chk-value-trap', p.value_trap);
             setChk('chk-gating200w', p.gating200w);
 
             showToast(`Applied preset: ${btn.textContent.trim().split(' ')[1]}`, "⚙️");
@@ -322,10 +322,10 @@ document.addEventListener('DOMContentLoaded', () => {
             max_pe: parseFloat(document.getElementById('slider-max-pe').value),
             max_de: parseFloat(document.getElementById('slider-max-de').value),
             conjunctive: document.getElementById('chk-conjunctive').checked,
-            ackbar: document.getElementById('chk-ackbar').checked,
-            winsorize: document.getElementById('chk-ackbar').checked,
-            enforce_full_cycle: document.getElementById('chk-ackbar').checked,
-            use_cyclically_adjusted_ey: document.getElementById('chk-ackbar').checked,
+            value_trap_filter: document.getElementById('chk-value-trap').checked,
+            winsorize: document.getElementById('chk-value-trap').checked,
+            enforce_full_cycle: document.getElementById('chk-value-trap').checked,
+            use_cyclically_adjusted_ey: document.getElementById('chk-value-trap').checked,
             gating_200w: document.getElementById('chk-gating200w').checked,
             cluster_boost: document.getElementById('chk-cluster-boost').checked,
             csuite_haircut: document.getElementById('chk-csuite-haircut').checked,
@@ -1028,10 +1028,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderCollarsTable([
             {
-                symbol: "NVDA", spot: 140.25, contracts: 1, shares_protected: 100, dte: 270,
-                put_strike: 126.0, put_price: 8.40, call_strike: 161.0, call_price: 9.10,
-                net_type: "CREDIT", net_premium_per_share: 0.70, downside_floor_pct: "-10.0%", upside_cap_pct: "+15.0%",
-                collar_ticket: "COLLAR NVDA x1: BUY 126.0 PUT / SELL 161.0 CALL EXP ~9M (CREDIT $0.70/sh)",
+                symbol: "NVDA", spot: 214.13, contracts: 1, shares_protected: 100, dte: 270,
+                put_strike: 192.5, put_price: 12.80, call_strike: 246.0, call_price: 13.90,
+                net_type: "CREDIT", net_premium_per_share: 1.10, downside_floor_pct: "-10.1%", upside_cap_pct: "+14.9%",
+                collar_ticket: "COLLAR NVDA x1: BUY 192.5 PUT / SELL 246.0 CALL EXP ~9M (CREDIT $1.10/sh)",
                 fidelity_deeplink: "https://digital.fidelity.com/ftgw/digital/trade-equity/index?symbol=NVDA"
             },
             {
@@ -1113,7 +1113,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             {
                 ticker: "NVDA", name: "NVIDIA Corp", sector: "Technology", theme: "Accelerated Computing",
-                spot: 140.25, sales5y: 65.2, roic: 68.4, pe: 42.1, pb: 28.5, de: 18.2,
+                spot: 214.13, sales5y: 65.2, roic: 68.4, pe: 42.1, pb: 28.5, de: 18.2,
                 raw_m: 18.36, clean_m: 18.36, insider_mult: 1.00, conviction_m: 18.36,
                 all_med: true, is_strike_zone: true, is_trap: false,
                 insider_notes: "Neutral open-market insider profile.",
@@ -1219,4 +1219,9 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchStatus();
     loadSeedCandidates();
     loadSeedFidelityLots();
+
+    // Auto-trigger live scan if served over http
+    if (window.location.protocol.startsWith('http')) {
+        triggerScan();
+    }
 });

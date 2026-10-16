@@ -21,7 +21,7 @@
     - **`STRONG HOLD / ADD`**: Tier-1 Compounder in Strike Zone with intact moat.
     - **`HOLD FOR TAX DEFERRAL (Xd to LTCG)`**: Sub-hurdle score with short-term capital gains; defers sale until LTCG reclassification to avoid ordinary income tax drag.
     - **`SELL (MOC)`**: Position is either LTCG (safe to exit at MOC) or has an unrealized loss (immediate tax-loss harvest with zero tax drag).
-- **Admiral Ackbar Cyclical-Trap Immunization**:
+- **"Value Trap" Cyclical Filter**:
   - Cross-sectional winsorization (2nd / 98th percentile clipping) eliminates scraper artifacts (e.g. Micron's 1-quarter YoY revenue spike misrecorded as 5-year CAGR).
   - 5-year full-cycle profitability gating blocks commoditized boom-bust cyclicals with negative trailing TTM EPS.
   - Cyclically adjusted earnings yield blends TTM EPS with 5-year median EPS.
@@ -31,7 +31,7 @@
 
 ## Release v2.1.0: Cyclical-Trap-Immunized & Audited Whitepaper Synchronization
 
-- **Admiral Ackbar Filter**: Eliminated peak-earnings cyclical trap vulnerability.
+- **"Value Trap" Filter**: Eliminated peak-earnings cyclical trap vulnerability.
 - **Cross-Sectional Winsorization**: Prevented extreme variance distortion across factor scores.
 - **LaTeX Whitepaper Synchronization**: Reconciled Section 8-9 and Table 8/9 metrics.
 

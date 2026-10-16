@@ -6,7 +6,7 @@ THE MUNGER FACTOR STRATEGY: FULL REPRODUCIBILITY & WHITEPAPER SYNC PIPELINE
 Refactored master orchestrator (v2.1):
   - Sanitizes `data/sp100_nasdaq100_universe.json` if present (fixing MU's
     1-quarter YoY `sales5y: 379.3` spike to annualized 5Y CAGR)
-  - Runs automated causality, cyclical-trap ("Admiral Ackbar"), mathematical
+  - Runs automated causality, cyclical-trap ("Value Trap"), mathematical
     parity, and performance benchmark unit tests
   - Executes all 7 backtest, attribution, sell-criteria, threshold, options
     overlay, and live strike-zone scanner scripts
@@ -79,7 +79,7 @@ def step_3_run_unit_and_causality_tests(base_dir: Path) -> None:
     if ret.returncode != 0:
         print("  [ERROR] Unit test suite failed!")
         sys.exit(ret.returncode)
-    print("  [PASS] All 4 unit test suites (Causality, Admiral Ackbar Trap Filter, O(1) BSM, Slippage) passed.")
+    print("  [PASS] All 4 unit test suites (Causality, Value Trap Filter, O(1) BSM, Slippage) passed.")
 
 
 def step_4_run_backtests_and_scanners(base_dir: Path) -> None:
@@ -91,7 +91,7 @@ def step_4_run_backtests_and_scanners(base_dir: Path) -> None:
         ("optimize_1y_threshold_1971_2008.py", "Walk-Forward Threshold Optimization (IS 1971-2008 -> OOS 2009-2026)"),
         ("optimize_call_tenors.py", "Analytical O(1) Call Tenor & Skew Optimization"),
         ("simulate_call_spreads.py", "Vectorized Call Spread & Lognormal Payoff Simulation"),
-        ("scan_strike_zone.py", "Live Strike-Zone Scanner & Admiral Ackbar Cyclical Trap Audit"),
+        ("scan_strike_zone.py", "Live Strike-Zone Scanner & Value Trap Cyclical Filter Audit"),
     ]
     for script_name, description in scripts:
         print(f"\n>>> Executing: {script_name} ({description})")

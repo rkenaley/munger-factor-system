@@ -64,7 +64,7 @@ The terminal launches at **`http://localhost:8505`**.
 1. **Stage 1: Universe & Clock Diagnostics**: Choose between the 176 Composite Universe, S&P 100, NASDAQ 100, or Custom Tickers. Inspect the market clock and trigger live intraday price updates via the Staleness Circuit Breaker.
 2. **Stage 2: 4-Pillar Hurdle Controls (Sliders & Checkboxes)**:
    - **Sliders:** Minimum Munger Multiplier ($\mathcal{M}_{\text{clean}} \ge 2.0\times$), Min 5Y Revenue CAGR ($g$), Min ROIC ($r$), Max P/E ($y$), and Max Debt-to-Equity ($s$).
-   - **Checkboxes:** Enforce Strict Conjunctive Hurdle (must beat all 4 medians simultaneously), Admiral Ackbar Cyclical-Trap Immunization (full-cycle 5Y profitability, winsorization), and 200-Week SMA pullback gating.
+   - **Checkboxes:** Enforce Strict Conjunctive Hurdle (must beat all 4 medians simultaneously), Value Trap Filter (full-cycle 5Y profitability, winsorization), and 200-Week SMA pullback gating.
    - **Preset Buttons:** 1-click strategy switching ("Classic Munger Strike Zone", "Deep Value Dislocation", "Secular Moat Compounder", "Permissive Watchlist").
 3. **Stage 3: SEC Form 4 Insider Conviction Engine**: Toggle the $1.15\times$ Cluster Buying Boost, $0.70\times$ Heavy C-Suite Distribution Haircut, and automatic Form 4 noise filtering.
 4. **Stage 4: Strike Zone Matrix & Heatmap**: View live cross-sectional candidate rankings, filter by Strike Zone or Blocked Traps, search by symbol, and click **"Inspect Moat"** to view a 4-pillar radar chart vs. the S&P 100 benchmark and insider transaction logs.
@@ -87,7 +87,7 @@ uv run munger-scan
 
 ### What Happens When You Run It:
 1. **Staleness Circuit Breaker**: Checks if the local price cache lags the market clock by >18 hours. If stale, it downloads the latest 5-day bars via multi-threaded `yfinance` and updates the cache.
-2. **Cross-Sectional Scoring**: Calculates Raw Munger Multipliers ($\mathcal{M}_{\text{raw}}$) and Admiral Ackbar Immunized Multipliers ($\mathcal{M}_{\text{clean}}$) across the entire universe.
+2. **Cross-Sectional Scoring**: Calculates Raw Munger Multipliers ($\mathcal{M}_{\text{raw}}$) and Value Trap Filter Immunized Multipliers ($\mathcal{M}_{\text{clean}}$) across the entire universe.
 3. **Cyclical-Trap Gating**: Flags and blocks boom-bust cyclicals (companies that fail 5-year full-cycle profitability or have distorted ratios).
 4. **SEC Form 4 Conviction Queries**: Downloads direct Form 4 XML filings from SEC EDGAR for top candidates, filtering for discretionary buys (Code P) and sales (Code S).
 5. **Conviction Multiplier Application**: Adjusts final scores:
@@ -97,19 +97,19 @@ uv run munger-scan
 
 ### Understanding the Output Table:
 ```
-Ticker  Spot ($)  Sales5Y_%  ROIC_%   P/B  Raw_M  Ackbar_M  Insider_Mult  Conviction_M  All_Med  Audit_Status
-   LLY   1208.25       47.7   102.3 31.11   2.98     10.70          1.00         10.70    False     Watchlist
-  FTNT    186.46       25.6   117.4 91.27   4.33     10.24          0.70          7.17    False     Watchlist
-  AAPL    345.85       16.4   148.8 46.33   4.26      7.16          0.70          5.01    False     Watchlist
+Ticker  Spot ($)  Sales5Y_%  ROIC_%   P/B  Raw_M  Trap_Filtered_M  Insider_Mult  Conviction_M  All_Med  Audit_Status
+   LLY   1208.25       47.7   102.3 31.11   2.98            10.70          1.00         10.70    False     Watchlist
+  FTNT    186.46       25.6   117.4 91.27   4.33            10.24          0.70          7.17    False     Watchlist
+  AAPL    345.85       16.4   148.8 46.33   4.26             7.16          0.70          5.01    False     Watchlist
 ```
 - **`Raw_M`**: Legacy unadjusted score (vulnerable to cyclical traps and single-quarter spikes).
-- **`Ackbar_M`**: Winsorized, full-cycle profitability-gated score.
+- **`Trap_Filtered_M`**: Winsorized, full-cycle profitability-gated score.
 - **`Insider_Mult`**: SEC Form 4 conviction multiplier (1.15x, 0.70x, or 1.00x).
-- **`Conviction_M`**: Final decision score ($\text{Ackbar\_M} \times \text{Insider\_Mult}$).
+- **`Conviction_M`**: Final decision score ($\text{Trap\_Filtered\_M} \times \text{Insider\_Mult}$).
 - **`All_Med`**: Boolean indicating whether the company clears the median hurdle across **all four pillars** simultaneously (Growth, ROIC, Earnings Yield, Solvency).
 - **`Audit_Status`**:
   - `STRIKE ZONE`: Meets all 4 factor hurdles with $\mathcal{M} \ge 2.0$. Prime buy candidate.
-  - `CYCLICAL TRAP BLOCKED`: Blocked by the Admiral Ackbar filter (e.g. Micron `MU`). Do not buy.
+  - `CYCLICAL TRAP BLOCKED`: Blocked by the Value Trap filter (e.g. Micron `MU`). Do not buy.
   - `Watchlist`: High quality, but temporarily missing one hurdle (e.g., valuation too rich or ROIC slightly below median).
 
 ---
@@ -273,7 +273,7 @@ uv run python test_causality_and_performance.py
 ```
 Verifies all 7 core mathematical invariants:
 1. `test_strict_point_in_time_causality_no_lookahead`
-2. `test_admiral_ackbar_cyclical_trap_filter_blocks_micron_outlier`
+2. `test_value_trap_cyclical_filter_blocks_micron_outlier`
 3. `test_analytical_delta_strike_inversion_accuracy_and_speed`
 4. `test_slippage_penalty_vs_synthetic_moc_bonus`
 5. `test_staleness_circuit_breaker_detection`

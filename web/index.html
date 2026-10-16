@@ -200,8 +200,8 @@
                 <div class="panel-card">
                     <div class="panel-card-header">
                         <div>
-                            <h2 class="card-title">⚙️ Stage 2: Munger 4-Pillar Hurdle & Cyclical-Trap Controls</h2>
-                            <p class="card-subtitle">Adjust minimum quality hurdles, enforce multi-factor conjunctivity, and activate the Admiral Ackbar filter.</p>
+                            <h2 class="card-title">⚙️ Stage 2: Munger 4-Pillar Hurdle &amp; Value Trap Filter Controls</h2>
+                            <p class="card-subtitle">Adjust minimum quality hurdles, enforce multi-factor conjunctivity, and activate the Value Trap filter.</p>
                         </div>
                         <span class="badge badge-boost">Multiplicative Moats</span>
                     </div>
@@ -210,8 +210,8 @@
                     <div style="margin-bottom: 1.25rem;">
                         <span style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 6px;">STRATEGY PRESETS:</span>
                         <div class="preset-bar">
-                            <button class="btn-preset active" data-preset="munger-strict">⭐ Classic Munger Strike Zone (M ≥ 2.0, All 4 Hurdles, Ackbar On)</button>
-                            <button class="btn-preset" data-preset="deep-value">💎 Deep Value Dislocation (Low P/E, High ROIC, Ackbar On)</button>
+                            <button class="btn-preset active" data-preset="munger-strict">⭐ Classic Munger Strike Zone (M ≥ 2.0, All 4 Hurdles, Value Trap Filter On)</button>
+                            <button class="btn-preset" data-preset="deep-value">💎 Deep Value Dislocation (Low P/E, High ROIC, Value Trap Filter On)</button>
                             <button class="btn-preset" data-preset="growth-compounder">🚀 Secular High-Growth Compounder (Sales &gt; 18%, ROIC &gt; 25%)</button>
                             <button class="btn-preset" data-preset="relaxed-screen">🔍 Permissive Screen (M ≥ 1.0, Single Pillar Tolerance)</button>
                         </div>
@@ -281,10 +281,10 @@
                             </div>
                         </label>
 
-                        <label class="toggle-card active" id="chk-ackbar-card">
-                            <input type="checkbox" id="chk-ackbar" checked>
+                        <label class="toggle-card active" id="chk-value-trap-card">
+                            <input type="checkbox" id="chk-value-trap" checked>
                             <div class="toggle-card-content">
-                                <div class="toggle-title">🪤 Admiral Ackbar Trap Filter</div>
+                                <div class="toggle-title">🛡️ Value Trap Filter</div>
                                 <div class="toggle-desc">Enforces 5-year full-cycle profitability, winsorizes extreme ratios, and blocks peak P/E boom-bust commodity cyclicals (e.g. Micron MU).</div>
                             </div>
                         </label>
@@ -401,7 +401,7 @@
                     <div class="kpi-card rose">
                         <div class="kpi-label">Blocked Cyclical Traps</div>
                         <div class="kpi-value" id="kpi-cyclical-traps" style="color: #f87171;">12</div>
-                        <div class="kpi-desc">Admiral Ackbar Filter Blocked</div>
+                        <div class="kpi-desc">Value Trap Filter Blocked</div>
                     </div>
 
                     <div class="kpi-card gold">
@@ -433,7 +433,7 @@
                         <div class="filter-chips">
                             <button class="filter-chip active" data-filter="all">All Candidates (<span id="cnt-all">176</span>)</button>
                             <button class="filter-chip" data-filter="strike">⭐ Strike Zone (<span id="cnt-strike">2</span>)</button>
-                            <button class="filter-chip" data-filter="traps">🪤 Blocked Traps (<span id="cnt-traps">12</span>)</button>
+                            <button class="filter-chip" data-filter="traps">🛡️ Value Traps Blocked (<span id="cnt-traps">12</span>)</button>
                             <button class="filter-chip" data-filter="cluster">🚀 Cluster Buys (<span id="cnt-cluster">0</span>)</button>
                             <button class="filter-chip" data-filter="watchlist">👀 Watchlist (<span id="cnt-watch">162</span>)</button>
                         </div>
@@ -453,7 +453,7 @@
                                     <th data-sort="roic" style="text-align: right;">ROIC %</th>
                                     <th data-sort="pe" style="text-align: right;">P/E</th>
                                     <th data-sort="raw_m" style="text-align: right;">Raw M</th>
-                                    <th data-sort="clean_m" style="text-align: right;">Ackbar M</th>
+                                    <th data-sort="clean_m" style="text-align: right;">Clean M (Trap-Filtered)</th>
                                     <th data-sort="insider_mult" style="text-align: center;">Insider</th>
                                     <th data-sort="conviction_m" style="text-align: right;">Conviction M</th>
                                     <th style="text-align: center;">Status</th>
@@ -721,7 +721,7 @@
             <div class="modal-header">
                 <div>
                     <h3 style="font-size: 1.25rem; font-weight: 700;" id="modal-stock-title">NVIDIA Corp (NVDA)</h3>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary);" id="modal-stock-subtitle">Semiconductors &bull; Technology &bull; Spot: $140.25</p>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary);" id="modal-stock-subtitle">Semiconductors &bull; Technology &bull; Spot: $214.13</p>
                 </div>
                 <button class="modal-close-btn" id="btn-close-modal">&times;</button>
             </div>

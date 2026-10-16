@@ -6,7 +6,7 @@ MUNGER FACTOR SYSTEM: AUTOMATED CAUSALITY, MATH, CYCLICAL TRAP & SPEED TESTS
 Verifies:
   1. Zero-Lookahead / Strict Causality: Truncating or shocking future prices after
      date t produces bit-for-bit identical factor scores on or before t.
-  2. Admiral Ackbar Cyclical-Trap Filter: Confirms that Micron's (`MU`) 1-quarter
+  2. Value Trap Cyclical Filter: Confirms that Micron's (`MU`) 1-quarter
      `sales5y: 379.3` spike and 2023 negative TTM EPS cycle (`-1.91, -1.43, -1.07, -0.95`)
      are blocked by cross-sectional winsorization + 5-year full-cycle profitability
      gating, restoring normal Z-scores for genuine compounders.
@@ -84,7 +84,7 @@ class TestMungerFactorSystemAudit(unittest.TestCase):
         pd.testing.assert_frame_equal(ey_base, ey_shocked, check_exact=False, rtol=1e-12, atol=1e-12)
         pd.testing.assert_frame_equal(med_base, med_shocked)
 
-    def test_admiral_ackbar_cyclical_trap_filter_blocks_micron_outlier(self) -> None:
+    def test_value_trap_cyclical_filter_blocks_micron_outlier(self) -> None:
         """
         Proves that:
           1. In raw unwinsorized/unfiltered mode, MU (`sales5y: 379.3`, `roic_proxy: 0.883`)
@@ -125,7 +125,7 @@ class TestMungerFactorSystemAudit(unittest.TestCase):
         mu_raw = float(scores_raw.loc[dt_last, "MU"])
         mu_clean = float(scores_immunized.loc[dt_last, "MU"])
         self.assertGreater(mu_raw, 10.0, "Raw unfiltered mode should show inflated MU score")
-        self.assertEqual(mu_clean, 0.0, "Admiral Ackbar filter must block MU due to FY2023 negative TTM EPS")
+        self.assertEqual(mu_clean, 0.0, "Value Trap filter must block MU due to FY2023 negative TTM EPS")
         self.assertFalse(bool(med_immunized.loc[dt_last, "MU"]))
 
     def test_analytical_delta_strike_inversion_accuracy_and_speed(self) -> None:

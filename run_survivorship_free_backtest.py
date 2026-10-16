@@ -7,7 +7,7 @@ Refactored v2.1:
   - Uses $1,000 initial capital so Figure 1 Y-axis (Log10 NAV starting at 10^3)
     matches Whitepaper Table 6 and Figure 1 captions exactly
   - Incorporates Cross-Sectional Winsorization, 5-Year Full-Cycle Profitability
-    Gating, and Cyclically Adjusted Earnings Yield ("Admiral Ackbar Filter")
+    Gating, and Cyclically Adjusted Earnings Yield ("Value Trap" Filter)
   - Enforces 45-day SEC reporting lag, -5 bps per-trade slippage, and 30%
     terminal delisting haircut
 ================================================================================
