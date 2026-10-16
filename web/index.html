@@ -263,10 +263,10 @@
                         <div class="control-group">
                             <div class="control-label-row">
                                 <span class="control-label">🛡️ Pillar 4: Max Debt-to-Equity ($s$):</span>
-                                <span class="control-value-badge" id="val-max-de">100.0%</span>
+                                <span class="control-value-badge" id="val-max-de">150.0%</span>
                             </div>
-                            <input type="range" class="slider-input" id="slider-max-de" min="20" max="250" step="5" value="100">
-                            <span class="control-hint">Solvency guardrail: filters out levered balances that risk dilution during macro liquidity freezes.</span>
+                            <input type="range" class="slider-input" id="slider-max-de" min="20" max="500" step="10" value="150">
+                            <span class="control-hint">Solvency guardrail (Median: 55.2%). Note: aggressive share buybacks (e.g. Mastercard, Home Depot) reduce accounting book equity, inflating D/E even when cash flows are pristine. Set to 150%–300% to include buyback compounders.</span>
                         </div>
                     </div>
 
@@ -418,7 +418,10 @@
                             <h2 class="card-title">📊 Stage 4: Cross-Sectional Strike-Zone Matrix</h2>
                             <p class="card-subtitle">Real-time ranking of candidates based on Munger Multipliers and SEC Form 4 conviction.</p>
                         </div>
-                        <div style="display: flex; gap: 8px;">
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn-action btn-secondary" id="btn-toggle-insider-filter">
+                                🕵️ Insider Filter: OFF
+                            </button>
                             <button class="btn-action btn-secondary" id="btn-select-all-strike">
                                 ☑️ Select All Strike Zone
                             </button>
@@ -433,6 +436,8 @@
                         <div class="filter-chips">
                             <button class="filter-chip active" data-filter="all">All Candidates (<span id="cnt-all">176</span>)</button>
                             <button class="filter-chip" data-filter="strike">⭐ Strike Zone (<span id="cnt-strike">2</span>)</button>
+                            <button class="filter-chip" data-filter="all-passed">✅ All 4 Passed (<span id="cnt-all-passed">0</span>)</button>
+                            <button class="filter-chip" data-filter="insider">🕵️ High Insider Conviction (<span id="cnt-insider">0</span>)</button>
                             <button class="filter-chip" data-filter="traps">🛡️ Value Traps Blocked (<span id="cnt-traps">12</span>)</button>
                             <button class="filter-chip" data-filter="cluster">🚀 Cluster Buys (<span id="cnt-cluster">0</span>)</button>
                             <button class="filter-chip" data-filter="watchlist">👀 Watchlist (<span id="cnt-watch">162</span>)</button>
@@ -449,11 +454,13 @@
                                     <th data-sort="ticker">Ticker</th>
                                     <th data-sort="name">Company Name</th>
                                     <th data-sort="spot" style="text-align: right;">Spot ($)</th>
-                                    <th data-sort="sales5y" style="text-align: right;">5Y Sales %</th>
-                                    <th data-sort="roic" style="text-align: right;">ROIC %</th>
-                                    <th data-sort="pe" style="text-align: right;">P/E</th>
+                                    <th data-sort="sales5y" style="text-align: right;" title="Pillar 1: 5Y Revenue Growth (Median: 12.8%)">📈 5Y Sales</th>
+                                    <th data-sort="roic" style="text-align: right;" title="Pillar 2: Return on Invested Capital (Median: 18.2%)">⚡ ROIC</th>
+                                    <th data-sort="pe" style="text-align: right;" title="Pillar 3: Price-to-Earnings Ratio (Median: 27.4x)">💵 P/E</th>
+                                    <th data-sort="de" style="text-align: right;" title="Pillar 4: Debt-to-Equity Ratio (Median: 55.2%)">🛡️ D/E</th>
+                                    <th data-sort="passed_count" style="text-align: center;" title="Conjunctive Hurdle: Must pass all 4 pillars simultaneously">All 4 Passed?</th>
                                     <th data-sort="raw_m" style="text-align: right;">Raw M</th>
-                                    <th data-sort="clean_m" style="text-align: right;">Clean M (Trap-Filtered)</th>
+                                    <th data-sort="clean_m" style="text-align: right;">Clean M</th>
                                     <th data-sort="insider_mult" style="text-align: center;">Insider</th>
                                     <th data-sort="conviction_m" style="text-align: right;">Conviction M</th>
                                     <th style="text-align: center;">Status</th>
@@ -462,7 +469,7 @@
                             </thead>
                             <tbody id="screener-table-body">
                                 <tr>
-                                    <td colspan="13" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                    <td colspan="15" style="text-align: center; padding: 2rem; color: var(--text-muted);">
                                         Click "Execute Live Munger Screener" above to populate candidates.
                                     </td>
                                 </tr>

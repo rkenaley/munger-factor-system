@@ -337,6 +337,19 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
         else:
             audit_status = "Neutral / Low Hurdle"
 
+        # Pillar-by-pillar pass evaluation against cross-sectional median and user hurdles
+        med_g = float(growth_s.median())
+        med_r = float(roic_s.median())
+        med_y = float(pe_s.median())
+        med_s = float(de_s.median())
+
+        pass_g = bool(sales5y >= med_g and sales5y >= min_sales5y)
+        pass_r = bool(roic >= med_r and roic >= min_roic)
+        pass_y = bool(pe <= med_y and pe <= max_pe and pe > 0)
+        pass_s = bool(de <= med_s and de <= max_de)
+        passed_count = int(pass_g) + int(pass_r) + int(pass_y) + int(pass_s)
+        failed_pillars = [p for p, ok in [("Growth", pass_g), ("ROIC", pass_r), ("Valuation", pass_y), ("Solvency", pass_s)] if not ok]
+
         candidates.append({
             "ticker": t,
             "name": name,
@@ -353,6 +366,14 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
             "insider_mult": insider_mult,
             "conviction_m": conviction_m,
             "all_med": passed_all_med,
+            "pillar_pass": {
+                "growth": pass_g,
+                "roic": pass_r,
+                "pe": pass_y,
+                "de": pass_s,
+            },
+            "passed_count": passed_count,
+            "failed_pillars": failed_pillars,
             "audit_status": audit_status,
             "is_strike_zone": is_strike_zone,
             "is_trap": is_trap,
@@ -383,6 +404,12 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
         "cyclical_traps_count": cyclical_traps_count,
         "cluster_buys_count": cluster_buys_count,
         "csuite_haircuts_count": csuite_haircuts_count,
+        "medians": {
+            "sales5y": round(float(growth_s.median()), 1),
+            "roic": round(float(roic_s.median()), 1),
+            "pe": round(float(pe_s.median()), 1),
+            "de": round(float(de_s.median()), 1),
+        },
         "parameters_applied": {
             "min_munger": min_munger,
             "conjunctive": enforce_conjunctive,

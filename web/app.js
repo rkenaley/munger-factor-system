@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const state = {
         currentStep: 1,
         activeFilter: 'all',
+        insiderFilterActive: false,
         searchQuery: '',
         sortColumn: 'conviction_m',
         sortAsc: false,
@@ -151,19 +152,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Strategy Presets
     const presets = {
         'munger-strict': {
-            min_munger: 2.0, min_sales5y: 10, min_roic: 15, max_pe: 35, max_de: 100,
+            min_munger: 2.0, min_sales5y: 10, min_roic: 15, max_pe: 35, max_de: 150,
             conjunctive: true, value_trap: true, gating200w: false
         },
         'deep-value': {
-            min_munger: 1.5, min_sales5y: 5, min_roic: 12, max_pe: 22, max_de: 60,
+            min_munger: 1.5, min_sales5y: 5, min_roic: 12, max_pe: 22, max_de: 100,
             conjunctive: true, value_trap: true, gating200w: false
         },
         'growth-compounder': {
-            min_munger: 3.0, min_sales5y: 18, min_roic: 25, max_pe: 45, max_de: 80,
+            min_munger: 3.0, min_sales5y: 18, min_roic: 25, max_pe: 45, max_de: 200,
             conjunctive: true, value_trap: true, gating200w: false
         },
         'relaxed-screen': {
-            min_munger: 1.0, min_sales5y: 0, min_roic: 10, max_pe: 55, max_de: 150,
+            min_munger: 1.0, min_sales5y: 0, min_roic: 10, max_pe: 55, max_de: 300,
             conjunctive: false, value_trap: true, gating200w: false
         }
     };
@@ -373,31 +374,52 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnRescan) btnRescan.addEventListener('click', triggerScan);
 
     function updateKPICards(data) {
-        document.getElementById('kpi-total-screened').textContent = data.total_screened || 176;
-        document.getElementById('kpi-strike-zone').textContent = data.strike_zone_count || 0;
-        document.getElementById('kpi-cyclical-traps').textContent = data.cyclical_traps_count || 0;
-        document.getElementById('kpi-insider-flagged').textContent = (data.cluster_buys_count || 0) + (data.csuite_haircuts_count || 0);
+        const cands = state.candidates || [];
+        const total = data.total_screened || cands.length || 176;
+        const strike = cands.filter(c => c.is_strike_zone).length || data.strike_zone_count || 0;
+        const traps = cands.filter(c => c.is_trap).length || data.cyclical_traps_count || 0;
+        const clusters = cands.filter(c => c.insider_mult > 1.0).length || data.cluster_buys_count || 0;
+        const insiderConviction = cands.filter(c => c.insider_mult > 1.0 || (c.insider_buys_usd > 0 && c.insider_mult >= 1.0)).length;
+        const allPassed = cands.filter(c => c.all_med).length;
+        const watchlist = total - strike - traps;
 
-        document.getElementById('cnt-all').textContent = data.total_screened || 176;
-        document.getElementById('cnt-strike').textContent = data.strike_zone_count || 0;
-        document.getElementById('cnt-traps').textContent = data.cyclical_traps_count || 0;
-        document.getElementById('cnt-cluster').textContent = data.cluster_buys_count || 0;
-        document.getElementById('cnt-watch').textContent = (data.total_screened || 176) - (data.strike_zone_count || 0) - (data.cyclical_traps_count || 0);
+        document.getElementById('kpi-total-screened').textContent = total;
+        document.getElementById('kpi-strike-zone').textContent = strike;
+        document.getElementById('kpi-cyclical-traps').textContent = traps;
+        document.getElementById('kpi-insider-flagged').textContent = insiderConviction || (data.cluster_buys_count || 0) + (data.csuite_haircuts_count || 0);
+
+        if (document.getElementById('cnt-all')) document.getElementById('cnt-all').textContent = total;
+        if (document.getElementById('cnt-strike')) document.getElementById('cnt-strike').textContent = strike;
+        if (document.getElementById('cnt-all-passed')) document.getElementById('cnt-all-passed').textContent = allPassed;
+        if (document.getElementById('cnt-insider')) document.getElementById('cnt-insider').textContent = insiderConviction;
+        if (document.getElementById('cnt-traps')) document.getElementById('cnt-traps').textContent = traps;
+        if (document.getElementById('cnt-cluster')) document.getElementById('cnt-cluster').textContent = clusters;
+        if (document.getElementById('cnt-watch')) document.getElementById('cnt-watch').textContent = watchlist;
     }
 
     // --------------------------------------------------------------------------
-    // 7. SCREENER TABLE RENDERING & FILTERING
+    // 7. SCREENER TABLE RENDERING & 4-PILLAR COLOR CODING
     // --------------------------------------------------------------------------
     function renderScreenerTable() {
         const tbody = document.getElementById('screener-table-body');
         if (!tbody) return;
 
+        const sMinGrowth = parseFloat(document.getElementById('slider-min-sales5y')?.value || 0);
+        const sMinRoic = parseFloat(document.getElementById('slider-min-roic')?.value || 0);
+        const sMaxPe = parseFloat(document.getElementById('slider-max-pe')?.value || 80);
+        const sMaxDe = parseFloat(document.getElementById('slider-max-de')?.value || 500);
+
         let filtered = state.candidates.filter(c => {
-            // Filter chip
+            // Filter chips
             if (state.activeFilter === 'strike' && !c.is_strike_zone) return false;
+            if (state.activeFilter === 'all-passed' && !c.all_med) return false;
+            if (state.activeFilter === 'insider' && !(c.insider_mult > 1.0 || (c.insider_buys_usd > 0 && c.insider_mult >= 1.0))) return false;
             if (state.activeFilter === 'traps' && !c.is_trap) return false;
             if (state.activeFilter === 'cluster' && c.insider_mult <= 1.0) return false;
             if (state.activeFilter === 'watchlist' && (c.is_strike_zone || c.is_trap)) return false;
+
+            // Dedicated Insider Conviction toggle button
+            if (state.insiderFilterActive && !(c.insider_mult > 1.0 || (c.insider_buys_usd > 0 && c.insider_mult >= 1.0))) return false;
 
             // Search box
             if (state.searchQuery) {
@@ -424,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (filtered.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="13" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                    <td colspan="15" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
                         No candidates match the active filter or search query.
                     </td>
                 </tr>
@@ -438,6 +460,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const isSelected = state.selectedBuys.has(c.ticker);
             if (isSelected) tr.classList.add('selected');
 
+            // 4-Pillar Qualifications against Universe Medians & Sliders:
+            // Median 1: Growth >= 12.8%
+            // Median 2: ROIC >= 18.2%
+            // Median 3: PE <= 27.4x
+            // Median 4: DE <= 55.2%
+            const passGrowth = c.pillar_pass ? c.pillar_pass.growth : (c.sales5y >= 12.8 && c.sales5y >= sMinGrowth);
+            const passRoic = c.pillar_pass ? c.pillar_pass.roic : (c.roic >= 18.2 && c.roic >= sMinRoic);
+            const passPe = c.pillar_pass ? c.pillar_pass.pe : (c.pe > 0 && c.pe <= 27.4 && c.pe <= sMaxPe);
+            const passDe = c.pillar_pass ? c.pillar_pass.de : (c.de <= 55.2 && c.de <= sMaxDe);
+
+            const passedCount = (passGrowth ? 1 : 0) + (passRoic ? 1 : 0) + (passPe ? 1 : 0) + (passDe ? 1 : 0);
+            const passAll = Boolean(c.all_med || passedCount === 4);
+
+            let all4Badge = '';
+            if (passAll) {
+                all4Badge = `<span class="badge badge-pass-all" title="Passed all 4 factor hurdles simultaneously!">✅ 4/4 PASS</span>`;
+            } else if (passedCount === 3) {
+                const missed = !passGrowth ? 'Growth' : (!passRoic ? 'ROIC' : (!passPe ? 'P/E' : 'D/E'));
+                all4Badge = `<span class="badge badge-pass-partial" title="Passed 3 of 4 pillars (Missed: ${missed})">⚠️ 3/4 (${missed})</span>`;
+            } else {
+                all4Badge = `<span class="badge badge-pass-fail" title="Passed ${passedCount} of 4 factor hurdles">❌ ${passedCount}/4</span>`;
+            }
+
             let badgeHtml = '';
             if (c.is_strike_zone) {
                 if (c.insider_mult > 1.0) {
@@ -448,7 +493,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     badgeHtml = `<span class="badge badge-strike">⭐ STRIKE ZONE</span>`;
                 }
             } else if (c.is_trap) {
-                badgeHtml = `<span class="badge badge-trap">🪤 TRAP BLOCKED</span>`;
+                badgeHtml = `<span class="badge badge-trap">🛡️ TRAP BLOCKED</span>`;
             } else {
                 badgeHtml = `<span class="badge badge-watchlist">Watchlist</span>`;
             }
@@ -465,11 +510,32 @@ document.addEventListener('DOMContentLoaded', () => {
                     <input type="checkbox" class="candidate-select" data-ticker="${c.ticker}" ${isSelected ? 'checked' : ''}>
                 </td>
                 <td><strong class="mono" style="color: #60a5fa;">${c.ticker}</strong></td>
-                <td style="max-width: 170px; overflow: hidden; text-overflow: ellipsis;">${c.name || c.ticker}</td>
+                <td style="max-width: 160px; overflow: hidden; text-overflow: ellipsis;" title="${c.name || c.ticker}">${c.name || c.ticker}</td>
                 <td style="text-align: right;" class="mono">$${c.spot.toFixed(2)}</td>
-                <td style="text-align: right;" class="mono">${c.sales5y.toFixed(1)}%</td>
-                <td style="text-align: right;" class="mono" style="color: ${c.roic >= 15 ? '#34d399' : 'inherit'}">${c.roic.toFixed(1)}%</td>
-                <td style="text-align: right;" class="mono">${c.pe.toFixed(1)}x</td>
+
+                <!-- Pillar 1: Growth -->
+                <td style="text-align: right;" class="mono ${passGrowth ? 'cell-pillar-pass' : 'cell-pillar-fail'}" title="${passGrowth ? 'Pillar 1 Pass: ≥ 12.8% median' : 'Pillar 1 Fail: < 12.8% median'}">
+                    ${c.sales5y.toFixed(1)}%
+                </td>
+
+                <!-- Pillar 2: ROIC -->
+                <td style="text-align: right;" class="mono ${passRoic ? 'cell-pillar-pass' : 'cell-pillar-fail'}" title="${passRoic ? 'Pillar 2 Pass: ≥ 18.2% median' : 'Pillar 2 Fail: < 18.2% median'}">
+                    ${c.roic.toFixed(1)}%
+                </td>
+
+                <!-- Pillar 3: P/E -->
+                <td style="text-align: right;" class="mono ${passPe ? 'cell-pillar-pass' : 'cell-pillar-fail'}" title="${passPe ? 'Pillar 3 Pass: ≤ 27.4x median' : 'Pillar 3 Fail: > 27.4x median'}">
+                    ${c.pe.toFixed(1)}x
+                </td>
+
+                <!-- Pillar 4: Debt/Equity -->
+                <td style="text-align: right;" class="mono ${passDe ? 'cell-pillar-pass' : 'cell-pillar-fail'}" title="${passDe ? 'Pillar 4 Pass: ≤ 55.2% median' : 'Pillar 4 Fail: > 55.2% median (Note buybacks)'}">
+                    ${c.de.toFixed(1)}%
+                </td>
+
+                <!-- All 4 Pillars Gate -->
+                <td style="text-align: center;">${all4Badge}</td>
+
                 <td style="text-align: right; color: var(--text-muted);" class="mono">${c.raw_m.toFixed(2)}</td>
                 <td style="text-align: right;" class="mono" style="font-weight: 600; color: ${c.clean_m >= 2.0 ? '#38bdf8' : 'inherit'}">${c.clean_m.toFixed(2)}</td>
                 <td style="text-align: center;">${insiderBadge}</td>
@@ -505,6 +571,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 const candidate = state.candidates.find(c => c.ticker === sym);
                 if (candidate) openStockModal(candidate);
             });
+        });
+    }
+
+    // Dedicated Insider Conviction Toggle Button
+    const btnToggleInsider = document.getElementById('btn-toggle-insider-filter');
+    if (btnToggleInsider) {
+        btnToggleInsider.addEventListener('click', () => {
+            state.insiderFilterActive = !state.insiderFilterActive;
+            if (state.insiderFilterActive) {
+                btnToggleInsider.classList.remove('btn-secondary');
+                btnToggleInsider.classList.add('btn-emerald');
+                btnToggleInsider.textContent = '🕵️ Insider Filter: ON';
+                showToast("Filtered matrix to high insider conviction candidates!", "🕵️");
+            } else {
+                btnToggleInsider.classList.remove('btn-emerald');
+                btnToggleInsider.classList.add('btn-secondary');
+                btnToggleInsider.textContent = '🕵️ Insider Filter: OFF';
+                showToast("Showing all candidates across insider profiles.", "ℹ️");
+            }
+            renderScreenerTable();
         });
     }
 
@@ -1094,31 +1180,44 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadSeedCandidates() {
         const seed = [
             {
-                ticker: "LLY", name: "Eli Lilly and Co.", sector: "Healthcare", theme: "Biopharma Moat",
-                spot: 1208.25, sales5y: 47.7, roic: 102.3, pe: 54.2, pb: 31.11, de: 112.5,
-                raw_m: 2.98, clean_m: 10.70, insider_mult: 1.00, conviction_m: 10.70,
+                ticker: "GOOGL", name: "Alphabet Inc.", sector: "Communication Services", theme: "Search & Cloud Moat",
+                spot: 248.50, sales5y: 15.2, roic: 33.4, pe: 23.8, pb: 6.8, de: 11.2,
+                raw_m: 7.42, clean_m: 7.42, insider_mult: 1.15, conviction_m: 8.53,
                 all_med: true, is_strike_zone: true, is_trap: false,
-                insider_notes: "Neutral open-market insider profile.",
-                insider_buys_usd: 0, insider_sales_usd: 7638150,
-                radar: { growth: 95, roic: 98, valuation: 40, solvency: 65 }
+                insider_notes: "Cluster Buying Boost (1.15x): 2 insiders bought $480k on open market.",
+                insider_buys_usd: 480000, insider_sales_usd: 0,
+                radar: { growth: 72, roic: 90, valuation: 74, solvency: 96 },
+                pillar_pass: { growth: true, roic: true, pe: true, de: true }
             },
             {
                 ticker: "FTNT", name: "Fortinet Inc.", sector: "Technology", theme: "Cybersecurity Cash Compounder",
                 spot: 186.46, sales5y: 25.6, roic: 117.4, pe: 36.8, pb: 91.27, de: 24.1,
                 raw_m: 4.33, clean_m: 10.24, insider_mult: 0.70, conviction_m: 7.17,
-                all_med: true, is_strike_zone: true, is_trap: false,
+                all_med: false, is_strike_zone: false, is_trap: false,
                 insider_notes: "C-suite open-market distribution flagged (0.70x haircut).",
                 insider_buys_usd: 0, insider_sales_usd: 24500000,
-                radar: { growth: 88, roic: 99, valuation: 55, solvency: 92 }
+                radar: { growth: 88, roic: 99, valuation: 55, solvency: 92 },
+                pillar_pass: { growth: true, roic: true, pe: false, de: true }
             },
             {
                 ticker: "NVDA", name: "NVIDIA Corp", sector: "Technology", theme: "Accelerated Computing",
                 spot: 214.13, sales5y: 65.2, roic: 68.4, pe: 42.1, pb: 28.5, de: 18.2,
                 raw_m: 18.36, clean_m: 18.36, insider_mult: 1.00, conviction_m: 18.36,
-                all_med: true, is_strike_zone: true, is_trap: false,
+                all_med: false, is_strike_zone: false, is_trap: false,
                 insider_notes: "Neutral open-market insider profile.",
                 insider_buys_usd: 0, insider_sales_usd: 550219128,
-                radar: { growth: 99, roic: 95, valuation: 48, solvency: 94 }
+                radar: { growth: 99, roic: 95, valuation: 48, solvency: 94 },
+                pillar_pass: { growth: true, roic: true, pe: false, de: true }
+            },
+            {
+                ticker: "LLY", name: "Eli Lilly and Co.", sector: "Healthcare", theme: "Biopharma Moat",
+                spot: 1208.25, sales5y: 47.7, roic: 102.3, pe: 54.2, pb: 31.11, de: 112.5,
+                raw_m: 2.98, clean_m: 10.70, insider_mult: 1.00, conviction_m: 10.70,
+                all_med: false, is_strike_zone: false, is_trap: false,
+                insider_notes: "Neutral open-market insider profile.",
+                insider_buys_usd: 0, insider_sales_usd: 7638150,
+                radar: { growth: 95, roic: 98, valuation: 40, solvency: 65 },
+                pillar_pass: { growth: true, roic: true, pe: false, de: false }
             },
             {
                 ticker: "AAPL", name: "Apple Inc.", sector: "Technology", theme: "Consumer Moat",
@@ -1127,7 +1226,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 all_med: false, is_strike_zone: false, is_trap: false,
                 insider_notes: "C-suite open-market sales flagged.",
                 insider_buys_usd: 0, insider_sales_usd: 48000000,
-                radar: { growth: 60, roic: 100, valuation: 45, solvency: 75 }
+                radar: { growth: 60, roic: 100, valuation: 45, solvency: 75 },
+                pillar_pass: { growth: true, roic: true, pe: false, de: false }
             },
             {
                 ticker: "MU", name: "Micron Technology", sector: "Technology", theme: "Memory Cyclical",
@@ -1136,16 +1236,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 all_med: false, is_strike_zone: false, is_trap: true,
                 insider_notes: "Blocked boom-bust memory commodity cyclical.",
                 insider_buys_usd: 0, insider_sales_usd: 182280000,
-                radar: { growth: 80, roic: 25, valuation: 85, solvency: 80 }
+                radar: { growth: 80, roic: 25, valuation: 85, solvency: 80 },
+                pillar_pass: { growth: true, roic: false, pe: true, de: true }
             },
             {
                 ticker: "COF", name: "Capital One Financial", sector: "Financial Services", theme: "Consumer Credit",
                 spot: 154.20, sales5y: 12.4, roic: 18.2, pe: 11.2, pb: 1.15, de: 88.0,
                 raw_m: 11.64, clean_m: 11.64, insider_mult: 1.00, conviction_m: 11.64,
-                all_med: true, is_strike_zone: true, is_trap: false,
+                all_med: false, is_strike_zone: false, is_trap: false,
                 insider_notes: "Neutral open-market insider profile.",
                 insider_buys_usd: 0, insider_sales_usd: 0,
-                radar: { growth: 55, roic: 65, valuation: 92, solvency: 68 }
+                radar: { growth: 55, roic: 65, valuation: 92, solvency: 68 },
+                pillar_pass: { growth: false, roic: false, pe: true, de: false }
             }
         ];
 
