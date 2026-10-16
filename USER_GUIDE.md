@@ -8,14 +8,15 @@
 
 ## Table of Contents
 1. [Quickstart & Environment Setup](#1-quickstart--environment-setup)
-2. [Tool 1: Live Strike-Zone Scanner (`scan_strike_zone.py`)](#2-tool-1-live-strike-zone-scanner)
-3. [Tool 2: Fidelity Tax-Lot Reconciler](#3-tool-2-fidelity-tax-lot-reconciler)
-4. [Tool 3: Staleness Circuit Breaker](#4-tool-3-staleness-circuit-breaker)
-5. [Tool 4: SEC Form 4 Insider Conviction Engine](#5-tool-4-sec-form-4-insider-conviction-engine)
-6. [Tool 5: Research Backtesting Engines](#6-tool-5-research-backtesting-engines)
-7. [Tool 6: Options Analysis & The 80/20 Engine](#7-tool-6-options-analysis--the-8020-engine)
-8. [Tool 7: Master Reproduction & Unit Tests](#8-tool-7-master-reproduction--unit-tests)
-9. [Troubleshooting & Frequently Asked Questions](#9-troubleshooting--faqs)
+2. [Interactive Web Terminal & Guided Screener Wizard](#2-interactive-web-terminal--guided-screener-wizard)
+3. [Tool 1: Live Strike-Zone Scanner (`scan_strike_zone.py`)](#3-tool-1-live-strike-zone-scanner)
+4. [Tool 2: Fidelity Tax-Lot Reconciler](#4-tool-2-fidelity-tax-lot-reconciler)
+5. [Tool 3: Staleness Circuit Breaker](#5-tool-3-staleness-circuit-breaker)
+6. [Tool 4: SEC Form 4 Insider Conviction Engine](#6-tool-4-sec-form-4-insider-conviction-engine)
+7. [Tool 5: Research Backtesting Engines](#7-tool-5-research-backtesting-engines)
+8. [Tool 6: Options Analysis & The 80/20 Engine](#8-tool-6-options-analysis--the-8020-engine)
+9. [Tool 7: Master Reproduction & Unit Tests](#9-tool-7-master-reproduction--unit-tests)
+10. [Troubleshooting & Frequently Asked Questions](#10-troubleshooting--faqs)
 
 ---
 
@@ -42,7 +43,38 @@ uv run python -c "import edgar, finvizfinance, yfinance; print('Connectivity Ver
 
 ---
 
-## 2. Tool 1: Live Strike-Zone Scanner
+## 2. Interactive Web Terminal & Guided Screener Wizard
+
+The **Munger Factor Web Terminal** provides a local, one-stop-shop graphical interface that automates the end-to-end process of finding compounders, tuning factor hurdles with sliders, inspecting SEC Form 4 insider conviction, reconciling your Fidelity portfolio, and generating trade tickets.
+
+### Launching the Web Terminal:
+```bash
+# Option A: Via PowerShell helper (opens browser automatically)
+.\start_server.ps1
+
+# Option B: Via Command Prompt / Batch file
+start_server.bat
+
+# Option C: Via uv package entrypoint
+uv run fidelity-control
+```
+The terminal launches at **`http://localhost:8505`**.
+
+### The 7-Stage Guided Discovery Workflow:
+1. **Stage 1: Universe & Clock Diagnostics**: Choose between the 176 Composite Universe, S&P 100, NASDAQ 100, or Custom Tickers. Inspect the market clock and trigger live intraday price updates via the Staleness Circuit Breaker.
+2. **Stage 2: 4-Pillar Hurdle Controls (Sliders & Checkboxes)**:
+   - **Sliders:** Minimum Munger Multiplier ($\mathcal{M}_{\text{clean}} \ge 2.0\times$), Min 5Y Revenue CAGR ($g$), Min ROIC ($r$), Max P/E ($y$), and Max Debt-to-Equity ($s$).
+   - **Checkboxes:** Enforce Strict Conjunctive Hurdle (must beat all 4 medians simultaneously), Admiral Ackbar Cyclical-Trap Immunization (full-cycle 5Y profitability, winsorization), and 200-Week SMA pullback gating.
+   - **Preset Buttons:** 1-click strategy switching ("Classic Munger Strike Zone", "Deep Value Dislocation", "Secular Moat Compounder", "Permissive Watchlist").
+3. **Stage 3: SEC Form 4 Insider Conviction Engine**: Toggle the $1.15\times$ Cluster Buying Boost, $0.70\times$ Heavy C-Suite Distribution Haircut, and automatic Form 4 noise filtering.
+4. **Stage 4: Strike Zone Matrix & Heatmap**: View live cross-sectional candidate rankings, filter by Strike Zone or Blocked Traps, search by symbol, and click **"Inspect Moat"** to view a 4-pillar radar chart vs. the S&P 100 benchmark and insider transaction logs.
+5. **Stage 5: Fidelity Portfolio Reconciliation & Dynamic Tax Deferral**: Drag & drop your `Portfolio_Positions_*.csv` or click "Load Sample Portfolio". The engine computes exact days to the 365-day LTCG threshold and displays tax drag savings.
+6. **Stage 6: Order Ticket Generator**: Set available cash, max position caps (default 15%), and cash reserve buffers. The system calculates exact share quantities and emits copyable tickets (`BUY LLY 45 SHARES MOC DAY`), direct Fidelity trade links, and downloadable CSVs.
+7. **Stage 7: Options 80/20 Collar Overlay**: Recommends 180–365 DTE protective put / covered call collars to protect large unrealized gains without triggering taxable capital gains realization.
+
+---
+
+## 3. Tool 1: Live Strike-Zone Scanner
 
 The Strike-Zone Scanner (`scan_strike_zone.py`) is the primary production tool for daily market analysis.
 
