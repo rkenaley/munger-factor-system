@@ -172,9 +172,15 @@ def main():
         if rep_file.exists():
             try:
                 with open(rep_file, "r", encoding="utf-8") as rf:
-                    d = json.load(rf)
-                    for m in d.get("metrics", []):
-                        curr_prices[m["ticker"]] = m.get("current_price", 100.0)
+                    raw_metrics = d.get("metrics", {})
+                    if isinstance(raw_metrics, dict):
+                        for tk, m in raw_metrics.items():
+                            if isinstance(m, dict):
+                                curr_prices[tk] = m.get("current_price", 100.0)
+                    elif isinstance(raw_metrics, list):
+                        for m in raw_metrics:
+                            if isinstance(m, dict):
+                                curr_prices[m.get("ticker", "")] = m.get("current_price", 100.0)
             except Exception:
                 pass
         if not curr_prices or 'NVDA' not in curr_prices:

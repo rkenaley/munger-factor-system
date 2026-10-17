@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ================================================================================
-MUNGER FACTOR SYSTEM: LIVE STRIKE-ZONE SCANNER & TAX-LOT RECONCILER (v2.2)
+MUNGER FACTOR SYSTEM: LIVE STRIKE-ZONE SCANNER & TAX-LOT RECONCILER (v2.3.0)
 ================================================================================
 Production Strike-Zone Screener integrating:
   1. Staleness Circuit Breaker: Automatically detects data lag > 18h against
@@ -19,9 +19,12 @@ Production Strike-Zone Screener integrating:
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Dict, List
 import pandas as pd
+
+ROOT_DIR = Path(__file__).resolve().parent
 
 from munger_engine import (
     check_data_freshness,
@@ -36,7 +39,7 @@ from munger_engine import (
 
 def run_strike_zone_scan() -> pd.DataFrame:
     print("=" * 96)
-    print(" MUNGER FACTOR SYSTEM: LIVE STRIKE-ZONE SCANNER & TAX-LOT RECONCILER (v2.2)")
+    print(" MUNGER FACTOR SYSTEM: LIVE STRIKE-ZONE SCANNER & TAX-LOT RECONCILER (v2.3.0)")
     print("=" * 96)
 
     # 1. Load Dataset
@@ -198,14 +201,15 @@ def run_strike_zone_scan() -> pd.DataFrame:
         print("\n[PORTFOLIO SUMMARY]")
         print(f" Total Live Securities Value: ${total_val:,.2f}")
         print(f" Total Cost Basis:           ${total_basis:,.2f}")
-        print(f" Total Unrealized Gain/Loss: ${total_gain:,.2f} ({(total_gain / total_basis * 100):.2f}%)")
+        gain_pct = (total_gain / total_basis * 100) if total_basis > 0 else 0.0
+        print(f" Total Unrealized Gain/Loss: ${total_gain:,.2f} ({gain_pct:.2f}%)")
         print(" Execution Directives Breakdown:")
         for act, cnt in actions_summary.items():
             print(f"   - {act}: {cnt} lots")
     else:
         print("[FIDELITY RECONCILER] No 'Portfolio_Positions_*.csv' found in workspace root or data/.")
         print("To reconcile personal tax lots, export your Fidelity positions CSV and drop it into:")
-        print(f"  {os.path.join(ROOT_DIR, 'data', 'Portfolio_Positions_*.csv')}")
+        print(f"  {os.path.join(str(ROOT_DIR), 'data', 'Portfolio_Positions_*.csv')}")
 
     print("\n" + "=" * 96)
     print(" SCAN & AUDIT COMPLETE")

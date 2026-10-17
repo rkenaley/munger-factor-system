@@ -153,6 +153,17 @@ def refresh_prices_api() -> Dict[str, Any]:
     }
 
 
+NASDAQ_100_SET = {
+    "AAPL", "ABNB", "ADBE", "ADI", "ADP", "ADSK", "AEP", "AMAT", "AMD", "AMGN", "AMZN", "ANSS", "APP", "ARM", "ASML",
+    "AVGO", "AXON", "BIIB", "BKNG", "BKR", "CCEP", "CDNS", "CDW", "CEG", "CHTR", "CPRT", "CRWD", "CSCO", "CSGP",
+    "CSX", "CTAS", "CTSH", "DASH", "DDOG", "DLTR", "DXCM", "EA", "EXC", "FANG", "FAST", "FTNT", "GEHC", "GFS", "GILD",
+    "GOOG", "GOOGL", "HON", "IDXX", "ILMN", "INTC", "INTU", "ISRG", "KDP", "KHC", "KLAC", "LIN", "LRCX", "LULU",
+    "MAR", "MCHP", "MDB", "MDLZ", "MELI", "META", "MNST", "MRNA", "MRVL", "MSFT", "MU", "NFLX", "NVDA", "NXPI",
+    "ODFL", "ON", "ORLY", "PANW", "PAYX", "PCAR", "PDD", "PEP", "PYPL", "QCOM", "REGN", "ROP", "ROST", "SBUX",
+    "SMCI", "SNPS", "SPLK", "TEAM", "TMUS", "TSLA", "TTD", "TTWO", "TXN", "VRSK", "VRTX", "WBD", "WDAY", "XEL", "ZS"
+}
+
+
 def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Executes live Munger factor screening based on user sliders and checkboxes.
@@ -172,12 +183,23 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
     csuite_haircut_enabled = bool(params.get("csuite_haircut", True))
     min_insider_buys = float(params.get("min_insider_buys", 0.0))
     gating_200w_enabled = bool(params.get("gating_200w", False))
+    universe_choice = str(params.get("universe", "combined")).lower().strip()
 
     ds = _get_dataset()
     close_df = ds["close_df"]
     fund_dict = ds["fund_dict"]
     clean_fund = ds["clean_fund"]
     eps_dict = ds["eps_dict"]
+
+    if universe_choice in ["nasdaq", "nasdaq100"]:
+        valid_cols = [c for c in close_df.columns if c in NASDAQ_100_SET]
+        if valid_cols:
+            close_df = close_df[valid_cols]
+    elif universe_choice in ["sp100", "sp_100"]:
+        sp100_overlap = {"AAPL", "MSFT", "AMZN", "GOOGL", "GOOG", "META", "NVDA", "TSLA", "AVGO", "COST", "CSCO", "ADBE", "NFLX", "AMD", "INTC", "QCOM", "TXN", "AMAT", "PEP", "LIN", "HON", "GILD", "SBUX", "MDLZ", "BKNG", "ISRG", "VRTX", "REGN", "LRCX", "MU"}
+        valid_cols = [c for c in close_df.columns if c not in (NASDAQ_100_SET - sp100_overlap)]
+        if valid_cols:
+            close_df = close_df[valid_cols]
 
     latest_dates = close_df.index[-2:]
     dt_last = latest_dates[-1]
@@ -262,6 +284,12 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
             else:
                 sma_200w_dist[t] = 0.0
 
+    med_g = float(growth_s.median()) if not growth_s.empty else 10.0
+    med_r = float(roic_s.median()) if not roic_s.empty else 15.0
+    med_y = float(pe_s.median()) if not pe_s.empty else 25.0
+    med_s = float(de_s.median()) if not de_s.empty else 50.0
+    med_nd = float(nd_ebitda_s.median()) if not nd_ebitda_s.empty else 1.5
+
     candidates = []
     strike_zone_count = 0
     cyclical_traps_count = 0
@@ -276,7 +304,6 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
 
         raw_m = float(scores_raw.loc[dt_last, t]) if pd.notna(scores_raw.loc[dt_last, t]) else 0.0
         clean_m = float(scores_clean.loc[dt_last, t]) if pd.notna(scores_clean.loc[dt_last, t]) else 0.0
-        passed_all_med = bool(med_clean.loc[dt_last, t])
 
         spot_price = round(float(close_df.loc[dt_last, t]), 2)
         sales5y = round(float(clean_fund.get(t, {}).get("sales5y", 0.0)), 1)
@@ -285,6 +312,20 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
         pb = round(float(meta.get("pb", 3.0)), 2)
         de = round(float(meta.get("de", 50.0)), 1)
         nd_ebitda = round(float(meta.get("net_debt_to_ebitda", 1.2)), 2)
+
+        # Pillar passes against medians and user hurdles
+        pass_g = bool(sales5y >= med_g and sales5y >= min_sales5y)
+        pass_r = bool(roic >= med_r and roic >= min_roic)
+        pass_y = bool(pe <= med_y and pe <= max_pe and pe > 0)
+        if max_de <= 15.0:
+            pass_s = bool(nd_ebitda <= med_nd and nd_ebitda <= max_de)
+        else:
+            pass_s = bool(de <= med_s and de <= max_de)
+
+        passed_all_med = bool(
+            sales5y >= med_g and roic >= med_r and (pe <= med_y and pe > 0) and
+            (nd_ebitda <= med_nd if max_de <= 15.0 else de <= med_s)
+        )
 
         # Check insider conviction
         insider_info = _INSIDER_CACHE.get(t, {"multiplier": 1.0, "signal": "NEUTRAL", "notes": "", "buys_usd": 0.0, "sales_usd": 0.0})
@@ -348,20 +389,6 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
         else:
             audit_status = "Neutral / Low Hurdle"
 
-        # Pillar-by-pillar pass evaluation against cross-sectional median and user hurdles
-        med_g = float(growth_s.median())
-        med_r = float(roic_s.median())
-        med_y = float(pe_s.median())
-        med_s = float(de_s.median())
-        med_nd = float(nd_ebitda_s.median())
-
-        pass_g = bool(sales5y >= med_g and sales5y >= min_sales5y)
-        pass_r = bool(roic >= med_r and roic >= min_roic)
-        pass_y = bool(pe <= med_y and pe <= max_pe and pe > 0)
-        if max_de <= 15.0:
-            pass_s = bool(nd_ebitda <= max_de)
-        else:
-            pass_s = bool(de <= med_s and de <= max_de)
         passed_count = int(pass_g) + int(pass_r) + int(pass_y) + int(pass_s)
         failed_pillars = [p for p, ok in [("Growth", pass_g), ("ROIC", pass_r), ("Valuation", pass_y), ("Solvency", pass_s)] if not ok]
 

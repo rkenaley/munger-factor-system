@@ -107,8 +107,15 @@ class ControlCenterHandler(http.server.SimpleHTTPRequestHandler):
                 try:
                     with open(report_file, "r", encoding="utf-8") as rf:
                         rep = json.load(rf)
-                        for m in rep.get("metrics", []):
-                            curr_prices[m["ticker"]] = m.get("current_price", 100.0)
+                        raw_metrics = rep.get("metrics", {})
+                        if isinstance(raw_metrics, dict):
+                            for tk, m in raw_metrics.items():
+                                if isinstance(m, dict):
+                                    curr_prices[tk] = m.get("current_price", 100.0)
+                        elif isinstance(raw_metrics, list):
+                            for m in raw_metrics:
+                                if isinstance(m, dict):
+                                    curr_prices[m.get("ticker", "")] = m.get("current_price", 100.0)
                 except Exception:
                     pass
             if not curr_prices or 'NVDA' not in curr_prices:
@@ -175,7 +182,7 @@ class ControlCenterHandler(http.server.SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.end_headers()
-            self.wfile.write(json.dumps({"status": "ONLINE", "port": PORT, "version": "2.2.0"}).encode("utf-8"))
+            self.wfile.write(json.dumps({"status": "ONLINE", "port": PORT, "version": "2.3.0"}).encode("utf-8"))
             return
 
         # Default static file serving from web/

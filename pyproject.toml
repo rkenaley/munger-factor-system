@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "munger-factor-system"
-version = "2.2.0"
+version = "2.3.0"
 description = "Audited, Vectorized, Zero-Lookahead Quantitative Munger Factor System & Fidelity Control Center"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -28,20 +28,22 @@ dev = [
 ]
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = {"" = ".", "fidelity_control" = "src/fidelity_control"}
 packages = ["fidelity_control"]
 py-modules = [
     "munger_engine",
     "run_survivorship_free_backtest",
-    "run_audited_institutional_analysis",
-    "test_munger_sell_criteria",
-    "optimize_1y_threshold_1971_2008",
-    "optimize_call_tenors",
-    "simulate_call_spreads",
+    "audit_buffett_and_survivorship",
     "scan_strike_zone",
     "reproduce_all",
     "test_causality_and_performance",
+    "watch_fidelity",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "test_causality_and_performance.py"]
+norecursedirs = ["archive", ".venv", "build", "dist", "*.egg-info"]
+pythonpath = [".", "src"]
 
 [project.scripts]
 munger-reproduce = "reproduce_all:main"

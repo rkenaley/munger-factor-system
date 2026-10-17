@@ -159,6 +159,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Universe radio card styling & auto-rescan
+    document.querySelectorAll('input[name="universe-choice"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            document.querySelectorAll('input[name="universe-choice"]').forEach(r => {
+                const card = r.closest('.toggle-card');
+                if (card) {
+                    if (r.checked) card.classList.add('active');
+                    else card.classList.remove('active');
+                }
+            });
+            triggerScan();
+        });
+    });
+
     // Strategy Presets
     const presets = {
         'munger-strict': {
@@ -200,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('val-max-pe').textContent = `${p.max_pe.toFixed(1)}x`;
 
             document.getElementById('slider-max-de').value = p.max_de;
-            document.getElementById('val-max-de').textContent = `${p.max_de.toFixed(1)}%`;
+            document.getElementById('val-max-de').textContent = `${p.max_de.toFixed(1)}x`;
 
             const setChk = (id, val) => {
                 const el = document.getElementById(id);
@@ -326,7 +340,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 6. LIVE MUNGER SCANNER API
     // --------------------------------------------------------------------------
     function gatherScanParameters() {
+        const selectedUniv = document.querySelector('input[name="universe-choice"]:checked')?.value || 'combined';
         return {
+            universe: selectedUniv,
             min_munger: parseFloat(document.getElementById('slider-min-munger').value),
             min_sales5y: parseFloat(document.getElementById('slider-min-sales5y').value),
             min_roic: parseFloat(document.getElementById('slider-min-roic').value),
@@ -911,6 +927,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (btnCancelFid && modalFid) {
         btnCancelFid.addEventListener('click', () => modalFid.classList.remove('active'));
+    }
+    const btnModalSample = document.getElementById('btn-modal-load-sample');
+    if (btnModalSample && modalFid) {
+        btnModalSample.addEventListener('click', () => {
+            loadFidelityReconciliation();
+            modalFid.classList.remove('active');
+        });
     }
     if (btnSubmitFid && modalFid) {
         btnSubmitFid.addEventListener('click', () => {

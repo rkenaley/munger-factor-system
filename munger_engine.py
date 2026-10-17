@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ================================================================================
-MUNGER FACTOR SYSTEM: SHARED VECTORIZED & ZERO-LOOKAHEAD CORE ENGINE (v2.2)
+MUNGER FACTOR SYSTEM: SHARED VECTORIZED & ZERO-LOOKAHEAD CORE ENGINE (v2.3.0)
 ================================================================================
 Centralizes data loading, point-in-time (causal) factor matrix construction,
 cyclical peak-earnings trap immunization ("Value Trap" Filter),
@@ -24,7 +24,7 @@ import pickle
 from dataclasses import dataclass
 from pathlib import Path
 from statistics import NormalDist
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -888,7 +888,6 @@ def fetch_live_insider_activity(
         (e.g., catching Micron CEO Sanjay Mehrotra's $46.33M+ open-market sale).
       - Neutral (1.00x): Applied otherwise or when no insider filings trigger conditions.
     """
-    from typing import Any
     if isinstance(tickers, str):
         tickers = [tickers]
 
@@ -898,6 +897,8 @@ def fetch_live_insider_activity(
     def is_csuite(pos_str: Any) -> bool:
         p = str(pos_str).upper()
         return any(t in p for t in csuite_titles)
+
+    cutoff_dt = pd.Timestamp.now() - pd.Timedelta(days=lookback_days)
 
     for ticker in tickers:
         t_clean = ticker.upper().strip()
@@ -925,10 +926,15 @@ def fetch_live_insider_activity(
             c = Company(t_clean)
             filings = c.get_filings(form="4")
             if filings and len(filings) > 0:
-                recent_filings = filings[:25]
+                recent_filings = filings[:35]
                 records = []
                 for f in recent_filings:
                     try:
+                        f_date_str = getattr(f, "filing_date", None)
+                        if f_date_str:
+                            f_date = pd.to_datetime(f_date_str)
+                            if f_date < cutoff_dt:
+                                continue
                         obj = f.obj()
                         if hasattr(obj, "to_dataframe"):
                             df = obj.to_dataframe()
@@ -978,6 +984,9 @@ def fetch_live_insider_activity(
                 stock = finvizfinance(t_clean)
                 inside_df = stock.ticker_inside_trader()
                 if inside_df is not None and not inside_df.empty:
+                    if "Date" in inside_df.columns:
+                        inside_df["_dt"] = pd.to_datetime(inside_df["Date"], errors="coerce", format="mixed")
+                        inside_df = inside_df[inside_df["_dt"].isna() | (inside_df["_dt"] >= cutoff_dt)]
                     trans_col = inside_df["Transaction"].astype(str).str.strip().str.lower()
                     val_col = pd.to_numeric(inside_df["Value ($)"], errors="coerce").fillna(0.0)
                     inside_df["_clean_val"] = val_col

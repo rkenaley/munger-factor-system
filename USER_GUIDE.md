@@ -1,7 +1,7 @@
 # MUNGER Factor System: Operational Tool Guide & User Manual
 
 > **A Comprehensive Step-by-Step Guide to Operating the Live Strike-Zone Screener, SEC Form 4 Conviction Engine, Fidelity Tax-Lot Reconciler, and Research Backtests**  
-> **Release:** v2.2.0  
+> **Release:** v2.3.0  
 > **Repository:** [`rkenaley/munger-factor-system`](https://github.com/rkenaley/munger-factor-system)
 
 ---
@@ -122,7 +122,7 @@ Ticker  Spot ($)  Sales5Y_%  ROIC_%   P/B  Raw_M  Trap_Filtered_M  Insider_Mult 
 
 ---
 
-## 3. Tool 2: Fidelity Tax-Lot Reconciler
+## 4. Tool 2: Fidelity Tax-Lot Reconciler
 
 The reconciler bridges quantitative factor scoring directly into your personal Fidelity brokerage account.
 
@@ -134,7 +134,7 @@ The reconciler bridges quantitative factor scoring directly into your personal F
 5. Save the file. Fidelity names this export `Portfolio_Positions_YYYYMMDD.csv` or `Portfolio_Positions.csv`.
 6. Drop this CSV directly into your repository root or `data/` folder:
    ```
-   c:\AGProj\Tabs\fidelity_control_center\data\Portfolio_Positions.csv
+   c:\AGProj\Tabs\munger-factor-system\data\Portfolio_Positions.csv
    ```
 7. Run the scanner:
    ```bash
@@ -165,7 +165,7 @@ Symbol  Shares  Cost_Basis  Live_Price  Live_Value  Unrealized_Gain  Days_Held L
 
 ---
 
-## 4. Tool 3: Staleness Circuit Breaker
+## 5. Tool 3: Staleness Circuit Breaker
 
 The circuit breaker prevents you from trading on day-old or week-old snapshot data.
 
@@ -193,7 +193,7 @@ print("Updated through:", updated_close.index[-1])
 
 ---
 
-## 5. Tool 4: SEC Form 4 Insider Conviction Engine
+## 6. Tool 4: SEC Form 4 Insider Conviction Engine
 
 ### Running Standalone Insider Queries:
 You can query insider transactions for any ticker or list of tickers:
@@ -222,7 +222,7 @@ for ticker, data in results.items():
 
 ---
 
-## 6. Tool 5: Research Backtesting Engines
+## 7. Tool 5: Research Backtesting Engines
 
 To audit historical performance, run factor sensitivity sweeps, or inspect the 1971–2026 compounding curves:
 
@@ -253,23 +253,23 @@ The parameter sweeps and options experiments are preserved for replication in `a
 
 ---
 
-## 7. Tool 6: Options Analysis & The 80/20 Engine
+## 8. Tool 6: Options Analysis & The 80/20 Engine
 
 ### Expiration Tenor & Skew Optimization
 ```bash
-uv run python optimize_call_tenors.py
+uv run python archive/research_experiments/optimize_call_tenors.py
 ```
 - Uses analytical $O(1)$ Black-Scholes-Merton inverse normal CDF inversion to evaluate vertical bull call spreads ($65\Delta / 30\Delta$) across 30, 60, 90, 120, 180, and 365 DTE with realistic equity volatility skew.
 
 ### Vertical Call Spread Simulator
 ```bash
-uv run python simulate_call_spreads.py
+uv run python archive/research_experiments/simulate_call_spreads.py
 ```
 - Simulates lognormal payoff distributions, delta-neutral cash yields, and models the **80/20 Treasury Allocation Model** (80% 3M T-Bills + 20% Bull Call Spreads).
 
 ---
 
-## 8. Tool 7: Master Reproduction & Unit Tests
+## 9. Tool 7: Master Reproduction & Unit Tests
 
 ### Automated Unit Test Suite
 ```bash
@@ -294,7 +294,7 @@ Executes the entire research pipeline from scratch: validates data files, runs a
 
 ---
 
-## 9. Troubleshooting & FAQs
+## 10. Troubleshooting & FAQs
 
 ### Q: Why did the scanner flag my holding as `HOLD FOR TAX DEFERRAL`?
 **A:** The stock no longer qualifies for the Munger Strike Zone (either its score dropped below $\mathcal{M} = 2.0$ or it was flagged as a cyclical trap). However, you have held this lot for less than 365 days and have an unrealized gain. Selling now forces an ordinary income tax hit ($\le 40.8\%$). The reconciler tells you the exact number of days remaining until LTCG status so you can defer the sale and preserve capital.

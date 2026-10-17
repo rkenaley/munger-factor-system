@@ -93,12 +93,17 @@ def evaluate_portfolio_drift(
         
     alerts = []
     
+    effective_nw = total_net_worth if total_net_worth > 0.0 else 1.0
+
     # 1. Crypto Drift Check
     btc_price = live_prices.get("BTC", 65000.0)
     eth_price = live_prices.get("ETH", 3200.0)
-    # Holdings from taxable
-    crypto_val = (0.20 * btc_price) + (4.0 * eth_price)
-    crypto_pct = (crypto_val / total_net_worth) * 100.0
+    btc_shares = sum(float(acc.get('holdings', {}).get('BTC', {}).get('shares', 0.0)) for acc in accounts)
+    eth_shares = sum(float(acc.get('holdings', {}).get('ETH', {}).get('shares', 0.0)) for acc in accounts)
+    if btc_shares == 0.0 and eth_shares == 0.0:
+        btc_shares, eth_shares = 0.20, 4.0
+    crypto_val = (btc_shares * btc_price) + (eth_shares * eth_price)
+    crypto_pct = (crypto_val / effective_nw) * 100.0
     max_crypto_pct = config['risk_limits'].get('max_crypto_pct', 0.025) * 100.0
     
     crypto_alert = {
@@ -110,14 +115,16 @@ def evaluate_portfolio_drift(
     }
     
     if crypto_pct > max_crypto_pct:
-        surplus = crypto_val - (total_net_worth * (max_crypto_pct / 100.0))
+        surplus = crypto_val - (effective_nw * (max_crypto_pct / 100.0))
         alerts.append(f"[CRYPTO DRIFT] Crypto at {crypto_pct:.2f}% exceeds {max_crypto_pct:.1f}% limit! Trim ${surplus:,.0f} into core VTI.")
         
     # 2. Single Stock Concentration (NVDA)
-    nvda_shares = 1600 # from config
+    nvda_shares = sum(float(acc.get('holdings', {}).get('NVDA', {}).get('shares', 0.0)) for acc in accounts)
+    if nvda_shares == 0.0:
+        nvda_shares = 1600.0
     nvda_price = live_prices.get("NVDA", 125.0)
     nvda_val = nvda_shares * nvda_price
-    nvda_pct = (nvda_val / total_net_worth) * 100.0
+    nvda_pct = (nvda_val / effective_nw) * 100.0
     max_single_stock_pct = config['risk_limits'].get('max_single_stock_pct', 0.08) * 100.0
     
     nvda_alert = {
@@ -132,7 +139,10 @@ def evaluate_portfolio_drift(
         alerts.append(f"[CONCENTRATION RISK] NVDA is {nvda_pct:.1f}% of total net worth (limit: {max_single_stock_pct:.1f}%). Implement covered call collar or staggered trims.")
 
     # 3. Cash Drag Check
-    taxable_cash = account_totals['taxable_brokerage']['cash']
+    if 'taxable_brokerage' in account_totals:
+        taxable_cash = account_totals['taxable_brokerage']['cash']
+    else:
+        taxable_cash = sum(data['cash'] for data in account_totals.values() if data.get('tax_type') == 'Taxable')
     target_cash_buffer = 75000.0
     excess_cash = max(0.0, taxable_cash - target_cash_buffer)
     
