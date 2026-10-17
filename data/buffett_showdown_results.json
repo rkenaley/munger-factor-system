@@ -1,0 +1,57 @@
+{
+  "timestamp": "2026-10-17T07:57:14.194015",
+  "period_years": 18.8,
+  "berkshire_cagr": 9.63,
+  "spy_cagr": 11.37,
+  "strategies": {
+    "Mechanical 1Y Exit": {
+      "signals": 4491,
+      "win_rate": 71.3,
+      "avg_return": 37.42,
+      "cagr_pre": 37.42,
+      "cagr_post": 33.42
+    },
+    "Stop-Loss (-15%) Exit": {
+      "signals": 4491,
+      "win_rate": 51.2,
+      "avg_return": 27.18,
+      "cagr_pre": 27.18,
+      "cagr_post": 24.27
+    },
+    "Dynamic Moat Exit (M < 1.0)": {
+      "signals": 4491,
+      "win_rate": 68.6,
+      "avg_return": 83.68,
+      "cagr_pre": 30.26,
+      "cagr_post": 27.02
+    },
+    "Dynamic Moat Exit (M < 1.5)": {
+      "signals": 4491,
+      "win_rate": 68.6,
+      "avg_return": 85.35,
+      "cagr_pre": 30.77,
+      "cagr_post": 27.48
+    },
+    "Options Call Spread (95C/110C)": {
+      "signals": 4491,
+      "win_rate": 70.1,
+      "avg_return": 58.58,
+      "cagr_pre": 58.58,
+      "cagr_post": 52.3
+    },
+    "80/20 Overlay (80% Stock + 20% Spread)": {
+      "signals": 4491,
+      "win_rate": 70.4,
+      "avg_return": 41.65,
+      "cagr_pre": 41.65,
+      "cagr_post": 37.19
+    }
+  },
+  "terminal_wealth_10k": {
+    "SPY": 75562.82,
+    "BRK_B": 56199.78,
+    "Munger_Mechanical_1Y": 2244765.23,
+    "Munger_Dynamic_Moat": 891910.91,
+    "Munger_8020_Options": 3787836.72
+  }
+}
