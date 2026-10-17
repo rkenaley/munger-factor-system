@@ -131,6 +131,15 @@ class ControlCenterHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(res).encode("utf-8"))
             return
 
+        # API: Fidelity Automatic File-Watcher Status
+        if self.path.startswith("/api/munger/watcher-status"):
+            from .watcher import WATCHER_STATE
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(WATCHER_STATE).encode("utf-8"))
+            return
+
         # API: Munger Options Collars
         if self.path.startswith("/api/munger/options-collars"):
             from .munger_api import get_options_collars_api
@@ -198,6 +207,23 @@ class ControlCenterHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.end_headers()
             self.wfile.write(json.dumps(res).encode("utf-8"))
+            return
+
+        # API: Force check Fidelity watcher directories now
+        if self.path == "/api/munger/watcher-trigger":
+            from .watcher import check_and_ingest_once, WATCHER_STATE
+            ingest_res = check_and_ingest_once()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            resp_payload = {
+                "status": "SUCCESS",
+                "triggered": True,
+                "reconciled": ingest_res is not None,
+                "watcher_state": WATCHER_STATE,
+                "recon_result": ingest_res,
+            }
+            self.wfile.write(json.dumps(resp_payload).encode("utf-8"))
             return
 
         # API: Munger Fidelity Order Generator
@@ -283,11 +309,19 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 def start_server(port: int = PORT):
     """Starts the local control center web server."""
+    # Launch Automatic Local File-Watcher Daemon in background
+    try:
+        from .watcher import start_fidelity_watcher
+        start_fidelity_watcher(poll_interval=2.0)
+    except Exception as e:
+        print(f"[WARN] Could not initialize Fidelity File-Watcher Daemon: {e}")
+
     with ThreadedTCPServer(("", port), ControlCenterHandler) as httpd:
         print(f"\n================================================================================")
         print(f" FIDELITY CONTROL CENTER WEB TERMINAL ACTIVE")
         print(f" Web UI:       http://localhost:{port}")
         print(f" API Endpoint: http://localhost:{port}/api/run")
+        print(f" File Watcher: Monitoring ~/Downloads for Portfolio_Positions_*.csv")
         print(f"================================================================================\n")
         try:
             httpd.serve_forever()

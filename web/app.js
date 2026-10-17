@@ -78,8 +78,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Trigger context-specific logic
         if (stepNumber === 4 && state.candidates.length === 0) {
             triggerScan();
-        } else if (stepNumber === 5 && state.lots.length === 0) {
-            loadFidelityReconciliation();
+        } else if (stepNumber === 5) {
+            pollWatcherStatus();
+            if (state.lots.length === 0) {
+                loadFidelityReconciliation();
+            }
         } else if (stepNumber === 6) {
             generateOrders();
         } else if (stepNumber === 7 && state.collars.length === 0) {
@@ -909,6 +912,80 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --------------------------------------------------------------------------
+    // 9B. AUTOMATIC LOCAL FILE-WATCHER DAEMON POLLER & TRIGGER
+    // --------------------------------------------------------------------------
+    let lastWatcherFileTime = null;
+
+    async function pollWatcherStatus(manualTrigger = false) {
+        try {
+            const url = manualTrigger ? '/api/munger/watcher-trigger' : '/api/munger/watcher-status';
+            const opts = manualTrigger ? { method: 'POST' } : { method: 'GET' };
+            const resp = await fetch(url, opts);
+            if (!resp.ok) return;
+
+            const data = await resp.json();
+            const watcherState = manualTrigger ? (data.watcher_state || {}) : data;
+
+            // Update UI banner elements
+            const watchDirsEl = document.getElementById('watcher-watch-dirs');
+            const lastFileEl = document.getElementById('watcher-last-file');
+            const syncStatusEl = document.getElementById('watcher-sync-status');
+
+            if (watchDirsEl && watcherState.watch_dirs) {
+                const shortDirs = watcherState.watch_dirs.map(d => d.replace(/.*Users\\[^\\]+/, '~')).join(', ');
+                watchDirsEl.textContent = `📁 Watching: ${shortDirs}`;
+            }
+
+            if (lastFileEl) {
+                if (watcherState.last_detected_file) {
+                    lastFileEl.textContent = `📄 Ingested: ${watcherState.last_detected_file} (${watcherState.last_detected_time || 'Just now'})`;
+                    lastFileEl.style.color = '#34d399';
+                } else {
+                    lastFileEl.textContent = `📄 Last Ingested: None yet`;
+                }
+            }
+
+            if (syncStatusEl) {
+                syncStatusEl.textContent = watcherState.active 
+                    ? `⏱️ Polling: Active (${watcherState.status || 'OK'})`
+                    : `⏱️ Polling: Background Daemon`;
+            }
+
+            // If a newly detected file has arrived with reconciliation results
+            if (watcherState.last_detected_time && watcherState.last_detected_time !== lastWatcherFileTime) {
+                lastWatcherFileTime = watcherState.last_detected_time;
+                if (watcherState.recon_result && watcherState.recon_result.lots) {
+                    state.lots = watcherState.recon_result.lots;
+                    renderFidelityLots(watcherState.recon_result);
+                    showToast(`⚡ Daemon ingested ${watcherState.last_detected_file}! (${state.lots.length} lots reconciled)`, "⚡", 4000);
+                } else {
+                    loadFidelityReconciliation();
+                }
+            } else if (manualTrigger) {
+                if (data.reconciled) {
+                    showToast(`⚡ Ingested new CSV from Downloads!`, "⚡", 3500);
+                } else {
+                    showToast(`Downloads scanned: no new un-ingested Fidelity CSV found.`, "ℹ️", 3000);
+                }
+            }
+        } catch (e) {
+            console.debug("Watcher poll status error (offline mode):", e);
+        }
+    }
+
+    const btnTriggerWatcher = document.getElementById('btn-trigger-watcher-check');
+    if (btnTriggerWatcher) {
+        btnTriggerWatcher.addEventListener('click', () => {
+            btnTriggerWatcher.disabled = true;
+            btnTriggerWatcher.textContent = "⏳ Scanning...";
+            pollWatcherStatus(true).finally(() => {
+                btnTriggerWatcher.disabled = false;
+                btnTriggerWatcher.textContent = "📂 Check Downloads Now";
+            });
+        });
+    }
+
+    // --------------------------------------------------------------------------
     // 10. ORDER GENERATION API & COPYABLE TICKETS
     // --------------------------------------------------------------------------
     async function generateOrders() {
@@ -1321,9 +1398,13 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchStatus();
     loadSeedCandidates();
     loadSeedFidelityLots();
+    pollWatcherStatus();
 
-    // Auto-trigger live scan if served over http
+    // Auto-trigger live scan and background watcher poller if served over http
     if (window.location.protocol.startsWith('http')) {
         triggerScan();
+        setInterval(() => {
+            pollWatcherStatus(false);
+        }, 3500);
     }
 });

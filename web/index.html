@@ -502,6 +502,28 @@
                         <span class="badge badge-strike">Tax Drag Shield</span>
                     </div>
 
+                    <!-- Automatic Local File-Watcher Daemon Status Banner -->
+                    <div class="control-group" id="watcher-status-card" style="margin-bottom: 1.25rem; border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.05); padding: 1.1rem 1.25rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="pulse-indicator" style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
+                                <span style="font-weight: 600; color: #34d399; font-size: 0.92rem;">⚡ Automatic Local File-Watcher Daemon: ACTIVE</span>
+                            </div>
+                            <button class="btn-action btn-secondary" id="btn-trigger-watcher-check" style="padding: 4px 10px; font-size: 0.78rem;">
+                                📂 Check Downloads Now
+                            </button>
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0 0 8px 0; line-height: 1.45;">
+                            <strong>Zero-Credential Local Automation:</strong> On Fidelity.com, click <em>Accounts &amp; Trade ➔ Positions ➔ Download CSV</em>. 
+                            The local daemon detects newly dropped <code>~/Downloads/Portfolio_Positions_*.csv</code> files within 2 seconds, archives a copy to <code>data/</code>, and reconciles your tax lots in real time without manual drag-and-drop.
+                        </p>
+                        <div style="font-size: 0.74rem; color: var(--text-muted); font-family: var(--font-mono); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;" id="watcher-status-meta">
+                            <span id="watcher-watch-dirs">📁 Watching: ~/Downloads &amp; ./data</span>
+                            <span id="watcher-last-file">📄 Last Ingested: None yet</span>
+                            <span id="watcher-sync-status">⏱️ Polling: Active (2.0s loop)</span>
+                        </div>
+                    </div>
+
                     <!-- Drop Zone & Actions -->
                     <div class="grid-2" style="margin-bottom: 1.5rem;">
                         <div class="drop-zone" id="csv-drop-zone">
