@@ -83,14 +83,10 @@ def step_3_run_unit_and_causality_tests(base_dir: Path) -> None:
 
 
 def step_4_run_backtests_and_scanners(base_dir: Path) -> None:
-    print_banner("STEP 4: EXECUTING REFACTORED BACKTESTS, OPTIONS & STRIKE-ZONE SCANNER")
+    print_banner("STEP 4: EXECUTING REFACTORED BACKTESTS, BUFFETT AUDIT & STRIKE-ZONE SCANNER")
     scripts = [
         ("run_survivorship_free_backtest.py", "Causal Survivorship-Aware Multi-Decade Backtest ($1k Start)"),
-        ("run_audited_institutional_analysis.py", "Audited Institutional Performance & Alpha Bridge ($1k Start)"),
-        ("test_munger_sell_criteria.py", "Vectorized Ablation Study: Munger Exit Rules"),
-        ("optimize_1y_threshold_1971_2008.py", "Walk-Forward Threshold Optimization (IS 1971-2008 -> OOS 2009-2026)"),
-        ("optimize_call_tenors.py", "Analytical O(1) Call Tenor & Skew Optimization"),
-        ("simulate_call_spreads.py", "Vectorized Call Spread & Lognormal Payoff Simulation"),
+        ("audit_buffett_and_survivorship.py", "Audited Buffett Showdown & Survivorship Bias Deconstruction"),
         ("scan_strike_zone.py", "Live Strike-Zone Scanner & Value Trap Cyclical Filter Audit"),
     ]
     for script_name, description in scripts:
@@ -117,22 +113,20 @@ def step_5_patch_and_compile_whitepaper(base_dir: Path) -> None:
     tex_content = tex_path.read_text(encoding="utf-8")
     # 1. Convert any lingering Markdown **bold** into LaTeX \textbf{...}
     tex_patched = re.sub(r"\*\*([^*]+)\*\*", r"\\textbf{\1}", tex_content)
-    # 2. Reconcile legacy +133.6% flat-vol spread max profit with Table 8's skew-adjusted +104.1%
-    tex_patched = tex_patched.replace("+133.6\\% (Max Profit)", "+104.1\\% (Max Profit)")
-    tex_patched = tex_patched.replace("+133.6\\%", "+104.1\\%")
-    # 3. Fix Micron Table 9 2025-09-16 unlagged 2026 EPS mismatch (2.1x P/E / 419.1x -> 19.1x P/E / Cyclical Gate)
-    tex_patched = tex_patched.replace("2.1x & 419.1x", "19.1x & 14.8x (Cyclical Capped)")
 
     if tex_patched != tex_content:
         tex_path.write_text(tex_patched, encoding="utf-8")
-        print(f"  [PATCHED] Cleaned Markdown '**' tags and synchronized Table 8/9 metrics in {tex_path}")
+        print(f"  [PATCHED] Cleaned Markdown '**' tags in {tex_path}")
 
-    if which("tectonic") is not None:
-        ret = subprocess.run(["tectonic", str(tex_path)], cwd=str(base_dir), capture_output=True, text=True)
+    tectonic_bin = which("tectonic") or which("tectonic.exe") or r"C:\Users\Ryan\.local\bin\tectonic.exe"
+    if tectonic_bin and Path(tectonic_bin).exists():
+        ret = subprocess.run([str(tectonic_bin), str(tex_path)], cwd=str(base_dir), capture_output=True, text=True)
         if ret.returncode == 0:
             print(f"  [COMPILED] Successfully compiled {tex_path} via tectonic")
         else:
             print(f"  [NOTE] tectonic returned code {ret.returncode}: {ret.stderr[:300]}")
+    else:
+        print("  [INFO] tectonic not found, skipping PDF compilation.")
 
 
 def main() -> None:

@@ -217,12 +217,13 @@
     "pe": 45.3,
     "pb": 16.99,
     "de": 59.6,
-    "sales5y": 85.5,
+    "sales5y": 13.15,
     "roic_proxy": 0.442,
     "fcf_margin": 0.343,
     "net_debt_to_ebitda": 0.68,
     "total_debt": 59419000832,
-    "total_cash": 23975000064
+    "total_cash": 23975000064,
+    "sales5y_raw_1q_spike": 85.5
   },
   "ACN": {
     "ticker": "ACN",
@@ -592,12 +593,13 @@
     "pe": 12.92,
     "pb": 1.2,
     "de": 50.0,
-    "sales5y": 1111.0,
+    "sales5y": 64.68,
     "roic_proxy": 0.09,
     "fcf_margin": 0.219,
     "net_debt_to_ebitda": -0.31,
     "total_debt": 48994000896,
-    "total_cash": 56639000576
+    "total_cash": 56639000576,
+    "sales5y_raw_1q_spike": 1111.0
   },
   "GOOGL": {
     "ticker": "GOOGL",
@@ -1057,12 +1059,13 @@
     "pe": 28.61,
     "pb": 23.87,
     "de": 16.97,
-    "sales5y": 105.9,
+    "sales5y": 15.54,
     "roic_proxy": 1.172,
     "fcf_margin": 0.138,
     "net_debt_to_ebitda": -0.12,
     "total_debt": 38860001280,
-    "total_cash": 62469001216
+    "total_cash": 62469001216,
+    "sales5y_raw_1q_spike": 105.9
   },
   "MU": {
     "ticker": "MU",
@@ -1072,12 +1075,13 @@
     "pe": 13.31,
     "pb": 11.09,
     "de": 3.74,
-    "sales5y": 379.3,
+    "sales5y": 36.81,
     "roic_proxy": 0.883,
     "fcf_margin": 0.219,
     "net_debt_to_ebitda": -0.35,
     "total_debt": 5178999808,
-    "total_cash": 43434000384
+    "total_cash": 43434000384,
+    "sales5y_raw_1q_spike": 379.3
   },
   "PEP": {
     "ticker": "PEP",
@@ -1207,12 +1211,13 @@
     "pe": 20.16,
     "pb": 14.08,
     "de": 1.28,
-    "sales5y": 371.6,
+    "sales5y": 36.37,
     "roic_proxy": 0.916,
     "fcf_margin": 0.381,
     "net_debt_to_ebitda": -0.36,
     "total_debt": 201000000,
-    "total_cash": 4761999872
+    "total_cash": 4761999872,
+    "sales5y_raw_1q_spike": 371.6
   },
   "SBUX": {
     "ticker": "SBUX",
@@ -1237,12 +1242,13 @@
     "pe": 180.17,
     "pb": 51.38,
     "de": 2.14,
-    "sales5y": 92.8,
+    "sales5y": 14.03,
     "roic_proxy": 0.381,
     "fcf_margin": 0.351,
     "net_debt_to_ebitda": -3.45,
     "total_debt": 211400000,
-    "total_cash": 9409098752
+    "total_cash": 9409098752,
+    "sales5y_raw_1q_spike": 92.8
   },
   "PM": {
     "ticker": "PM",
@@ -1507,12 +1513,13 @@
     "pe": 38.28,
     "pb": 22.42,
     "de": 220.62,
-    "sales5y": 66.9,
+    "sales5y": 10.79,
     "roic_proxy": 0.966,
     "fcf_margin": 0.057,
     "net_debt_to_ebitda": -0.3,
     "total_debt": 2987489024,
-    "total_cash": 3308146944
+    "total_cash": 3308146944,
+    "sales5y_raw_1q_spike": 66.9
   },
   "APP": {
     "ticker": "APP",
@@ -1597,12 +1604,13 @@
     "pe": 159.66,
     "pb": 32.58,
     "de": 2.57,
-    "sales5y": 104.5,
+    "sales5y": 15.38,
     "roic_proxy": 0.258,
     "fcf_margin": 0.076,
     "net_debt_to_ebitda": -4.23,
     "total_debt": 44413000,
-    "total_cash": 1252957952
+    "total_cash": 1252957952,
+    "sales5y_raw_1q_spike": 104.5
   },
   "CDNS": {
     "ticker": "CDNS",
@@ -1762,12 +1770,13 @@
     "pe": 25.0,
     "pb": 8.8,
     "de": 1027.33,
-    "sales5y": 112.5,
+    "sales5y": 16.27,
     "roic_proxy": 0.15,
     "fcf_margin": -1.197,
     "net_debt_to_ebitda": 12.16,
     "total_debt": 51612999680,
-    "total_cash": 5538999808
+    "total_cash": 5538999808,
+    "sales5y_raw_1q_spike": 112.5
   },
   "CPRT": {
     "ticker": "CPRT",
@@ -1987,12 +1996,13 @@
     "pe": 27.96,
     "pb": 18.99,
     "de": 35.99,
-    "sales5y": 109.3,
+    "sales5y": 15.92,
     "roic_proxy": 0.087,
     "fcf_margin": 0.075,
     "net_debt_to_ebitda": -1.33,
     "total_debt": 1671200000,
-    "total_cash": 2738400000
+    "total_cash": 2738400000,
+    "sales5y_raw_1q_spike": 109.3
   },
   "HONA": {
     "ticker": "HONA",
@@ -2017,12 +2027,13 @@
     "pe": 33.08,
     "pb": 1.78,
     "de": 99.65,
-    "sales5y": 75.6,
+    "sales5y": 11.92,
     "roic_proxy": 0.051,
     "fcf_margin": 0.229,
     "net_debt_to_ebitda": 6.66,
     "total_debt": 33528000512,
-    "total_cash": 1526000000
+    "total_cash": 1526000000,
+    "sales5y_raw_1q_spike": 75.6
   },
   "HON": {
     "ticker": "HON",
@@ -2347,12 +2358,13 @@
     "pe": 82.16,
     "pb": 16.92,
     "de": 31.21,
-    "sales5y": 91.9,
+    "sales5y": 13.92,
     "roic_proxy": 0.15,
     "fcf_margin": -0.357,
     "net_debt_to_ebitda": -10.23,
     "total_debt": 39708000256,
-    "total_cash": 100009000960
+    "total_cash": 100009000960,
+    "sales5y_raw_1q_spike": 91.9
   },
   "SNPS": {
     "ticker": "SNPS",
@@ -2377,12 +2389,13 @@
     "pe": 164.11,
     "pb": 5.57,
     "de": 98.6,
-    "sales5y": 454.0,
+    "sales5y": 40.83,
     "roic_proxy": 0.006,
     "fcf_margin": -7.095,
     "net_debt_to_ebitda": 8.35,
     "total_debt": 10195300352,
-    "total_cash": 8042100224
+    "total_cash": 8042100224,
+    "sales5y_raw_1q_spike": 454.0
   },
   "STX": {
     "ticker": "STX",
@@ -2497,12 +2510,13 @@
     "pe": 52.73,
     "pb": 19.11,
     "de": 2.88,
-    "sales5y": 103.9,
+    "sales5y": 15.31,
     "roic_proxy": 0.365,
     "fcf_margin": 0.098,
     "net_debt_to_ebitda": -0.17,
     "total_debt": 100127000,
-    "total_cash": 354828992
+    "total_cash": 354828992,
+    "sales5y_raw_1q_spike": 103.9
   },
   "ARE": {
     "ticker": "ARE",
@@ -2632,12 +2646,13 @@
     "pe": 25.0,
     "pb": 4.15,
     "de": 1.63,
-    "sales5y": 286.8,
+    "sales5y": 31.07,
     "roic_proxy": 0.15,
     "fcf_margin": -0.356,
     "net_debt_to_ebitda": -0.81,
     "total_debt": 54498000,
-    "total_cash": 2118968960
+    "total_cash": 2118968960,
+    "sales5y_raw_1q_spike": 286.8
   },
   "CWEN": {
     "ticker": "CWEN",

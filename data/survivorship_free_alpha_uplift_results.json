@@ -14,10 +14,10 @@
     "vol": 0.2716032804949155
   },
   "legacy_unadjusted_pre_tax": {
-    "cagr": 0.2888144339054486,
-    "sharpe": 0.7992213128832703,
-    "max_drawdown": -0.768669734169209,
-    "vol": 0.3337532043075772
+    "cagr": 0.3070281779079713,
+    "sharpe": 0.8308220094050899,
+    "max_drawdown": -0.7077128370927617,
+    "vol": 0.3391733771365441
   },
   "sp500_benchmark": {
     "cagr": 0.10569643112413085,
@@ -25,5 +25,5 @@
     "max_drawdown": -0.5225820154267877,
     "vol": 0.17494094827891704
   },
-  "lookahead_and_moc_inflation_bps": 845.4
+  "lookahead_and_moc_inflation_bps": 1027.5
 }

@@ -40,7 +40,28 @@ from munger_engine import (
     parse_fidelity_positions_csv,
     run_portfolio_simulation,
 )
-from optimize_call_tenors import find_strike_by_delta_legacy_binary
+
+
+def find_strike_by_delta_legacy_binary(
+    S: float,
+    T: float,
+    r: float,
+    sigma: float,
+    target_delta: float,
+    q: float = 0.01,
+    iterations: int = 50,
+) -> float:
+    """Legacy 50-iteration binary search preserved strictly for parity benchmarking."""
+    low_K = S * 0.25
+    high_K = S * 3.00
+    for _ in range(iterations):
+        mid_K = 0.5 * (low_K + high_K)
+        c = bsm_call(S, mid_K, T, r, sigma, q)
+        if c["delta"] > target_delta:
+            low_K = mid_K
+        else:
+            high_K = mid_K
+    return mid_K
 
 
 class TestMungerFactorSystemAudit(unittest.TestCase):
