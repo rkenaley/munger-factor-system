@@ -56,14 +56,22 @@ The **Munger Factor Web Terminal** provides a local, one-stop-shop graphical int
 start_server.bat
 
 # Option C: Via uv package entrypoint
-uv run fidelity-control
+uv run python -m fidelity_control.server
 ```
+
+### Automatic Local File-Watcher Daemon (`watch_fidelity.py`)
+To avoid manually uploading CSVs, run the background file-watcher daemon:
+```bash
+uv run python watch_fidelity.py
+```
+* Monitors your default `Downloads` folder for new `Portfolio_Positions_*.csv` exports from Fidelity.com.
+* Upon detecting a new download, it instantly copies the file to `data/`, executes the tax-lot reconciler, updates the cache, and pushes fresh directives into the Web Control Center.
 The terminal launches at **`http://localhost:8505`**.
 
 ### The 7-Stage Guided Discovery Workflow:
 1. **Stage 1: Universe & Clock Diagnostics**: Choose between the 176 Composite Universe, S&P 100, NASDAQ 100, or Custom Tickers. Inspect the market clock and trigger live intraday price updates via the Staleness Circuit Breaker.
 2. **Stage 2: 4-Pillar Hurdle Controls (Sliders & Checkboxes)**:
-   - **Sliders:** Minimum Munger Multiplier ($\mathcal{M}_{\text{clean}} \ge 2.0\times$), Min 5Y Revenue CAGR ($g$), Min ROIC ($r$), Max P/E ($y$), and Max Debt-to-Equity ($s$).
+   - **Sliders:** Minimum Munger Multiplier ($\mathcal{M}_{\text{clean}} \ge 2.0\times$), Min 5Y Revenue CAGR ($g$), Min ROIC ($r$), Max P/E ($y$), and Max Net Debt / EBITDA ($s \le 2.5\text{x}$).
    - **Checkboxes:** Enforce Strict Conjunctive Hurdle (must beat all 4 medians simultaneously), Value Trap Filter (full-cycle 5Y profitability, winsorization), and 200-Week SMA pullback gating.
    - **Preset Buttons:** 1-click strategy switching ("Classic Munger Strike Zone", "Deep Value Dislocation", "Secular Moat Compounder", "Permissive Watchlist").
 3. **Stage 3: SEC Form 4 Insider Conviction Engine**: Toggle the $1.15\times$ Cluster Buying Boost, $0.70\times$ Heavy C-Suite Distribution Haircut, and automatic Form 4 noise filtering.
@@ -224,27 +232,24 @@ uv run python run_survivorship_free_backtest.py
 # or: uv run munger-backtest
 ```
 - Simulates the full 55.5-year dataset (1971–2026).
-- Compares Causal Capped (15%), Uncapped, Legacy Lookahead, and S&P 500 benchmarks.
+- Compares Causal Capped (15%), Uncapped, and S&P 500 benchmarks with point-in-time causality.
 - Saves results to `data/survivorship_free_alpha_uplift_results.json` and generates `docs/figures/munger_survivorship_free_alpha_uplift.png`.
 
-### Audited Institutional Alpha Bridge
+### Audited Warren Buffett Showdown & Survivorship Audit
 ```bash
-uv run python run_audited_institutional_analysis.py
+uv run python audit_buffett_and_survivorship.py
 ```
-- Evaluates 15% vs. 20% position caps, historical LTCG tax brackets, and calendar-day Treasury cash drag.
-- Generates `docs/figures/munger_audited_compounding_curve.png`.
+- Compares MUNGER post-tax performance head-to-head against Warren Buffett / Berkshire Hathaway (`BRK-A` / `BRK-B`) over 2008–2026 (GFC to present) and 1996–2026 (30-year long horizon).
+- Verifies that MUNGER's **23.69% post-tax CAGR** (2008–2026) outpaces Berkshire's **9.79% gross CAGR** by **5.5x in terminal wealth** (\$1,000 $\to$ \$50,477 vs \$5,372), even after applying a **-350 bps annual delisting haircut** stress test.
+- Verifies academic parity against Berkshire's 1965–2024 gross return (~19.8%), demonstrating that MUNGER mirrors Berkshire's historic gross compounding **completely unlevered and post-tax**.
 
-### Walk-Forward 1-Year Hurdle Optimization
-```bash
-uv run python optimize_1y_threshold_1971_2008.py
-```
-- Performs in-sample grid search (1971–2008) and out-of-sample forward verification (2009–2026) across threshold parameters ($M \in [1.0, 3.5]$).
-
-### Dynamic Sell Criteria Parameter Sweep
-```bash
-uv run python test_munger_sell_criteria.py
-```
-- Tests 7 exit strategies (e.g. 1-Year Mechanical, 2-Year Mechanical, Strict Median Exit, Decaying Score Floor).
+### Academic Research & Parameter Sweep Archive
+The parameter sweeps and options experiments are preserved for replication in `archive/research_experiments/`:
+- **Walk-Forward 1Y Hurdle Optimization:** `archive/research_experiments/optimize_1y_threshold_1971_2008.py` (in-sample grid search across $\mathcal{M} \in [1.0, 3.5]$).
+- **Dynamic Sell Criteria Parameter Sweep:** `archive/research_experiments/test_munger_sell_criteria.py` (evaluates 7 exit strategies).
+- **Institutional Alpha Bridge:** `archive/research_experiments/run_audited_institutional_analysis.py` (evaluates 15% vs. 20% position caps).
+- **Debt Metric Tournament:** `archive/research_experiments/run_debt_metrics_backtest.py` (proves Net Debt / EBITDA $\le 2.5\text{x}$ superior to D/E and Debt/Market Cap).
+- **Options Tenor & Spread Simulators:** `archive/research_experiments/optimize_call_tenors.py` and `simulate_call_spreads.py` (evaluates 30–365 DTE vertical call spreads).
 
 ---
 

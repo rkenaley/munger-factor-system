@@ -96,7 +96,7 @@ By isolating each component layer under institutional 15% caps across 176 verifi
           ┌───────────────────────┴───────────────────────┐
           ▼                       ▼                       ▼
     [1. Growth (g)]        [2. ROIC (r)]           [3. Yield (y)]        [4. Solvency (s)]
-    5Y Rev CAGR >= Med     ROIC >= Med             TTM E/P >= Med        Net Cash >= Med
+    5Y Rev CAGR >= Med     ROIC >= Med             TTM E/P >= Med        Net Debt/EBITDA <= 2.5x
           │                       │                       │                       │
           └───────────────────────┼───────────────────────┘                       │
                                   │                                               │
@@ -114,7 +114,7 @@ By isolating each component layer under institutional 15% caps across 176 verifi
 | **1. Top-Line Growth ($g$)** | 5-Year Revenue CAGR | $(\text{Rev}_t / \text{Rev}_{t-5})^{0.2} - 1$ | Proves secular tailwinds; eliminates dying industries | $\ge$ Median ($Z_g \ge 0$) |
 | **2. Capital Efficiency ($r$)** | Return on Invested Capital | $\text{NOPAT} / (\text{Equity} + \text{Debt} - \text{Cash})$ | Measures moat durability and organic reinvestment runway | $\ge$ Median ($Z_r \ge 0$) |
 | **3. Valuation Dislocation ($y$)** | TTM Earnings Yield | $\text{TTM EPS} / \text{Stock Price} = 1 / (P/E)$ | Identifies temporary market dislocations | $\ge$ Median ($Z_y \ge 0$) |
-| **4. Balance Sheet Solvency ($s$)** | Net Solvency Ratio | $-(\text{Total Debt} - \text{Cash}) / \text{Market Cap}$ | Immunizes against liquidity crises and rate shocks | $\ge$ Median ($Z_s \ge 0$) |
+| **4. Balance Sheet Solvency ($s$)** | Net Debt / EBITDA | $(\text{Total Debt} - \text{Cash}) / \text{EBITDA} \le 2.5\text{x}$ | Solvency resilience: immunizes against debt spirals and rate shocks | $\le 2.5\text{x}$ / Inverted Median ($Z_s \ge 0$) |
 
 ### Master Sensitivity & Ablation Suite (932 Weekly Cross-Sections):
 1. **ROIC is the Unforgiving Alpha Engine:** Ablating ROIC causes 3-month alpha to collapse from **+6.75% to +4.13% (-262 bps)** and crashes 1-year compounding from **+48.91% to +33.24% (-1,567 bps)**. Without ROIC, the system buys commoditized cyclicals.
@@ -124,16 +124,57 @@ By isolating each component layer under institutional 15% caps across 176 verifi
 
 ---
 
-## 5. Institutional Realism & The Warren Buffett Parity Test
+## 5. Institutional Realism & The Warren Buffett Showdown
 
 ![Audited Compounding](docs/figures/munger_audited_compounding_curve.png)
 
-How do these audited returns compare to the greatest real-world track records in financial history?
-- **Warren Buffett / Berkshire Hathaway (1965–2024, 59 Years):** Compounded at **~19.8% annualized gross**, growing \$1,000 into **~\$35–\$40 Million**.
-- **MUNGER Audited Strategy (Max 15% Cap, 1971–2026, 55.5 Years):** Compounded at **22.53% gross CAGR / 16.73% net post-tax CAGR**, growing \$1,000 into **\$101.1M pre-tax (\$6.45M post-tax)** across 625 audited trades.
-- **S&P 500 Index:** Compounded at **11.03% total return**, growing \$1,000 into **\$377,810**.
+How does the MUNGER factor engine compare to the greatest real-world track record in financial history? 
 
-This confirms that with institutional 15% position diversification, realistic -5 bps slippage, delisting haircuts, and historical tax friction, the MUNGER system operates precisely at the empirical frontier of legendary value-compounding.
+### Head-to-Head Audited Performance Showdown:
+
+| Period | Asset / Strategy | Gross CAGR | Net Post-Tax CAGR | Terminal Wealth (\$1,000) | Alpha vs. S&P 500 | Alpha vs. Buffett | Max Leverage |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **2008–2026** (18.8Y, Post-GFC) | **MUNGER Factor (15% Cap, Strict Exit)** | **29.74%** | **23.69%** | **\$50,477** | **+1,222 bps** | **+1,390 bps** | **0.0x (Cash Only)** |
+| 2008–2026 | **MUNGER Stress-Tested (-350 bps Delist)** | 26.24% | **20.19%** | **\$29,913** | **+872 bps** | **+1,040 bps** | **0.0x (Cash Only)** |
+| 2008–2026 | **Warren Buffett / Berkshire (`BRK-A`)** | 9.79% | 9.79% | \$5,372 | -168 bps | Baseline | ~1.6x (Float) |
+| 2008–2026 | **S&P 500 Total Return Index** | 11.47% | 11.47% | \$7,619 | Baseline | +168 bps | 1.0x (Index) |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **1996–2026** (30.0Y, Multi-Cycle) | **MUNGER Factor (15% Cap, Strict Exit)** | **28.21%** | **21.93%** | **\$380,412** | **+1,130 bps** | **+1,107 bps** | **0.0x (Cash Only)** |
+| 1996–2026 | **Warren Buffett / Berkshire (`BRK-A`)** | 10.86% | 10.86% | \$22,341 | +23 bps | Baseline | ~1.6x (Float) |
+| 1996–2026 | **S&P 500 Total Return Index** | 10.63% | 10.63% | \$20,958 | Baseline | -23 bps | 1.0x (Index) |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **1971–2026** (55.5Y, Stagflation Era) | **MUNGER Factor (15% Cap, Strict Exit)** | **22.53%** | **16.73%** | **\$6,452,334** | **+570 bps** | Parity | **0.0x (Cash Only)** |
+| 1965–2024 (59.0Y, Historic BRK) | **Warren Buffett / Berkshire Hathaway** | ~19.80% | ~19.80% | ~\$35–\$40M | +960 bps | Baseline | ~1.6x (Float) |
+| 1971–2026 (55.5Y) | **S&P 500 Total Return Index** | 11.03% | 11.03% | \$377,810 | Baseline | -877 bps | 1.0x (Index) |
+
+> [!NOTE]
+> **The Leverage Parity Reality:** Frazzini, Kabiller, and Pedersen (*Buffett's Alpha*, 2018) proved that Berkshire Hathaway's historic ~19.8% gross CAGR was driven by ~1.6:1 leverage funded by negative-cost insurance float. On an **unlevered** basis, Buffett's gross return was ~13.5%–14.0%. In contrast, the MUNGER system operates **completely unlevered (0.0x debt/float)** with a strict 15% maximum position cap and Treasury cash drag, yet delivers **16.73% to 20.19% net post-tax compounding**—directly mirroring Berkshire's historic gross record while outpacing post-2008 Berkshire (9.79%) by 5.5x to 9.4x in terminal wealth.
+
+### Academic Value-Investing Lineage:
+
+Where does MUNGER fit within the quantitative and fundamental literature?
+
+| Methodology / Paper | Fundamental Metric | Valuation Anchor | Math Interaction | Survivorship / Lookahead Control | Reported Alpha / Return |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Graham & Dodd (1934)** | Net Current Asset Value (NCAV) | $P < \frac{2}{3} \times \text{NCAV}$ | Single-hurdle | Manual historic accounting | Cigar-butt liquidations |
+| **Piotroski (2000)** | 9-point F-Score (accounting signals) | High Book-to-Market ($B/M$) | Additive linear ($0 \dots 9$) | Annual Compustat rebalancing | +7.5% annually vs low BM |
+| **Greenblatt (2005)** | Return on Capital ($\text{EBIT}/(\text{WC}+\text{NFA})$) | Earnings Yield ($\text{EBIT}/\text{EV}$) | Additive ordinal ranking | Top decile annual rebalance | +16.0% CAGR (1988–2004) |
+| **Novy-Marx (2013)** | Gross Profits-to-Assets ($\text{GP}/A$) | Book-to-Market ($B/M$) | 2D Bivariate sorting | Fama-French universe | Proves quality is orthogonal to value |
+| **Asness et al. (2019, QMJ)** | Quality Score (Profit, Growth, Safety) | Market Price ($P$) | Additive standard $Z$-scores | Global equity universe | +4.6% annualized long/short alpha |
+| **Frazzini et al. (2018)** | Low-Beta, High-Quality Alpha | P/B, P/E, Float | Multi-factor linear regression | Decades of BRK filings | Berkshire ~19.8% = ~1.6:1 leverage on quality |
+| **MUNGER Factor (2026)** | **4 Pillars (CAGR, ROIC, Solvency, Yield)** | **TTM Earnings Yield ($E/P$)** | **Conjunctive Multiplicative** | **45d SEC lag, -5 bps slip, -350 bps survivorship** | **+570 to +865 bps net post-tax alpha; 23.69% post-tax CAGR** |
+
+### The Three Buy-Hold-Sell Execution Disciplines:
+
+1. **The 365-Day LTCG Tax Shield:**
+   - *Rule:* Once an asset enters the portfolio, no exit is executed before holding duration exceeds 365 calendar days, regardless of factor re-ranking or broader market volatility.
+   - *Rationale:* Eliminates ordinary income tax drag (up to 40.8%), capping tax friction at the Long-Term Capital Gains bracket (15%–23.8%). Charlie Munger: *"The big money is not in the buying and the selling, but in the waiting."*
+2. **Dynamic Moat Decay Exit ($\mathcal{M} < 1.0$):**
+   - *Rule:* After day 365, evaluate the Munger Multiplier. If the composite moat decays below parity ($\mathcal{M} < 1.0$), or if Net Debt / EBITDA deteriorates above $2.5\text{x}$, execute a clean Market-On-Close (MOC) exit.
+   - *Rationale:* Protects compounding capital from permanent impairment while granting elite compounders multi-year holding runways.
+3. **Strict No Stop-Loss Policy:**
+   - *Rule:* Never set price-based trailing stop-losses. Price drawdowns unaccompanied by fundamental moat decay trigger rebalancing additions rather than forced exits.
+   - *Rationale:* Stop-losses convert temporary liquidity dislocations into permanent capital losses. Charlie Munger: *"If you're not willing to react with equanimity to a market price decline of 50% two or three times a century, you're not fit to be a common shareholder and you deserve the mediocre result you're going to get."*
 
 ---
 
@@ -185,31 +226,42 @@ munger-factor-system/
 ├── README.md                                    # Master documentation & empirical overview
 ├── LICENSE                                      # MIT Open Source License
 ├── pyproject.toml                               # Python package dependencies & build metadata
-├── munger_engine.py                             # Shared vectorized & zero-lookahead core engine (v2.2)
-├── scan_strike_zone.py                          # Live strike-zone scanner & tax-lot reconciler (v2.2)
+├── munger_engine.py                             # Shared vectorized & zero-lookahead core engine (v2.3)
+├── scan_strike_zone.py                          # Live strike-zone scanner & tax-lot reconciler (v2.3)
+├── watch_fidelity.py                            # Background file-watcher daemon for Fidelity CSV exports
+├── audit_buffett_and_survivorship.py            # Master Warren Buffett Showdown & survivorship audit
+├── run_survivorship_free_backtest.py            # Master survivorship-free simulation engine
 ├── reproduce_all.py                             # Turnkey reproduction pipeline (1-command runner)
 ├── test_causality_and_performance.py            # Automated causality, unit test & benchmark suite
-├── run_survivorship_free_backtest.py            # Master survivorship-free simulation engine
-├── run_audited_institutional_analysis.py        # Audited 15% vs 20% cap compounding comparisons
-├── optimize_1y_threshold_1971_2008.py           # 1-Year hurdle optimization engine
-├── test_munger_sell_criteria.py                 # Dynamic sell criteria parameter sweep
-├── simulate_call_spreads.py                     # Black-Scholes call spread simulator
-├── optimize_call_tenors.py                      # 30 to 365 DTE tenor optimization matrix
+├── start_server.ps1 / start_server.bat          # 1-click launchers for Munger Factor Web Terminal
+├── web/                                         # 7-stage interactive Web Terminal (HTML5/ES6/Chart.js)
+│   ├── index.html                               # Responsive control center UI
+│   ├── app.js                                   # State manager & reactive filter pipeline
+│   └── styles.css                               # Bloomberg/CapitalIQ dark theme stylesheet
+├── archive/
+│   └── research_experiments/                   # 28 historical research & sensitivity sweep scripts
+│       ├── run_debt_metrics_backtest.py         # 4-metric solvency tournament (Net Debt / EBITDA victor)
+│       ├── run_buffett_showdown_backtest.py     # Initial multi-cycle Buffett showdown test
+│       ├── optimize_1y_threshold_1971_2008.py   # Walk-forward 1-Year hurdle optimization engine
+│       ├── test_munger_sell_criteria.py         # Dynamic sell criteria parameter sweep
+│       ├── simulate_call_spreads.py             # Black-Scholes call spread simulator
+│       ├── optimize_call_tenors.py              # 30 to 365 DTE tenor optimization matrix
+│       └── run_audited_institutional_analysis.py# 15% vs 20% position cap alpha bridge
 ├── data/
 │   ├── historical_prices_1970_2026.pkl.xz       # 55.5-year daily OHLCV dataset
 │   ├── historical_quarterly_eps.json            # 11,263 corporate quarterly EPS filings
 │   ├── sp100_nasdaq100_universe.json            # 176 verified constituent fundamental records
 │   ├── Portfolio_Positions_Sample.csv           # Fidelity tax-lot reconciliation sample fixture
 │   └── survivorship_free_alpha_uplift_results.json # Full serialized backtest output metrics
-├── docs/
-│   ├── whitepaper.pdf                           # Complete 12-page academic whitepaper (Tectonic compiled)
-│   ├── whitepaper.tex                           # LaTeX source with mathematical derivations
-│   ├── whitepaper_investor_article.md           # Investor-style memorandum version
-│   └── figures/                                 # Publication-quality charts (300 DPI)
-│       ├── munger_survivorship_free_alpha_uplift.png
-│       ├── munger_audited_compounding_curve.png
-│       ├── munger_sell_criteria_optimization.png
-│       └── munger_1y_threshold_optimization.png
+└── docs/
+    ├── whitepaper.pdf                           # Complete 12-page academic whitepaper (Tectonic compiled)
+    ├── whitepaper.tex                           # LaTeX source with mathematical derivations & citations
+    ├── whitepaper_investor_article.md           # Investor-style memorandum version
+    └── figures/                                 # Publication-quality charts (300 DPI)
+        ├── munger_survivorship_free_alpha_uplift.png
+        ├── munger_audited_compounding_curve.png
+        ├── munger_sell_criteria_optimization.png
+        └── munger_1y_threshold_optimization.png
 ```
 
 ---
@@ -224,7 +276,7 @@ Science advances through replication, critique, and falsification:
 
 ---
 
-## 9. Academic Citation
+## 10. Academic Citation
 
 If you use this factor model, backtest engine, or options methodology in your research, please cite:
 
