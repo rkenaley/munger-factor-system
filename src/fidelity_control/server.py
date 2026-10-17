@@ -150,6 +150,26 @@ class ControlCenterHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(res).encode("utf-8"))
             return
 
+        # API: Munger 80/20 Options Bull Call Spreads (95C / 110C)
+        if self.path.startswith("/api/munger/options-spreads"):
+            from .munger_api import get_options_call_spreads_api
+            res = get_options_call_spreads_api()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(res).encode("utf-8"))
+            return
+
+        # API: Audited Buffett Showdown Dataset
+        if self.path.startswith("/api/munger/buffett-showdown"):
+            from .munger_api import get_buffett_showdown_api
+            res = get_buffett_showdown_api()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(res).encode("utf-8"))
+            return
+
         # API: Health check
         if self.path == "/api/health":
             self.send_response(200)

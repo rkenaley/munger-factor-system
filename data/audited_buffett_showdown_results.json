@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-10-17T08:06:49.286625",
+  "bias_audit": {
+    "preliminary_unadjusted_cagr": 33.42,
+    "lookahead_bias_bps": 410.0,
+    "survivorship_bias_bps": 350.0,
+    "signal_averaging_distortion_bps": 580.0,
+    "audited_causal_post_tax_cagr_2008": 23.69,
+    "fully_haircutted_post_tax_cagr_2008": 20.19
+  },
+  "period_2008_2026": {
+    "years": 18.8,
+    "berkshire_cagr": 9.79,
+    "berkshire_wealth_10k": 57765.48,
+    "spy_cagr": 12.32,
+    "spy_wealth_10k": 88590.67,
+    "munger_dynamic_cagr": 23.69,
+    "munger_dynamic_wealth_10k": 541915.22,
+    "munger_haircutted_cagr": 20.19,
+    "munger_haircutted_wealth_10k": 316235.14,
+    "munger_8020_overlay_cagr": 27.95,
+    "munger_8020_overlay_wealth_10k": 1024434.64
+  },
+  "period_1996_2026": {
+    "years": 30.4,
+    "berkshire_cagr": 10.86,
+    "berkshire_wealth_10k": 229318.97,
+    "spy_cagr": 12.09,
+    "spy_wealth_10k": 320617.81,
+    "munger_dynamic_cagr": 21.93,
+    "munger_dynamic_wealth_10k": 4137133.55,
+    "munger_haircutted_cagr": 18.43,
+    "munger_haircutted_wealth_10k": 1708276.41
+  }
+}

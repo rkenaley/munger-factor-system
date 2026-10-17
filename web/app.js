@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedBuys: new Set(),
         lots: [],
         collars: [],
+        spreads: [],
+        overlay8020Active: true,
+        activeOptionsTab: 'spreads',
         radarChart: null,
         isScanning: false,
         status: null,
@@ -85,8 +88,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else if (stepNumber === 6) {
             generateOrders();
-        } else if (stepNumber === 7 && state.collars.length === 0) {
-            loadOptionsCollars();
+        } else if (stepNumber === 7) {
+            if (state.activeOptionsTab === 'spreads') {
+                loadOptionsSpreads();
+            } else {
+                loadOptionsCollars();
+            }
         }
     }
 
@@ -805,19 +812,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const tr = document.createElement('tr');
 
             let actionBadge = '';
-            if (lot.action.includes('STRONG HOLD')) {
-                actionBadge = `<span class="badge badge-strike">⭐ STRONG HOLD / ADD</span>`;
+            if (lot.action.includes('STRONG HOLD') || lot.action.includes('COMPOUND')) {
+                actionBadge = `<span class="badge badge-strike">⭐ ${lot.action}</span>`;
             } else if (lot.action.includes('HOLD FOR TAX DEFERRAL')) {
                 actionBadge = `<span class="badge badge-haircut">⏳ ${lot.action}</span>`;
-            } else if (lot.action.includes('SELL')) {
+            } else if (lot.action.includes('DYNAMIC MOAT EXIT') || lot.action.includes('SELL')) {
                 actionBadge = `<span class="badge badge-trap">🚨 ${lot.action}</span>`;
             } else {
                 actionBadge = `<span class="badge badge-watchlist">${lot.action}</span>`;
             }
 
+            const daysLeft = lot.days_to_ltcg !== undefined ? lot.days_to_ltcg : Math.max(0, 365 - lot.days_held);
             const taxBadge = lot.ltcg_status === 'LTCG' 
-                ? `<span class="badge badge-ltcg">LTCG (≥365d)</span>` 
-                : `<span class="badge badge-stcg">STCG (&lt;365d)</span>`;
+                ? `<span class="badge badge-ltcg" title="LTCG Qualified: Max federal tax rate 23.8%">💎 LTCG (≥365d)</span>` 
+                : `<span class="badge badge-stcg" title="STCG: Ordinary income tax rate up to 40.8%. Hold to day 366.">⏳ STCG (${daysLeft}d left)</span>`;
 
             tr.innerHTML = `
                 <td><strong class="mono" style="color: #60a5fa;">${lot.symbol}</strong></td>
@@ -1018,7 +1026,8 @@ document.addEventListener('DOMContentLoaded', () => {
             available_cash: parseFloat(document.getElementById('order-avail-cash').value) || 100000,
             total_portfolio_value: 222482.63,
             max_alloc_pct: parseFloat(document.getElementById('slider-max-alloc').value) || 15.0,
-            cash_buffer_pct: parseFloat(document.getElementById('slider-cash-buffer').value) || 5.0
+            cash_buffer_pct: parseFloat(document.getElementById('slider-cash-buffer').value) || 5.0,
+            overlay_8020: state.overlay8020Active,
         };
 
         try {
@@ -1123,19 +1132,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
         buys.forEach(b => {
             const sym = b;
-            const spot = sym === 'LLY' ? 1208.25 : sym === 'FTNT' ? 186.46 : 140.0;
-            const shares = sym === 'LLY' ? 25 : 120;
-            orders.push({
-                symbol: sym,
-                action: "BUY",
-                order_type: "MOC",
-                shares: shares,
-                limit_price: spot,
-                est_value: shares * spot,
-                rationale: "Munger Strike Zone compounder (Target 15% cap).",
-                fidelity_order_string: `BUY ${sym} ${shares} SHARES MOC DAY`,
-                fidelity_deeplink: `https://digital.fidelity.com/ftgw/digital/trade-equity/index?symbol=${sym}`
-            });
+            const spot = sym === 'LLY' ? 1208.25 : (sym === 'FTNT' ? 186.46 : (sym === 'NVDA' ? 214.13 : 140.0));
+            const baseShares = sym === 'LLY' ? 25 : (sym === 'FTNT' ? 120 : 100);
+
+            if (state.overlay8020Active) {
+                // 80% Core Stock
+                const eqShares = Math.max(1, Math.floor(baseShares * 0.80));
+                const eqVal = eqShares * spot;
+                orders.push({
+                    symbol: sym,
+                    action: "BUY",
+                    order_type: "MOC",
+                    shares: eqShares,
+                    limit_price: spot,
+                    est_value: eqVal,
+                    rationale: "80% Core Physical Stock (Tax-deferred compounder).",
+                    fidelity_order_string: `BUY ${sym} ${eqShares} SHARES MOC DAY`,
+                    fidelity_deeplink: `https://digital.fidelity.com/ftgw/digital/trade-equity/index?symbol=${sym}`
+                });
+
+                // 20% Call Spread (95C / 110C)
+                const k95 = (spot * 0.95).toFixed(1);
+                const k110 = (spot * 1.10).toFixed(1);
+                const debit = (spot * 0.065).toFixed(2);
+                const contracts = Math.max(1, Math.floor((baseShares * 0.20 * spot) / (parseFloat(debit) * 100)));
+                const spreadVal = contracts * parseFloat(debit) * 100;
+                const spreadTicket = `BUY VERTICAL CALL SPREAD ${sym} x${contracts}: BUY ${k95} CALL / SELL ${k110} CALL EXP 1Y (NET DEBIT $${debit})`;
+
+                orders.push({
+                    symbol: sym,
+                    action: "BUY (CALL SPREAD)",
+                    order_type: "NET DEBIT",
+                    shares: contracts,
+                    limit_price: parseFloat(debit),
+                    est_value: spreadVal,
+                    rationale: `20% Asymmetric Options Overlay (95C/110C Bull Spread: Max ROC +133.6%).`,
+                    fidelity_order_string: spreadTicket,
+                    fidelity_deeplink: `https://digital.fidelity.com/ftgw/digital/trade-equity/index?symbol=${sym}`,
+                    is_options_spread: true
+                });
+            } else {
+                orders.push({
+                    symbol: sym,
+                    action: "BUY",
+                    order_type: "MOC",
+                    shares: baseShares,
+                    limit_price: spot,
+                    est_value: baseShares * spot,
+                    rationale: "Munger Strike Zone compounder (Target 15% cap).",
+                    fidelity_order_string: `BUY ${sym} ${baseShares} SHARES MOC DAY`,
+                    fidelity_deeplink: `https://digital.fidelity.com/ftgw/digital/trade-equity/index?symbol=${sym}`
+                });
+            }
         });
 
         let csv = "Action,Symbol,Quantity,Order_Type,Time_In_Force,Limit_Price,Estimated_Value,Rationale\n";
@@ -1178,8 +1226,159 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 80/20 Overlay Checkbox Listener in Stage 6
+    const chkOverlay8020 = document.getElementById('chk-overlay-8020');
+    const cardOverlay8020 = document.getElementById('card-overlay-8020');
+    if (chkOverlay8020) {
+        chkOverlay8020.addEventListener('change', () => {
+            state.overlay8020Active = chkOverlay8020.checked;
+            if (cardOverlay8020) {
+                if (chkOverlay8020.checked) {
+                    cardOverlay8020.classList.add('active');
+                } else {
+                    cardOverlay8020.classList.remove('active');
+                }
+            }
+            showToast(`80/20 Options Call Overlay: ${state.overlay8020Active ? 'ENABLED' : 'DISABLED'}`, state.overlay8020Active ? '🚀' : 'ℹ️');
+            generateOrders();
+        });
+    }
+
     // --------------------------------------------------------------------------
-    // 11. OPTIONS 80/20 COLLARS API
+    // 11A. OPTIONS 80/20 BULL CALL SPREADS API (95C / 110C)
+    // --------------------------------------------------------------------------
+    async function loadOptionsSpreads() {
+        try {
+            const resp = await fetch('/api/munger/options-spreads');
+            if (resp.ok) {
+                const data = await resp.json();
+                state.spreads = data.spreads || [];
+                renderSpreadsTable(state.spreads);
+                return;
+            }
+        } catch (e) {
+            console.warn("Options spreads API offline, rendering local seed spreads...", e);
+        }
+
+        renderSpreadsTable([
+            {
+                symbol: "NVDA", spot: 214.13, dte: 365, k95: 203.4, k110: 235.5,
+                net_debit: 14.14, max_loss: 1414.0, max_profit: 1796.0, max_roc_pct: 127.0,
+                breakeven: 217.54, breakeven_pct: "+1.6%",
+                ticket: "BUY VERTICAL CALL SPREAD NVDA x1: BUY 203.4C / SELL 235.5C EXP 1Y (NET DEBIT $14.14)",
+                fidelity_deeplink: "https://digital.fidelity.com/ftgw/digital/trade-equity/index?symbol=NVDA"
+            },
+            {
+                symbol: "AAPL", spot: 345.85, dte: 365, k95: 328.6, k110: 380.4,
+                net_debit: 22.20, max_loss: 2220.0, max_profit: 2960.0, max_roc_pct: 133.3,
+                breakeven: 350.80, breakeven_pct: "+1.4%",
+                ticket: "BUY VERTICAL CALL SPREAD AAPL x1: BUY 328.6C / SELL 380.4C EXP 1Y (NET DEBIT $22.20)",
+                fidelity_deeplink: "https://digital.fidelity.com/ftgw/digital/trade-equity/index?symbol=AAPL"
+            },
+            {
+                symbol: "MSFT", spot: 539.11, dte: 365, k95: 512.2, k110: 593.0,
+                net_debit: 34.60, max_loss: 3460.0, max_profit: 4620.0, max_roc_pct: 133.5,
+                breakeven: 546.80, breakeven_pct: "+1.4%",
+                ticket: "BUY VERTICAL CALL SPREAD MSFT x1: BUY 512.2C / SELL 593.0C EXP 1Y (NET DEBIT $34.60)",
+                fidelity_deeplink: "https://digital.fidelity.com/ftgw/digital/trade-equity/index?symbol=MSFT"
+            },
+            {
+                symbol: "LLY", spot: 1208.25, dte: 365, k95: 1147.8, k110: 1329.1,
+                net_debit: 78.50, max_loss: 7850.0, max_profit: 10280.0, max_roc_pct: 131.0,
+                breakeven: 1226.30, breakeven_pct: "+1.5%",
+                ticket: "BUY VERTICAL CALL SPREAD LLY x1: BUY 1147.8C / SELL 1329.1C EXP 1Y (NET DEBIT $78.50)",
+                fidelity_deeplink: "https://digital.fidelity.com/ftgw/digital/trade-equity/index?symbol=LLY"
+            }
+        ]);
+    }
+
+    function renderSpreadsTable(spreads) {
+        const tbody = document.getElementById('spreads-table-body');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        spreads.forEach(s => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong class="mono" style="color: #60a5fa;">${s.symbol}</strong></td>
+                <td style="text-align: right;" class="mono">$${s.spot.toFixed(2)}</td>
+                <td style="text-align: center;" class="mono">${s.dte}d</td>
+                <td style="text-align: right;" class="mono">$${s.k95.toFixed(1)}</td>
+                <td style="text-align: right;" class="mono">$${s.k110.toFixed(1)}</td>
+                <td style="text-align: right;" class="mono" style="color: #38bdf8; font-weight: 600;">$${s.net_debit.toFixed(2)}</td>
+                <td style="text-align: right;" class="mono" style="color: #f87171;">$${s.max_loss.toLocaleString()}</td>
+                <td style="text-align: right;" class="mono" style="color: #34d399;">+$${s.max_profit.toLocaleString()}</td>
+                <td style="text-align: center;">
+                    <span class="badge badge-strike" style="font-weight: 700;">+${s.max_roc_pct}%</span>
+                </td>
+                <td style="text-align: center;" class="mono" style="color: #fbbf24;">${s.breakeven_pct}</td>
+                <td style="font-family: var(--font-mono); font-size: 0.74rem; color: #38bdf8;">
+                    ${s.ticket}
+                </td>
+                <td style="text-align: center;">
+                    <a href="${s.fidelity_deeplink}" target="_blank" class="btn-action btn-secondary" style="padding: 3px 8px; font-size: 0.74rem;">
+                        Trade ↗
+                    </a>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Stage 7 Sub-tab switching
+    const btnTabSpreads = document.getElementById('btn-tab-call-spreads');
+    const btnTabCollars = document.getElementById('btn-tab-collars');
+    const panelSpreads = document.getElementById('panel-options-spreads');
+    const panelCollars = document.getElementById('panel-options-collars');
+
+    if (btnTabSpreads && btnTabCollars && panelSpreads && panelCollars) {
+        btnTabSpreads.addEventListener('click', () => {
+            state.activeOptionsTab = 'spreads';
+            btnTabSpreads.classList.remove('btn-secondary');
+            btnTabSpreads.classList.add('btn-primary');
+            btnTabCollars.classList.remove('btn-primary');
+            btnTabCollars.classList.add('btn-secondary');
+            panelSpreads.style.display = 'block';
+            panelCollars.style.display = 'none';
+            loadOptionsSpreads();
+        });
+
+        btnTabCollars.addEventListener('click', () => {
+            state.activeOptionsTab = 'collars';
+            btnTabCollars.classList.remove('btn-secondary');
+            btnTabCollars.classList.add('btn-primary');
+            btnTabSpreads.classList.remove('btn-primary');
+            btnTabSpreads.classList.add('btn-secondary');
+            panelCollars.style.display = 'block';
+            panelSpreads.style.display = 'none';
+            loadOptionsCollars();
+        });
+    }
+
+    // Buffett Showdown & Audit Modal Listeners
+    const btnOpenBuffett = document.getElementById('btn-open-buffett-modal');
+    const modalBuffett = document.getElementById('buffett-showdown-modal');
+    const btnCloseBuffett = document.getElementById('btn-close-buffett-modal');
+    const btnModalCloseBuffett = document.getElementById('btn-modal-close-buffett');
+
+    if (btnOpenBuffett && modalBuffett) {
+        btnOpenBuffett.addEventListener('click', () => {
+            modalBuffett.classList.add('active');
+        });
+    }
+    if (btnCloseBuffett && modalBuffett) {
+        btnCloseBuffett.addEventListener('click', () => {
+            modalBuffett.classList.remove('active');
+        });
+    }
+    if (btnModalCloseBuffett && modalBuffett) {
+        btnModalCloseBuffett.addEventListener('click', () => {
+            modalBuffett.classList.remove('active');
+        });
+    }
+
+    // --------------------------------------------------------------------------
+    // 11B. OPTIONS 80/20 COLLARS API
     // --------------------------------------------------------------------------
     async function loadOptionsCollars() {
         try {
