@@ -232,17 +232,20 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
     roic_vals = {t: float(fund_dict.get(t, {}).get("roic_proxy", 0.0)) * 100.0 for t in close_df.columns}
     pe_vals = {t: float(fund_dict.get(t, {}).get("pe", 25.0)) for t in close_df.columns}
     de_vals = {t: float(fund_dict.get(t, {}).get("de", 50.0)) for t in close_df.columns}
+    nd_ebitda_vals = {t: float(fund_dict.get(t, {}).get("net_debt_to_ebitda", 1.2)) for t in close_df.columns}
 
     growth_s = pd.Series(growth_vals)
     roic_s = pd.Series(roic_vals)
     pe_s = pd.Series(pe_vals)
     de_s = pd.Series(de_vals)
+    nd_ebitda_s = pd.Series(nd_ebitda_vals)
 
     growth_pct = (growth_s.rank(pct=True) * 100.0).to_dict()
     roic_pct = (roic_s.rank(pct=True) * 100.0).to_dict()
-    # For PE and DE, lower is better valuation/solvency
+    # For PE and Net Debt / EBITDA, lower is better valuation/solvency
     pe_pct = ((1.0 - pe_s.rank(pct=True)) * 100.0).to_dict()
     de_pct = ((1.0 - de_s.rank(pct=True)) * 100.0).to_dict()
+    solvency_pct = ((1.0 - nd_ebitda_s.rank(pct=True)) * 100.0).to_dict()
 
     # Calculate 200-week SMA for pullback gating if requested
     sma_200w_dist = {}
@@ -280,6 +283,7 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
         pe = round(float(meta.get("pe", 25.0)), 1)
         pb = round(float(meta.get("pb", 3.0)), 2)
         de = round(float(meta.get("de", 50.0)), 1)
+        nd_ebitda = round(float(meta.get("net_debt_to_ebitda", 1.2)), 2)
 
         # Check insider conviction
         insider_info = _INSIDER_CACHE.get(t, {"multiplier": 1.0, "signal": "NEUTRAL", "notes": "", "buys_usd": 0.0, "sales_usd": 0.0})
@@ -308,8 +312,14 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
             passes_sliders = False
         if pe > max_pe:
             passes_sliders = False
-        if de > max_de:
-            passes_sliders = False
+        # Solvency hurdle: Net Debt / EBITDA (if slider <= 15.0) or legacy D/E
+        if max_de <= 15.0:
+            if nd_ebitda > max_de:
+                passes_sliders = False
+        else:
+            if de > max_de:
+                passes_sliders = False
+
         if enforce_conjunctive and not passed_all_med:
             passes_sliders = False
         if gating_200w_enabled and sma_200w_dist.get(t, 0.0) > 25.0:
@@ -342,11 +352,15 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
         med_r = float(roic_s.median())
         med_y = float(pe_s.median())
         med_s = float(de_s.median())
+        med_nd = float(nd_ebitda_s.median())
 
         pass_g = bool(sales5y >= med_g and sales5y >= min_sales5y)
         pass_r = bool(roic >= med_r and roic >= min_roic)
         pass_y = bool(pe <= med_y and pe <= max_pe and pe > 0)
-        pass_s = bool(de <= med_s and de <= max_de)
+        if max_de <= 15.0:
+            pass_s = bool(nd_ebitda <= max_de)
+        else:
+            pass_s = bool(de <= med_s and de <= max_de)
         passed_count = int(pass_g) + int(pass_r) + int(pass_y) + int(pass_s)
         failed_pillars = [p for p, ok in [("Growth", pass_g), ("ROIC", pass_r), ("Valuation", pass_y), ("Solvency", pass_s)] if not ok]
 
@@ -361,6 +375,7 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
             "pe": pe,
             "pb": pb,
             "de": de,
+            "nd_ebitda": nd_ebitda,
             "raw_m": round(raw_m, 2),
             "clean_m": round(clean_m, 2),
             "insider_mult": insider_mult,
@@ -387,7 +402,7 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
                 "growth": round(growth_pct.get(t, 50.0), 1),
                 "roic": round(roic_pct.get(t, 50.0), 1),
                 "valuation": round(pe_pct.get(t, 50.0), 1),
-                "solvency": round(de_pct.get(t, 50.0), 1),
+                "solvency": round(solvency_pct.get(t, 50.0), 1),
             },
             "fidelity_deeplink": generate_fidelity_deeplink(t, "BUY"),
             "fidelity_research": generate_fidelity_research_link(t),
@@ -409,6 +424,7 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
             "roic": round(float(roic_s.median()), 1),
             "pe": round(float(pe_s.median()), 1),
             "de": round(float(de_s.median()), 1),
+            "nd_ebitda": round(float(nd_ebitda_s.median()), 2),
         },
         "parameters_applied": {
             "min_munger": min_munger,

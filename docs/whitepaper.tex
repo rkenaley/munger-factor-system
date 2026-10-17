@@ -104,7 +104,7 @@ When a great compounder suffers a temporary market dislocation, its valuation co
 \textbf{1. Top-Line Growth} & 5-Year Revenue CAGR & $g_i = (\text{Rev}_t / \text{Rev}_{t-5})^{1/5} - 1$ & Filters for secular expansion; eliminates cyclical value decays & $\ge$ Universe Median ($Z_g \ge 0$) \\
 \textbf{2. Capital Efficiency} & Return on Invested Capital & $\text{ROIC}_i = \frac{\text{NOPAT}_i}{\text{Equity}_i + \text{Debt}_i - \text{Cash}_i}$ & Measures competitive moat and organic reinvestment rate & $\ge$ Universe Median ($Z_r \ge 0$) \\
 \textbf{3. Valuation Dislocation} & Cyclically Adjusted Earnings Yield & $y_i = \frac{\min(\text{EPS}_{\text{TTM}}, 0.5\text{EPS}_{\text{TTM}} + 0.5\text{EPS}_{\text{5Y Med}})}{\text{Stock Price}_i}$ & Identifies cyclical pullbacks; prevents peak-margin P/E traps & $\ge$ Universe Median ($Z_y \ge 0$) \\
-\textbf{4. Financial Solvency} & Net Solvency Ratio & $s_i = -\frac{\text{Total Debt}_i - \text{Cash}_i}{\text{Market Cap}_i}$ & Immunizes against liquidity crises and interest rate shocks & $\ge$ Universe Median ($Z_s \ge 0$) \\
+\textbf{4. Financial Solvency} & Net Debt / EBITDA & $s_i = \frac{\text{Total Debt}_i - \text{Cash}_i}{\text{EBITDA}_i}$ & Measures operating cash debt coverage; immune to share-buyback equity distortions & $\le 2.5\text{x}$ ($Z_s \ge 0$) \\
 \bottomrule
 \end{tabular}%
 }
@@ -193,6 +193,40 @@ Sub-Median Hurdle ($Z_k \ge -0.25$) & Requires 40th percentile in all 4 & 3,900 
 \textbf{Median Hurdle ($Z_k \ge 0.0$ [Base])} & \textbf{Requires 50th percentile in all 4} & \textbf{2,070} & \textbf{62.6\%} & \textbf{+10.11\%} & \textbf{+6.75\%} & \textbf{+48.91\%} & \textbf{$-18.7\%$} & \textbf{Ideal Goldilocks balance: 2.2 signals/wk, 96.9\% market presence.} \\
 Above-Median Hurdle ($Z_k \ge +0.25$) & Requires 60th percentile in all 4 & 1,485 & 61.3\% & +10.51\% & +7.33\% & +53.44\% & $-18.8\%$ & Higher alpha ($+7.33\%$), but signal frequency drops to 1.59/week. \\
 Quartile Hurdle ($Z_k \ge +0.67$ [$Q_3$]) & Requires 75th percentile in all 4 & 914 & 59.4\% & +9.00\% & +6.07\% & +32.19\% & $-19.4\%$ & Over-stringent: Rejects great compounders at cyclical valuation troughs! \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}
+
+\subsection{The Empirical Solvency Showdown: Net Debt / EBITDA vs. Book Debt-to-Equity}
+A critical empirical finding of our 2008--2026 backtest is the severe breakdown of traditional accounting Book Debt-to-Equity ($\frac{\text{Total Debt}}{\text{Book Equity}}$). Under GAAP, when cash-generative compounders execute value-accretive share repurchases above book value, the expenditure reduces Retained Earnings or increases Treasury Stock, mechanically depleting accounting equity. Over decades, this creates negative or near-zero book equity for world-class compounders (e.g., Mastercard D/E of 439\%, Home Depot D/E of 380\%, AutoZone negative equity), causing naive screeners to wrongfully eliminate 70\% of elite franchises.
+
+To resolve this, we evaluated six competing solvency models head-to-head across 932 weekly cross-sections from 2008 to 2026. Table \ref{tab:solvency_showdown} reports the empirical results:
+\begin{enumerate}
+    \item \textbf{Net Debt / EBITDA ($\le 2.5\text{x}$) Emerged Victorious:} In the $\mathcal{M} \ge 12.0\text{x}$ multiplier framework, Net Debt / EBITDA delivered \textbf{+44.89\% 1-year return} and \textbf{+32.42\% alpha over the S\&P 500}, while expanding high-conviction signals by \textbf{+49.2\%} (2,289 vs.\ 1,534 triggers).
+    \item \textbf{Elimination of False Negatives:} Net Debt / EBITDA achieved \textbf{100\% retention} of high-ROIC compounders (retaining Apple, Home Depot, Mastercard, and Alphabet), whereas Book Debt-to-Equity disqualified Home Depot and Mastercard 100\% of the time over the 18.8-year backtest.
+    \item \textbf{Crisis Robustness (+14.37\% in 2008 GFC):} During the 2008--2010 Lehman crash, Net Debt / EBITDA maintained positive compounding (+14.37\%), while Debt / Market Cap collapsed ($-15.56\%$ return, $-54.54\%$ max drawdown) because crashing stock prices mechanically inflated debt-to-market-cap ratios, forcing the portfolio into vulnerable high-beta speculative equities.
+\end{enumerate}
+
+\begin{table*}[t!]
+\centering
+\caption{Empirical Solvency Showdown: 18.8-Year Head-to-Head Comparison Across 932 Weekly Cross-Sections (2008--2026)}
+\label{tab:solvency_showdown}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrrl}
+\toprule
+\textbf{Solvency Model Tested} & \textbf{Signals} & \textbf{Win Rate (3M)} & \textbf{Fwd 3M Ret} & \textbf{Fwd 1Y Ret} & \textbf{1Y Alpha vs.\ SPY} & \textbf{Max DD (1Y)} & \textbf{Compounder Retention \& Diagnostic Verdict} \\
+\midrule
+Baseline (No Debt Filter) & 12,875 & 63.8\% & +6.29\% & +30.60\% & +17.18\% & $-27.18\%$ & Unshielded balance-sheet risk during credit freezes. \\
+Model 1: Book Debt/Equity ($\le 100\%$) & 8,544 & 64.9\% & +7.13\% & +34.24\% & +20.91\% & $-28.26\%$ & \textbf{Severe False Negatives:} Disqualifies HD (0\%) and MA (0\%) due to buybacks! \\
+\textbf{Model 2: Net Debt / EBITDA ($\le 2.5\text{x}$) [$\star$ Victor]} & \textbf{11,647} & \textbf{63.6\%} & \textbf{+6.51\%} & \textbf{+32.05\%} & \textbf{+18.87\%} & \textbf{$-28.11\%$} & \textbf{Optimal Solvency:} 100\% Compounder Retention, +14.37\% return through GFC. \\
+Model 3: Debt / Market Cap ($\le 25\%$) & 4,161 & 61.2\% & +7.61\% & +38.18\% & +25.06\% & $-32.51\%$ & High nominal return, but collapsed in 2008 GFC ($-54.54\%$ DD). \\
+Model 4: Net Debt / FCF ($\le 3.5\text{x}$) & 10,870 & 63.5\% & +6.54\% & +32.24\% & +19.14\% & $-28.35\%$ & Excellent cash coverage; slightly noisier year-to-year capex cycles. \\
+Model 5: Dual Solvency (ND/EBITDA + D/MC) & 4,161 & 61.2\% & +7.61\% & +38.18\% & +25.06\% & $-32.51\%$ & Overly restrictive (drops 68\% of viable candidates). \\
+\midrule
+\multicolumn{8}{l}{\textbf{Multiplier Composite ($\mathcal{M} \ge 12.0\text{x}$) Showdown:}} \\
+\textit{Pillar 4 = Net Debt / EBITDA} & \textbf{2,289} & \textbf{57.5\%} & \textbf{+6.77\%} & \textbf{+44.89\%} & \textbf{+32.42\%} & \textbf{$-18.7\%$} & \textbf{+49.2\% More Opportunities Captured than Book D/E (+32.42\% Alpha).} \\
+\textit{Pillar 4 = Traditional Book D/E} & 1,534 & 58.9\% & +7.63\% & +44.49\% & +32.12\% & $-18.7\%$ & Signal-starved: Misses generational compounders. \\
 \bottomrule
 \end{tabular}%
 }

@@ -9,7 +9,10 @@
     "de": 78.44,
     "sales5y": 16.4,
     "roic_proxy": 1.488,
-    "fcf_margin": 0.231
+    "fcf_margin": 0.231,
+    "net_debt_to_ebitda": 0.13,
+    "total_debt": 84343996416,
+    "total_cash": 62399000576
   },
   "BNY": {
     "ticker": "BNY",
@@ -21,7 +24,10 @@
     "de": 50.0,
     "sales5y": 13.1,
     "roic_proxy": 0.141,
-    "fcf_margin": 0.294
+    "fcf_margin": 0.294,
+    "net_debt_to_ebitda": -5.58,
+    "total_debt": 89533997056,
+    "total_cash": 197993005056
   },
   "AMZN": {
     "ticker": "AMZN",
@@ -33,7 +39,10 @@
     "de": 45.62,
     "sales5y": 19.6,
     "roic_proxy": 0.306,
-    "fcf_margin": 0.004
+    "fcf_margin": 0.004,
+    "net_debt_to_ebitda": 0.76,
+    "total_debt": 251635007488,
+    "total_cash": 122988003328
   },
   "BAC": {
     "ticker": "BAC",
@@ -45,7 +54,10 @@
     "de": 50.0,
     "sales5y": 16.8,
     "roic_proxy": 0.112,
-    "fcf_margin": 0.295
+    "fcf_margin": 0.295,
+    "net_debt_to_ebitda": -3.43,
+    "total_debt": 745580986368,
+    "total_cash": 991028969472
   },
   "AXP": {
     "ticker": "AXP",
@@ -57,7 +69,10 @@
     "de": 172.38,
     "sales5y": 12.8,
     "roic_proxy": 0.344,
-    "fcf_margin": 0.161
+    "fcf_margin": 0.161,
+    "net_debt_to_ebitda": 0.31,
+    "total_debt": 59092000768,
+    "total_cash": 45752000512
   },
   "ADBE": {
     "ticker": "ADBE",
@@ -69,7 +84,10 @@
     "de": 57.69,
     "sales5y": 12.9,
     "roic_proxy": 0.619,
-    "fcf_margin": 0.36
+    "fcf_margin": 0.36,
+    "net_debt_to_ebitda": 0.12,
+    "total_debt": 6786999808,
+    "total_cash": 5641999872
   },
   "BA": {
     "ticker": "BA",
@@ -81,7 +99,10 @@
     "de": 790.88,
     "sales5y": 8.0,
     "roic_proxy": 1.735,
-    "fcf_margin": 0.06
+    "fcf_margin": 0.06,
+    "net_debt_to_ebitda": 0.97,
+    "total_debt": 48362000384,
+    "total_cash": 19295000576
   },
   "AMAT": {
     "ticker": "AMAT",
@@ -93,7 +114,10 @@
     "de": 28.67,
     "sales5y": 24.8,
     "roic_proxy": 0.411,
-    "fcf_margin": 0.1
+    "fcf_margin": 0.1,
+    "net_debt_to_ebitda": -0.19,
+    "total_debt": 7345999872,
+    "total_cash": 9233000448
   },
   "ABBV": {
     "ticker": "ABBV",
@@ -105,7 +129,10 @@
     "de": 50.0,
     "sales5y": 10.2,
     "roic_proxy": 0.158,
-    "fcf_margin": 0.262
+    "fcf_margin": 0.262,
+    "net_debt_to_ebitda": 2.09,
+    "total_debt": 70884999168,
+    "total_cash": 6568999936
   },
   "BMY": {
     "ticker": "BMY",
@@ -117,7 +144,10 @@
     "de": 201.86,
     "sales5y": 5.7,
     "roic_proxy": 0.466,
-    "fcf_margin": 0.165
+    "fcf_margin": 0.165,
+    "net_debt_to_ebitda": 1.8,
+    "total_debt": 45053001728,
+    "total_cash": 11066999808
   },
   "ABT": {
     "ticker": "ABT",
@@ -129,7 +159,10 @@
     "de": 63.21,
     "sales5y": 13.0,
     "roic_proxy": 0.106,
-    "fcf_margin": 0.155
+    "fcf_margin": 0.155,
+    "net_debt_to_ebitda": 2.32,
+    "total_debt": 32719998976,
+    "total_cash": 5602999808
   },
   "AMT": {
     "ticker": "AMT",
@@ -141,7 +174,10 @@
     "de": 438.72,
     "sales5y": 4.7,
     "roic_proxy": 0.339,
-    "fcf_margin": 0.267
+    "fcf_margin": 0.267,
+    "net_debt_to_ebitda": 6.14,
+    "total_debt": 44979900416,
+    "total_cash": 1762499968
   },
   "ANET": {
     "ticker": "ANET",
@@ -153,7 +189,10 @@
     "de": 50.0,
     "sales5y": 37.7,
     "roic_proxy": 0.315,
-    "fcf_margin": 0.369
+    "fcf_margin": 0.369,
+    "net_debt_to_ebitda": -2.88,
+    "total_debt": 0,
+    "total_cash": 13343299584
   },
   "AMGN": {
     "ticker": "AMGN",
@@ -165,7 +204,10 @@
     "de": 490.28,
     "sales5y": 9.5,
     "roic_proxy": 0.915,
-    "fcf_margin": 0.227
+    "fcf_margin": 0.227,
+    "net_debt_to_ebitda": 2.51,
+    "total_debt": 57303998464,
+    "total_cash": 13989000192
   },
   "AVGO": {
     "ticker": "AVGO",
@@ -177,7 +219,10 @@
     "de": 59.6,
     "sales5y": 85.5,
     "roic_proxy": 0.442,
-    "fcf_margin": 0.343
+    "fcf_margin": 0.343,
+    "net_debt_to_ebitda": 0.68,
+    "total_debt": 59419000832,
+    "total_cash": 23975000064
   },
   "ACN": {
     "ticker": "ACN",
@@ -189,7 +234,10 @@
     "de": 40.28,
     "sales5y": 6.2,
     "roic_proxy": 0.26,
-    "fcf_margin": 0.151
+    "fcf_margin": 0.151,
+    "net_debt_to_ebitda": 0.04,
+    "total_debt": 13396989952,
+    "total_cash": 12837769216
   },
   "BRK-B": {
     "ticker": "BRK-B",
@@ -201,7 +249,10 @@
     "de": 17.14,
     "sales5y": 10.0,
     "roic_proxy": 0.121,
-    "fcf_margin": 0.187
+    "fcf_margin": 0.187,
+    "net_debt_to_ebitda": -1.81,
+    "total_debt": 128598999040,
+    "total_cash": 365513998336
   },
   "AMD": {
     "ticker": "AMD",
@@ -213,7 +264,10 @@
     "de": 6.36,
     "sales5y": 50.1,
     "roic_proxy": 0.102,
-    "fcf_margin": 0.214
+    "fcf_margin": 0.214,
+    "net_debt_to_ebitda": -0.92,
+    "total_debt": 4276000000,
+    "total_cash": 13111000064
   },
   "BLK": {
     "ticker": "BLK",
@@ -225,7 +279,10 @@
     "de": 23.19,
     "sales5y": 30.6,
     "roic_proxy": 0.123,
-    "fcf_margin": 0.278
+    "fcf_margin": 0.278,
+    "net_debt_to_ebitda": 0.09,
+    "total_debt": 14968000512,
+    "total_cash": 13843000320
   },
   "C": {
     "ticker": "C",
@@ -237,7 +294,10 @@
     "de": 50.0,
     "sales5y": 15.5,
     "roic_proxy": 0.085,
-    "fcf_margin": 0.218
+    "fcf_margin": 0.218,
+    "net_debt_to_ebitda": -14.0,
+    "total_debt": 817476993024,
+    "total_cash": 1401245007872
   },
   "CMCSA": {
     "ticker": "CMCSA",
@@ -249,7 +309,10 @@
     "de": 100.47,
     "sales5y": -1.2,
     "roic_proxy": 0.115,
-    "fcf_margin": 0.102
+    "fcf_margin": 0.102,
+    "net_debt_to_ebitda": 2.43,
+    "total_debt": 90381000704,
+    "total_cash": 7661000192
   },
   "CAT": {
     "ticker": "CAT",
@@ -261,7 +324,10 @@
     "de": 232.78,
     "sales5y": 24.0,
     "roic_proxy": 0.57,
-    "fcf_margin": 0.068
+    "fcf_margin": 0.068,
+    "net_debt_to_ebitda": 2.41,
+    "total_debt": 45146001408,
+    "total_cash": 5944999936
   },
   "BKNG": {
     "ticker": "BKNG",
@@ -273,7 +339,10 @@
     "de": 50.0,
     "sales5y": 8.1,
     "roic_proxy": 0.306,
-    "fcf_margin": 0.274
+    "fcf_margin": 0.274,
+    "net_debt_to_ebitda": 0.36,
+    "total_debt": 20924000256,
+    "total_cash": 17213999104
   },
   "CRM": {
     "ticker": "CRM",
@@ -285,7 +354,10 @@
     "de": 110.42,
     "sales5y": 10.8,
     "roic_proxy": 0.194,
-    "fcf_margin": 0.404
+    "fcf_margin": 0.404,
+    "net_debt_to_ebitda": 2.4,
+    "total_debt": 42375999488,
+    "total_cash": 11402999808
   },
   "DELL": {
     "ticker": "DELL",
@@ -297,7 +369,10 @@
     "de": 50.0,
     "sales5y": 57.7,
     "roic_proxy": 0.13,
-    "fcf_margin": 0.04
+    "fcf_margin": 0.04,
+    "net_debt_to_ebitda": 1.34,
+    "total_debt": 35284000768,
+    "total_cash": 11569999872
   },
   "COP": {
     "ticker": "COP",
@@ -309,7 +384,10 @@
     "de": 35.64,
     "sales5y": 35.5,
     "roic_proxy": 0.142,
-    "fcf_margin": 0.119
+    "fcf_margin": 0.119,
+    "net_debt_to_ebitda": 0.58,
+    "total_debt": 23289999360,
+    "total_cash": 7692000256
   },
   "DIS": {
     "ticker": "DIS",
@@ -321,7 +399,10 @@
     "de": 39.4,
     "sales5y": 6.8,
     "roic_proxy": 0.08,
-    "fcf_margin": 0.049
+    "fcf_margin": 0.049,
+    "net_debt_to_ebitda": 1.95,
+    "total_debt": 46041001984,
+    "total_cash": 5184999936
   },
   "COST": {
     "ticker": "COST",
@@ -333,7 +414,10 @@
     "de": 28.44,
     "sales5y": 11.1,
     "roic_proxy": 0.284,
-    "fcf_margin": 0.022
+    "fcf_margin": 0.022,
+    "net_debt_to_ebitda": -0.78,
+    "total_debt": 10181000192,
+    "total_cash": 21301000192
   },
   "DHR": {
     "ticker": "DHR",
@@ -345,7 +429,10 @@
     "de": 52.97,
     "sales5y": 5.5,
     "roic_proxy": 0.076,
-    "fcf_margin": 0.172
+    "fcf_margin": 0.172,
+    "net_debt_to_ebitda": 2.93,
+    "total_debt": 27857999872,
+    "total_cash": 4348000256
   },
   "CVS": {
     "ticker": "CVS",
@@ -357,7 +444,10 @@
     "de": 95.5,
     "sales5y": 7.1,
     "roic_proxy": 0.062,
-    "fcf_margin": 0.02
+    "fcf_margin": 0.02,
+    "net_debt_to_ebitda": 3.74,
+    "total_debt": 76305997824,
+    "total_cash": 13957999616
   },
   "DUK": {
     "ticker": "DUK",
@@ -369,7 +459,10 @@
     "de": 162.16,
     "sales5y": 1.1,
     "roic_proxy": 0.099,
-    "fcf_margin": -0.136
+    "fcf_margin": -0.136,
+    "net_debt_to_ebitda": 5.51,
+    "total_debt": 92205998080,
+    "total_cash": 673000000
   },
   "CSCO": {
     "ticker": "CSCO",
@@ -381,7 +474,10 @@
     "de": 62.02,
     "sales5y": 17.6,
     "roic_proxy": 0.273,
-    "fcf_margin": 0.177
+    "fcf_margin": 0.177,
+    "net_debt_to_ebitda": 0.82,
+    "total_debt": 31185000448,
+    "total_cash": 15918000128
   },
   "DE": {
     "ticker": "DE",
@@ -393,7 +489,10 @@
     "de": 230.3,
     "sales5y": 4.9,
     "roic_proxy": 0.182,
-    "fcf_margin": 0.094
+    "fcf_margin": 0.094,
+    "net_debt_to_ebitda": 6.7,
+    "total_debt": 64577998848,
+    "total_cash": 6940000256
   },
   "GD": {
     "ticker": "GD",
@@ -405,7 +504,10 @@
     "de": 35.34,
     "sales5y": 8.1,
     "roic_proxy": 0.178,
-    "fcf_margin": 0.08
+    "fcf_margin": 0.08,
+    "net_debt_to_ebitda": 0.78,
+    "total_debt": 9479000064,
+    "total_cash": 4333000192
   },
   "EMR": {
     "ticker": "EMR",
@@ -417,7 +519,10 @@
     "de": 67.68,
     "sales5y": 7.0,
     "roic_proxy": 0.128,
-    "fcf_margin": 0.199
+    "fcf_margin": 0.199,
+    "net_debt_to_ebitda": 1.92,
+    "total_debt": 13802000384,
+    "total_cash": 2180000000
   },
   "GE": {
     "ticker": "GE",
@@ -429,7 +534,10 @@
     "de": 113.22,
     "sales5y": 21.1,
     "roic_proxy": 0.482,
-    "fcf_margin": 0.13
+    "fcf_margin": 0.13,
+    "net_debt_to_ebitda": 0.9,
+    "total_debt": 20230000640,
+    "total_cash": 9944999936
   },
   "GEV": {
     "ticker": "GEV",
@@ -441,7 +549,10 @@
     "de": 28.36,
     "sales5y": 21.9,
     "roic_proxy": 0.826,
-    "fcf_margin": 0.38
+    "fcf_margin": 0.38,
+    "net_debt_to_ebitda": -2.29,
+    "total_debt": 3720000000,
+    "total_cash": 12720000000
   },
   "CVX": {
     "ticker": "CVX",
@@ -453,7 +564,10 @@
     "de": 18.96,
     "sales5y": 53.5,
     "roic_proxy": 0.122,
-    "fcf_margin": 0.105
+    "fcf_margin": 0.105,
+    "net_debt_to_ebitda": 0.56,
+    "total_debt": 37075001344,
+    "total_cash": 8529999872
   },
   "GOOG": {
     "ticker": "GOOG",
@@ -465,7 +579,10 @@
     "de": 18.86,
     "sales5y": 24.2,
     "roic_proxy": 0.487,
-    "fcf_margin": 0.051
+    "fcf_margin": 0.051,
+    "net_debt_to_ebitda": -0.7,
+    "total_debt": 120790999040,
+    "total_cash": 242473992192
   },
   "COF": {
     "ticker": "COF",
@@ -477,7 +594,10 @@
     "de": 50.0,
     "sales5y": 1111.0,
     "roic_proxy": 0.09,
-    "fcf_margin": 0.219
+    "fcf_margin": 0.219,
+    "net_debt_to_ebitda": -0.31,
+    "total_debt": 48994000896,
+    "total_cash": 56639000576
   },
   "GOOGL": {
     "ticker": "GOOGL",
@@ -489,7 +609,10 @@
     "de": 18.86,
     "sales5y": 24.2,
     "roic_proxy": 0.487,
-    "fcf_margin": 0.051
+    "fcf_margin": 0.051,
+    "net_debt_to_ebitda": -0.7,
+    "total_debt": 120790999040,
+    "total_cash": 242473992192
   },
   "FDX": {
     "ticker": "FDX",
@@ -501,7 +624,10 @@
     "de": 135.7,
     "sales5y": 12.5,
     "roic_proxy": 0.148,
-    "fcf_margin": 0.06
+    "fcf_margin": 0.06,
+    "net_debt_to_ebitda": 2.48,
+    "total_debt": 42944000000,
+    "total_cash": 13550999552
   },
   "HD": {
     "ticker": "HD",
@@ -513,7 +639,10 @@
     "de": 380.26,
     "sales5y": 5.7,
     "roic_proxy": 1.043,
-    "fcf_margin": 0.064
+    "fcf_margin": 0.064,
+    "net_debt_to_ebitda": 2.48,
+    "total_debt": 63188000768,
+    "total_cash": 2084999936
   },
   "GS": {
     "ticker": "GS",
@@ -525,7 +654,10 @@
     "de": 725.38,
     "sales5y": 42.5,
     "roic_proxy": 0.169,
-    "fcf_margin": 0.31
+    "fcf_margin": 0.31,
+    "net_debt_to_ebitda": -3.31,
+    "total_debt": 838999998464,
+    "total_cash": 1008999989248
   },
   "ISRG": {
     "ticker": "ISRG",
@@ -537,7 +669,10 @@
     "de": 50.0,
     "sales5y": 18.5,
     "roic_proxy": 0.174,
-    "fcf_margin": 0.237
+    "fcf_margin": 0.237,
+    "net_debt_to_ebitda": -1.25,
+    "total_debt": 0,
+    "total_cash": 5216200192
   },
   "JPM": {
     "ticker": "JPM",
@@ -549,7 +684,10 @@
     "de": 50.0,
     "sales5y": 30.4,
     "roic_proxy": 0.178,
-    "fcf_margin": 0.349
+    "fcf_margin": 0.349,
+    "net_debt_to_ebitda": -3.08,
+    "total_debt": 1326255046656,
+    "total_cash": 1881473941504
   },
   "GM": {
     "ticker": "GM",
@@ -561,7 +699,10 @@
     "de": 202.34,
     "sales5y": 1.9,
     "roic_proxy": 0.032,
-    "fcf_margin": 0.118
+    "fcf_margin": 0.118,
+    "net_debt_to_ebitda": 6.32,
+    "total_debt": 128771997696,
+    "total_cash": 24718999552
   },
   "GILD": {
     "ticker": "GILD",
@@ -573,7 +714,10 @@
     "de": 223.47,
     "sales5y": 10.2,
     "roic_proxy": 0.211,
-    "fcf_margin": 0.321
+    "fcf_margin": 0.321,
+    "net_debt_to_ebitda": 1.46,
+    "total_debt": 26246000640,
+    "total_cash": 4881999872
   },
   "JNJ": {
     "ticker": "JNJ",
@@ -585,7 +729,10 @@
     "de": 57.71,
     "sales5y": 6.6,
     "roic_proxy": 0.257,
-    "fcf_margin": 0.172
+    "fcf_margin": 0.172,
+    "net_debt_to_ebitda": 0.83,
+    "total_debt": 49036001280,
+    "total_cash": 20757999616
   },
   "INTC": {
     "ticker": "INTC",
@@ -597,7 +744,10 @@
     "de": 49.0,
     "sales5y": 25.4,
     "roic_proxy": 0.021,
-    "fcf_margin": 0.085
+    "fcf_margin": 0.085,
+    "net_debt_to_ebitda": 1.24,
+    "total_debt": 50537000960,
+    "total_cash": 29727000576
   },
   "INTU": {
     "ticker": "INTU",
@@ -609,7 +759,10 @@
     "de": 44.34,
     "sales5y": 13.7,
     "roic_proxy": 0.236,
-    "fcf_margin": 0.296
+    "fcf_margin": 0.296,
+    "net_debt_to_ebitda": 0.18,
+    "total_debt": 8421000192,
+    "total_cash": 7200000000
   },
   "LLY": {
     "ticker": "LLY",
@@ -621,7 +774,10 @@
     "de": 162.07,
     "sales5y": 47.7,
     "roic_proxy": 1.023,
-    "fcf_margin": 0.139
+    "fcf_margin": 0.139,
+    "net_debt_to_ebitda": 1.1,
+    "total_debt": 54907998208,
+    "total_cash": 8949999616
   },
   "IBM": {
     "ticker": "IBM",
@@ -633,7 +789,10 @@
     "de": 188.97,
     "sales5y": 1.1,
     "roic_proxy": 0.345,
-    "fcf_margin": 0.174
+    "fcf_margin": 0.174,
+    "net_debt_to_ebitda": 3.47,
+    "total_debt": 65272000512,
+    "total_cash": 8131999744
   },
   "LIN": {
     "ticker": "LIN",
@@ -645,7 +804,10 @@
     "de": 68.95,
     "sales5y": 9.3,
     "roic_proxy": 0.184,
-    "fcf_margin": 0.117
+    "fcf_margin": 0.117,
+    "net_debt_to_ebitda": 1.67,
+    "total_debt": 28013000704,
+    "total_cash": 4897999872
   },
   "KO": {
     "ticker": "KO",
@@ -657,7 +819,10 @@
     "de": 115.52,
     "sales5y": 6.7,
     "roic_proxy": 0.421,
-    "fcf_margin": 0.104
+    "fcf_margin": 0.104,
+    "net_debt_to_ebitda": 1.64,
+    "total_debt": 44260999168,
+    "total_cash": 16371000320
   },
   "MCD": {
     "ticker": "MCD",
@@ -669,7 +834,10 @@
     "de": 50.0,
     "sales5y": 3.7,
     "roic_proxy": 0.199,
-    "fcf_margin": 0.226
+    "fcf_margin": 0.226,
+    "net_debt_to_ebitda": 3.6,
+    "total_debt": 54604001280,
+    "total_cash": 822000000
   },
   "LMT": {
     "ticker": "LMT",
@@ -681,7 +849,10 @@
     "de": 234.24,
     "sales5y": 10.5,
     "roic_proxy": 0.892,
-    "fcf_margin": 0.072
+    "fcf_margin": 0.072,
+    "net_debt_to_ebitda": 1.73,
+    "total_debt": 20537999360,
+    "total_cash": 3791000064
   },
   "LRCX": {
     "ticker": "LRCX",
@@ -693,7 +864,10 @@
     "de": 33.05,
     "sales5y": 30.0,
     "roic_proxy": 0.651,
-    "fcf_margin": 0.133
+    "fcf_margin": 0.133,
+    "net_debt_to_ebitda": -0.17,
+    "total_debt": 4121564928,
+    "total_cash": 5579170816
   },
   "MDLZ": {
     "ticker": "MDLZ",
@@ -705,7 +879,10 @@
     "de": 82.64,
     "sales5y": 4.1,
     "roic_proxy": 0.133,
-    "fcf_margin": 0.057
+    "fcf_margin": 0.057,
+    "net_debt_to_ebitda": 3.35,
+    "total_debt": 22058999808,
+    "total_cash": 1716000000
   },
   "LOW": {
     "ticker": "LOW",
@@ -717,7 +894,10 @@
     "de": 50.0,
     "sales5y": 8.3,
     "roic_proxy": 0.188,
-    "fcf_margin": 0.051
+    "fcf_margin": 0.051,
+    "net_debt_to_ebitda": 3.05,
+    "total_debt": 42031001600,
+    "total_cash": 3172000000
   },
   "MRK": {
     "ticker": "MRK",
@@ -729,7 +909,10 @@
     "de": 128.41,
     "sales5y": 5.1,
     "roic_proxy": 0.07,
-    "fcf_margin": 0.228
+    "fcf_margin": 0.228,
+    "net_debt_to_ebitda": 1.62,
+    "total_debt": 53910999040,
+    "total_cash": 7141000192
   },
   "META": {
     "ticker": "META",
@@ -741,7 +924,10 @@
     "de": 43.0,
     "sales5y": 28.0,
     "roic_proxy": 0.298,
-    "fcf_margin": 0.094
+    "fcf_margin": 0.094,
+    "net_debt_to_ebitda": 0.2,
+    "total_debt": 112317997056,
+    "total_cash": 90259996672
   },
   "MO": {
     "ticker": "MO",
@@ -753,7 +939,10 @@
     "de": 50.0,
     "sales5y": 1.2,
     "roic_proxy": 0.443,
-    "fcf_margin": 0.442
+    "fcf_margin": 0.442,
+    "net_debt_to_ebitda": 1.41,
+    "total_debt": 24576999424,
+    "total_cash": 2367000064
   },
   "MS": {
     "ticker": "MS",
@@ -765,7 +954,10 @@
     "de": 517.28,
     "sales5y": 28.0,
     "roic_proxy": 0.18,
-    "fcf_margin": 0.259
+    "fcf_margin": 0.259,
+    "net_debt_to_ebitda": -2.32,
+    "total_debt": 607495979008,
+    "total_cash": 739076014080
   },
   "MA": {
     "ticker": "MA",
@@ -777,7 +969,10 @@
     "de": 439.58,
     "sales5y": 14.1,
     "roic_proxy": 2.412,
-    "fcf_margin": 0.483
+    "fcf_margin": 0.483,
+    "net_debt_to_ebitda": 0.59,
+    "total_debt": 24643000320,
+    "total_cash": 11608999936
   },
   "MMM": {
     "ticker": "MMM",
@@ -789,7 +984,10 @@
     "de": 437.94,
     "sales5y": 2.5,
     "roic_proxy": 0.819,
-    "fcf_margin": 0.252
+    "fcf_margin": 0.252,
+    "net_debt_to_ebitda": 1.21,
+    "total_debt": 13159999488,
+    "total_cash": 5303000064
   },
   "NEE": {
     "ticker": "NEE",
@@ -801,7 +999,10 @@
     "de": 161.68,
     "sales5y": 12.4,
     "roic_proxy": 0.117,
-    "fcf_margin": -0.619
+    "fcf_margin": -0.619,
+    "net_debt_to_ebitda": 7.35,
+    "total_debt": 110196998144,
+    "total_cash": 2865999872
   },
   "MSFT": {
     "ticker": "MSFT",
@@ -813,7 +1014,10 @@
     "de": 29.12,
     "sales5y": 17.7,
     "roic_proxy": 0.34,
-    "fcf_margin": 0.05
+    "fcf_margin": 0.05,
+    "net_debt_to_ebitda": 0.27,
+    "total_debt": 128812998656,
+    "total_cash": 76842999808
   },
   "MDT": {
     "ticker": "MDT",
@@ -825,7 +1029,10 @@
     "de": 55.37,
     "sales5y": 13.7,
     "roic_proxy": 0.106,
-    "fcf_margin": 0.144
+    "fcf_margin": 0.144,
+    "net_debt_to_ebitda": 1.86,
+    "total_debt": 28152999936,
+    "total_cash": 8819000320
   },
   "NOW": {
     "ticker": "NOW",
@@ -837,7 +1044,10 @@
     "de": 67.54,
     "sales5y": 24.0,
     "roic_proxy": 0.142,
-    "fcf_margin": 0.35
+    "fcf_margin": 0.35,
+    "net_debt_to_ebitda": 1.31,
+    "total_debt": 8453000192,
+    "total_cash": 4664000000
   },
   "NVDA": {
     "ticker": "NVDA",
@@ -849,7 +1059,10 @@
     "de": 16.97,
     "sales5y": 105.9,
     "roic_proxy": 1.172,
-    "fcf_margin": 0.138
+    "fcf_margin": 0.138,
+    "net_debt_to_ebitda": -0.12,
+    "total_debt": 38860001280,
+    "total_cash": 62469001216
   },
   "MU": {
     "ticker": "MU",
@@ -861,7 +1074,10 @@
     "de": 3.74,
     "sales5y": 379.3,
     "roic_proxy": 0.883,
-    "fcf_margin": 0.219
+    "fcf_margin": 0.219,
+    "net_debt_to_ebitda": -0.35,
+    "total_debt": 5178999808,
+    "total_cash": 43434000384
   },
   "PEP": {
     "ticker": "PEP",
@@ -873,7 +1089,10 @@
     "de": 230.72,
     "sales5y": 5.6,
     "roic_proxy": 0.522,
-    "fcf_margin": 0.092
+    "fcf_margin": 0.092,
+    "net_debt_to_ebitda": 2.12,
+    "total_debt": 51881000960,
+    "total_cash": 11162999808
   },
   "NFLX": {
     "ticker": "NFLX",
@@ -885,7 +1104,10 @@
     "de": 55.24,
     "sales5y": 13.4,
     "roic_proxy": 0.495,
-    "fcf_margin": 0.525
+    "fcf_margin": 0.525,
+    "net_debt_to_ebitda": 0.51,
+    "total_debt": 16654660608,
+    "total_cash": 9127910400
   },
   "PANW": {
     "ticker": "PANW",
@@ -897,7 +1119,10 @@
     "de": 9.34,
     "sales5y": 34.5,
     "roic_proxy": 0.017,
-    "fcf_margin": 0.369
+    "fcf_margin": 0.369,
+    "net_debt_to_ebitda": -0.32,
+    "total_debt": 2567000064,
+    "total_cash": 3071000064
   },
   "PFE": {
     "ticker": "PFE",
@@ -909,7 +1134,10 @@
     "de": 74.25,
     "sales5y": 2.6,
     "roic_proxy": 0.05,
-    "fcf_margin": 0.196
+    "fcf_margin": 0.196,
+    "net_debt_to_ebitda": 2.04,
+    "total_debt": 63480000512,
+    "total_cash": 11704000512
   },
   "ORCL": {
     "ticker": "ORCL",
@@ -921,7 +1149,10 @@
     "de": 251.72,
     "sales5y": 29.6,
     "roic_proxy": 0.412,
-    "fcf_margin": -0.639
+    "fcf_margin": -0.639,
+    "net_debt_to_ebitda": 3.84,
+    "total_debt": 169142992896,
+    "total_cash": 37077000192
   },
   "QCOM": {
     "ticker": "QCOM",
@@ -933,7 +1164,10 @@
     "de": 55.21,
     "sales5y": -4.0,
     "roic_proxy": 0.338,
-    "fcf_margin": 0.232
+    "fcf_margin": 0.232,
+    "net_debt_to_ebitda": 0.58,
+    "total_debt": 15269999616,
+    "total_cash": 8304000000
   },
   "PG": {
     "ticker": "PG",
@@ -945,7 +1179,10 @@
     "de": 64.49,
     "sales5y": 1.5,
     "roic_proxy": 0.303,
-    "fcf_margin": 0.153
+    "fcf_margin": 0.153,
+    "net_debt_to_ebitda": 1.01,
+    "total_debt": 35024998400,
+    "total_cash": 9941999616
   },
   "SCHW": {
     "ticker": "SCHW",
@@ -957,7 +1194,10 @@
     "de": 151.11,
     "sales5y": 20.9,
     "roic_proxy": 0.203,
-    "fcf_margin": 0.388
+    "fcf_margin": 0.388,
+    "net_debt_to_ebitda": -0.9,
+    "total_debt": 40000000000,
+    "total_cash": 68500000768
   },
   "SNDK": {
     "ticker": "SNDK",
@@ -969,7 +1209,10 @@
     "de": 1.28,
     "sales5y": 371.6,
     "roic_proxy": 0.916,
-    "fcf_margin": 0.381
+    "fcf_margin": 0.381,
+    "net_debt_to_ebitda": -0.36,
+    "total_debt": 201000000,
+    "total_cash": 4761999872
   },
   "SBUX": {
     "ticker": "SBUX",
@@ -981,7 +1224,10 @@
     "de": 50.0,
     "sales5y": -1.4,
     "roic_proxy": 0.12,
-    "fcf_margin": 0.08
+    "fcf_margin": 0.08,
+    "net_debt_to_ebitda": 3.34,
+    "total_debt": 22453100544,
+    "total_cash": 3610299904
   },
   "PLTR": {
     "ticker": "PLTR",
@@ -993,7 +1239,10 @@
     "de": 2.14,
     "sales5y": 92.8,
     "roic_proxy": 0.381,
-    "fcf_margin": 0.351
+    "fcf_margin": 0.351,
+    "net_debt_to_ebitda": -3.45,
+    "total_debt": 211400000,
+    "total_cash": 9409098752
   },
   "PM": {
     "ticker": "PM",
@@ -1005,7 +1254,10 @@
     "de": 50.0,
     "sales5y": 10.4,
     "roic_proxy": 0.219,
-    "fcf_margin": 0.228
+    "fcf_margin": 0.228,
+    "net_debt_to_ebitda": 2.39,
+    "total_debt": 49138999296,
+    "total_cash": 6002999808
   },
   "SO": {
     "ticker": "SO",
@@ -1017,7 +1269,10 @@
     "de": 182.06,
     "sales5y": 0.1,
     "roic_proxy": 0.115,
-    "fcf_margin": -0.13
+    "fcf_margin": -0.13,
+    "net_debt_to_ebitda": 5.2,
+    "total_debt": 77086998528,
+    "total_cash": 2984000000
   },
   "TSLA": {
     "ticker": "TSLA",
@@ -1029,7 +1284,10 @@
     "de": 18.37,
     "sales5y": 25.5,
     "roic_proxy": 0.047,
-    "fcf_margin": 0.047
+    "fcf_margin": 0.047,
+    "net_debt_to_ebitda": -2.55,
+    "total_debt": 16080000000,
+    "total_cash": 43524001792
   },
   "TMUS": {
     "ticker": "TMUS",
@@ -1041,7 +1299,10 @@
     "de": 214.03,
     "sales5y": 7.9,
     "roic_proxy": 0.18,
-    "fcf_margin": 0.123
+    "fcf_margin": 0.123,
+    "net_debt_to_ebitda": 3.42,
+    "total_debt": 120427003904,
+    "total_cash": 2824999936
   },
   "RTX": {
     "ticker": "RTX",
@@ -1053,7 +1314,10 @@
     "de": 57.02,
     "sales5y": 14.5,
     "roic_proxy": 0.123,
-    "fcf_margin": 0.106
+    "fcf_margin": 0.106,
+    "net_debt_to_ebitda": 1.92,
+    "total_debt": 38855999488,
+    "total_cash": 8304999936
   },
   "TMO": {
     "ticker": "TMO",
@@ -1065,7 +1329,10 @@
     "de": 80.58,
     "sales5y": 10.5,
     "roic_proxy": 0.135,
-    "fcf_margin": 0.135
+    "fcf_margin": 0.135,
+    "net_debt_to_ebitda": 3.28,
+    "total_debt": 42548998144,
+    "total_cash": 4064000000
   },
   "UNH": {
     "ticker": "UNH",
@@ -1077,7 +1344,10 @@
     "de": 69.21,
     "sales5y": 0.4,
     "roic_proxy": 0.142,
-    "fcf_margin": 0.054
+    "fcf_margin": 0.054,
+    "net_debt_to_ebitda": 1.58,
+    "total_debt": 74330996736,
+    "total_cash": 28548999168
   },
   "T": {
     "ticker": "T",
@@ -1089,7 +1359,10 @@
     "de": 129.05,
     "sales5y": 2.3,
     "roic_proxy": 0.183,
-    "fcf_margin": 0.08
+    "fcf_margin": 0.08,
+    "net_debt_to_ebitda": 3.3,
+    "total_debt": 165755994112,
+    "total_cash": 17570000896
   },
   "UPS": {
     "ticker": "UPS",
@@ -1101,7 +1374,10 @@
     "de": 189.9,
     "sales5y": 7.6,
     "roic_proxy": 0.296,
-    "fcf_margin": 0.062
+    "fcf_margin": 0.062,
+    "net_debt_to_ebitda": 1.99,
+    "total_debt": 28672999424,
+    "total_cash": 4653000192
   },
   "USB": {
     "ticker": "USB",
@@ -1113,7 +1389,10 @@
     "de": 50.0,
     "sales5y": 10.4,
     "roic_proxy": 0.126,
-    "fcf_margin": 0.299
+    "fcf_margin": 0.299,
+    "net_debt_to_ebitda": 1.29,
+    "total_debt": 73040003072,
+    "total_cash": 49522999296
   },
   "UNP": {
     "ticker": "UNP",
@@ -1125,7 +1404,10 @@
     "de": 150.77,
     "sales5y": 11.5,
     "roic_proxy": 0.397,
-    "fcf_margin": 0.186
+    "fcf_margin": 0.186,
+    "net_debt_to_ebitda": 2.26,
+    "total_debt": 31168999424,
+    "total_cash": 2114000000
   },
   "UBER": {
     "ticker": "UBER",
@@ -1137,7 +1419,10 @@
     "de": 51.87,
     "sales5y": 12.2,
     "roic_proxy": 0.372,
-    "fcf_margin": 0.131
+    "fcf_margin": 0.131,
+    "net_debt_to_ebitda": 1.25,
+    "total_debt": 14730999808,
+    "total_cash": 5391000064
   },
   "VZ": {
     "ticker": "VZ",
@@ -1149,7 +1434,10 @@
     "de": 184.08,
     "sales5y": -0.7,
     "roic_proxy": 0.158,
-    "fcf_margin": 0.126
+    "fcf_margin": 0.126,
+    "net_debt_to_ebitda": 3.76,
+    "total_debt": 193646002176,
+    "total_cash": 1796000000
   },
   "V": {
     "ticker": "V",
@@ -1161,7 +1449,10 @@
     "de": 67.82,
     "sales5y": 14.4,
     "roic_proxy": 0.612,
-    "fcf_margin": 0.459
+    "fcf_margin": 0.459,
+    "net_debt_to_ebitda": 0.32,
+    "total_debt": 23857999872,
+    "total_cash": 13792000000
   },
   "TXN": {
     "ticker": "TXN",
@@ -1173,7 +1464,10 @@
     "de": 78.04,
     "sales5y": 22.8,
     "roic_proxy": 0.352,
-    "fcf_margin": 0.182
+    "fcf_margin": 0.182,
+    "net_debt_to_ebitda": 0.74,
+    "total_debt": 14051999744,
+    "total_cash": 7000999936
   },
   "AEP": {
     "ticker": "AEP",
@@ -1185,7 +1479,10 @@
     "de": 160.79,
     "sales5y": 7.0,
     "roic_proxy": 0.101,
-    "fcf_margin": -0.263
+    "fcf_margin": -0.263,
+    "net_debt_to_ebitda": 5.86,
+    "total_debt": 53525000192,
+    "total_cash": 603000000
   },
   "ABNB": {
     "ticker": "ABNB",
@@ -1197,7 +1494,10 @@
     "de": 32.0,
     "sales5y": 16.5,
     "roic_proxy": 0.345,
-    "fcf_margin": 0.244
+    "fcf_margin": 0.244,
+    "net_debt_to_ebitda": -3.47,
+    "total_debt": 2496000000,
+    "total_cash": 12069000192
   },
   "ALNY": {
     "ticker": "ALNY",
@@ -1209,7 +1509,10 @@
     "de": 220.62,
     "sales5y": 66.9,
     "roic_proxy": 0.966,
-    "fcf_margin": 0.057
+    "fcf_margin": 0.057,
+    "net_debt_to_ebitda": -0.3,
+    "total_debt": 2987489024,
+    "total_cash": 3308146944
   },
   "APP": {
     "ticker": "APP",
@@ -1221,7 +1524,10 @@
     "de": 111.13,
     "sales5y": 52.8,
     "roic_proxy": 2.037,
-    "fcf_margin": 0.466
+    "fcf_margin": 0.466,
+    "net_debt_to_ebitda": 0.09,
+    "total_debt": 3515072000,
+    "total_cash": 3053306112
   },
   "ADI": {
     "ticker": "ADI",
@@ -1233,7 +1539,10 @@
     "de": 27.31,
     "sales5y": 39.6,
     "roic_proxy": 0.122,
-    "fcf_margin": 0.299
+    "fcf_margin": 0.299,
+    "net_debt_to_ebitda": 0.99,
+    "total_debt": 9164060672,
+    "total_cash": 2324933888
   },
   "ARM": {
     "ticker": "ARM",
@@ -1245,7 +1554,10 @@
     "de": 5.62,
     "sales5y": 22.4,
     "roic_proxy": 0.134,
-    "fcf_margin": 0.259
+    "fcf_margin": 0.259,
+    "net_debt_to_ebitda": -3.2,
+    "total_debt": 485000000,
+    "total_cash": 3888000000
   },
   "ASML": {
     "ticker": "ASML",
@@ -1257,7 +1569,10 @@
     "de": 9.09,
     "sales5y": 21.3,
     "roic_proxy": 0.539,
-    "fcf_margin": 0.239
+    "fcf_margin": 0.239,
+    "net_debt_to_ebitda": -0.67,
+    "total_debt": 1963000064,
+    "total_cash": 12735099904
   },
   "XOM": {
     "ticker": "XOM",
@@ -1269,7 +1584,10 @@
     "de": 15.92,
     "sales5y": 44.1,
     "roic_proxy": 0.126,
-    "fcf_margin": 0.057
+    "fcf_margin": 0.057,
+    "net_debt_to_ebitda": 0.47,
+    "total_debt": 42368000000,
+    "total_cash": 10588000256
   },
   "ALAB": {
     "ticker": "ALAB",
@@ -1281,7 +1599,10 @@
     "de": 2.57,
     "sales5y": 104.5,
     "roic_proxy": 0.258,
-    "fcf_margin": 0.076
+    "fcf_margin": 0.076,
+    "net_debt_to_ebitda": -4.23,
+    "total_debt": 44413000,
+    "total_cash": 1252957952
   },
   "CDNS": {
     "ticker": "CDNS",
@@ -1293,7 +1614,10 @@
     "de": 38.66,
     "sales5y": 24.2,
     "roic_proxy": 0.232,
-    "fcf_margin": 0.276
+    "fcf_margin": 0.276,
+    "net_debt_to_ebitda": 0.52,
+    "total_debt": 2651358976,
+    "total_cash": 1531835008
   },
   "WMT": {
     "ticker": "WMT",
@@ -1305,7 +1629,10 @@
     "de": 71.65,
     "sales5y": 5.9,
     "roic_proxy": 0.223,
-    "fcf_margin": 0.01
+    "fcf_margin": 0.01,
+    "net_debt_to_ebitda": 1.44,
+    "total_debt": 75092000768,
+    "total_cash": 11528999936
   },
   "CTAS": {
     "ticker": "CTAS",
@@ -1317,7 +1644,10 @@
     "de": 52.1,
     "sales5y": 10.9,
     "roic_proxy": 0.414,
-    "fcf_margin": 0.151
+    "fcf_margin": 0.151,
+    "net_debt_to_ebitda": 0.76,
+    "total_debt": 2711374080,
+    "total_cash": 364579008
   },
   "BKR": {
     "ticker": "BKR",
@@ -1329,7 +1659,10 @@
     "de": 80.92,
     "sales5y": -2.4,
     "roic_proxy": 0.165,
-    "fcf_margin": 0.159
+    "fcf_margin": 0.159,
+    "net_debt_to_ebitda": -0.16,
+    "total_debt": 16252999680,
+    "total_cash": 17024000000
   },
   "ADSK": {
     "ticker": "ADSK",
@@ -1341,7 +1674,10 @@
     "de": 109.52,
     "sales5y": 16.1,
     "roic_proxy": 0.539,
-    "fcf_margin": 0.405
+    "fcf_margin": 0.405,
+    "net_debt_to_ebitda": -0.2,
+    "total_debt": 3704999936,
+    "total_cash": 4155000064
   },
   "ADP": {
     "ticker": "ADP",
@@ -1353,7 +1689,10 @@
     "de": 91.44,
     "sales5y": 6.8,
     "roic_proxy": 0.722,
-    "fcf_margin": 0.239
+    "fcf_margin": 0.239,
+    "net_debt_to_ebitda": 0.2,
+    "total_debt": 5514699776,
+    "total_cash": 4230099968
   },
   "AXON": {
     "ticker": "AXON",
@@ -1365,7 +1704,10 @@
     "de": 50.36,
     "sales5y": 35.3,
     "roic_proxy": 0.062,
-    "fcf_margin": 0.069
+    "fcf_margin": 0.069,
+    "net_debt_to_ebitda": 7.01,
+    "total_debt": 1850605952,
+    "total_cash": 692532992
   },
   "WFC": {
     "ticker": "WFC",
@@ -1377,7 +1719,10 @@
     "de": 50.0,
     "sales5y": 9.5,
     "roic_proxy": 0.126,
-    "fcf_margin": 0.272
+    "fcf_margin": 0.272,
+    "net_debt_to_ebitda": -3.17,
+    "total_debt": 441562005504,
+    "total_cash": 601165004800
   },
   "CEG": {
     "ticker": "CEG",
@@ -1389,7 +1734,10 @@
     "de": 76.42,
     "sales5y": 23.0,
     "roic_proxy": 0.151,
-    "fcf_margin": -0.212
+    "fcf_margin": -0.212,
+    "net_debt_to_ebitda": 3.02,
+    "total_debt": 24700000256,
+    "total_cash": 697000000
   },
   "CCEP": {
     "ticker": "CCEP",
@@ -1401,7 +1749,10 @@
     "de": 139.06,
     "sales5y": 4.4,
     "roic_proxy": 0.235,
-    "fcf_margin": 0.074
+    "fcf_margin": 0.074,
+    "net_debt_to_ebitda": 2.89,
+    "total_debt": 12188999680,
+    "total_cash": 1994000000
   },
   "CRWV": {
     "ticker": "CRWV",
@@ -1413,7 +1764,10 @@
     "de": 1027.33,
     "sales5y": 112.5,
     "roic_proxy": 0.15,
-    "fcf_margin": -1.197
+    "fcf_margin": -1.197,
+    "net_debt_to_ebitda": 12.16,
+    "total_debt": 51612999680,
+    "total_cash": 5538999808
   },
   "CPRT": {
     "ticker": "CPRT",
@@ -1425,7 +1779,10 @@
     "de": 0.97,
     "sales5y": 2.4,
     "roic_proxy": 0.162,
-    "fcf_margin": 0.19
+    "fcf_margin": 0.19,
+    "net_debt_to_ebitda": -2.36,
+    "total_debt": 88367000,
+    "total_cash": 4489802240
   },
   "DASH": {
     "ticker": "DASH",
@@ -1437,7 +1794,10 @@
     "de": 33.28,
     "sales5y": 35.6,
     "roic_proxy": 0.089,
-    "fcf_margin": 0.324
+    "fcf_margin": 0.324,
+    "net_debt_to_ebitda": -1.42,
+    "total_debt": 3304999936,
+    "total_cash": 5346999808
   },
   "CRWD": {
     "ticker": "CRWD",
@@ -1449,7 +1809,10 @@
     "de": 15.96,
     "sales5y": 25.8,
     "roic_proxy": 0.015,
-    "fcf_margin": 0.37
+    "fcf_margin": 0.37,
+    "net_debt_to_ebitda": -39.24,
+    "total_debt": 820179008,
+    "total_cash": 5013847040
   },
   "DDOG": {
     "ticker": "DDOG",
@@ -1461,7 +1824,10 @@
     "de": 29.26,
     "sales5y": 35.6,
     "roic_proxy": 0.047,
-    "fcf_margin": 0.265
+    "fcf_margin": 0.265,
+    "net_debt_to_ebitda": -44.73,
+    "total_debt": 1277800960,
+    "total_cash": 4985438208
   },
   "FANG": {
     "ticker": "FANG",
@@ -1473,7 +1839,10 @@
     "de": 28.68,
     "sales5y": 52.5,
     "roic_proxy": 0.035,
-    "fcf_margin": 0.31
+    "fcf_margin": 0.31,
+    "net_debt_to_ebitda": 1.03,
+    "total_debt": 12613999616,
+    "total_cash": 462000000
   },
   "CSX": {
     "ticker": "CSX",
@@ -1485,7 +1854,10 @@
     "de": 138.07,
     "sales5y": 10.1,
     "roic_proxy": 0.244,
-    "fcf_margin": 0.135
+    "fcf_margin": 0.135,
+    "net_debt_to_ebitda": 2.64,
+    "total_debt": 19451000832,
+    "total_cash": 1390000000
   },
   "FER": {
     "ticker": "FER",
@@ -1497,7 +1869,10 @@
     "de": 144.09,
     "sales5y": 5.2,
     "roic_proxy": 0.116,
-    "fcf_margin": 0.09
+    "fcf_margin": 0.09,
+    "net_debt_to_ebitda": 4.39,
+    "total_debt": 10657000448,
+    "total_cash": 3864000000
   },
   "DXCM": {
     "ticker": "DXCM",
@@ -1509,7 +1884,10 @@
     "de": 53.35,
     "sales5y": 13.1,
     "roic_proxy": 0.385,
-    "fcf_margin": 0.205
+    "fcf_margin": 0.205,
+    "net_debt_to_ebitda": -0.39,
+    "total_debt": 1398400000,
+    "total_cash": 1947000064
   },
   "FAST": {
     "ticker": "FAST",
@@ -1521,7 +1899,10 @@
     "de": 10.85,
     "sales5y": 14.7,
     "roic_proxy": 0.343,
-    "fcf_margin": 0.105
+    "fcf_margin": 0.105,
+    "net_debt_to_ebitda": 0.12,
+    "total_debt": 451700000,
+    "total_cash": 211900000
   },
   "EXC": {
     "ticker": "EXC",
@@ -1533,7 +1914,10 @@
     "de": 177.36,
     "sales5y": 9.9,
     "roic_proxy": 0.097,
-    "fcf_margin": -0.106
+    "fcf_margin": -0.106,
+    "net_debt_to_ebitda": 6.09,
+    "total_debt": 52672999424,
+    "total_cash": 1812999936
   },
   "FTNT": {
     "ticker": "FTNT",
@@ -1545,7 +1929,10 @@
     "de": 36.19,
     "sales5y": 25.6,
     "roic_proxy": 1.174,
-    "fcf_margin": 0.301
+    "fcf_margin": 0.301,
+    "net_debt_to_ebitda": -1.35,
+    "total_debt": 561400000,
+    "total_cash": 4069600000
   },
   "GEHC": {
     "ticker": "GEHC",
@@ -1557,7 +1944,10 @@
     "de": 93.97,
     "sales5y": 5.8,
     "roic_proxy": 0.194,
-    "fcf_margin": 0.074
+    "fcf_margin": 0.074,
+    "net_debt_to_ebitda": 2.36,
+    "total_debt": 10540999680,
+    "total_cash": 2079000064
   },
   "MAR": {
     "ticker": "MAR",
@@ -1569,7 +1959,10 @@
     "de": 50.0,
     "sales5y": 11.1,
     "roic_proxy": 0.146,
-    "fcf_margin": 0.279
+    "fcf_margin": 0.279,
+    "net_debt_to_ebitda": 3.6,
+    "total_debt": 17774000128,
+    "total_cash": 462000000
   },
   "KLAC": {
     "ticker": "KLAC",
@@ -1581,7 +1974,10 @@
     "de": 96.88,
     "sales5y": 15.2,
     "roic_proxy": 0.875,
-    "fcf_margin": 0.193
+    "fcf_margin": 0.193,
+    "net_debt_to_ebitda": 0.21,
+    "total_debt": 6151712768,
+    "total_cash": 4902408192
   },
   "LITE": {
     "ticker": "LITE",
@@ -1593,7 +1989,10 @@
     "de": 35.99,
     "sales5y": 109.3,
     "roic_proxy": 0.087,
-    "fcf_margin": 0.075
+    "fcf_margin": 0.075,
+    "net_debt_to_ebitda": -1.33,
+    "total_debt": 1671200000,
+    "total_cash": 2738400000
   },
   "HONA": {
     "ticker": "HONA",
@@ -1605,7 +2004,10 @@
     "de": 50.0,
     "sales5y": 5.4,
     "roic_proxy": 0.147,
-    "fcf_margin": 0.109
+    "fcf_margin": 0.109,
+    "net_debt_to_ebitda": 4.27,
+    "total_debt": 16149000192,
+    "total_cash": 1057000000
   },
   "KDP": {
     "ticker": "KDP",
@@ -1617,7 +2019,10 @@
     "de": 99.65,
     "sales5y": 75.6,
     "roic_proxy": 0.051,
-    "fcf_margin": 0.229
+    "fcf_margin": 0.229,
+    "net_debt_to_ebitda": 6.66,
+    "total_debt": 33528000512,
+    "total_cash": 1526000000
   },
   "HON": {
     "ticker": "HON",
@@ -1629,7 +2034,10 @@
     "de": 185.37,
     "sales5y": 4.3,
     "roic_proxy": 0.466,
-    "fcf_margin": 0.069
+    "fcf_margin": 0.069,
+    "net_debt_to_ebitda": 3.03,
+    "total_debt": 34955001856,
+    "total_cash": 9196000256
   },
   "MELI": {
     "ticker": "MELI",
@@ -1641,7 +2049,10 @@
     "de": 168.59,
     "sales5y": 49.8,
     "roic_proxy": 0.275,
-    "fcf_margin": 0.01
+    "fcf_margin": 0.01,
+    "net_debt_to_ebitda": 1.92,
+    "total_debt": 13207000064,
+    "total_cash": 5744999936
   },
   "IDXX": {
     "ticker": "IDXX",
@@ -1653,7 +2064,10 @@
     "de": 67.97,
     "sales5y": 9.7,
     "roic_proxy": 0.742,
-    "fcf_margin": 0.2
+    "fcf_margin": 0.2,
+    "net_debt_to_ebitda": 0.55,
+    "total_debt": 1096081024,
+    "total_cash": 196932992
   },
   "MRNA": {
     "ticker": "MRNA",
@@ -1665,7 +2079,10 @@
     "de": 19.04,
     "sales5y": 2.1,
     "roic_proxy": 0.15,
-    "fcf_margin": 0.134
+    "fcf_margin": 0.134,
+    "net_debt_to_ebitda": -0.22,
+    "total_debt": 1287000064,
+    "total_cash": 5137999872
   },
   "MCHP": {
     "ticker": "MCHP",
@@ -1677,7 +2094,10 @@
     "de": 83.69,
     "sales5y": 38.0,
     "roic_proxy": 0.072,
-    "fcf_margin": 0.266
+    "fcf_margin": 0.266,
+    "net_debt_to_ebitda": 3.4,
+    "total_debt": 5398700032,
+    "total_cash": 272300000
   },
   "MRVL": {
     "ticker": "MRVL",
@@ -1689,7 +2109,10 @@
     "de": 28.52,
     "sales5y": 36.5,
     "roic_proxy": 0.165,
-    "fcf_margin": 0.255
+    "fcf_margin": 0.255,
+    "net_debt_to_ebitda": 0.47,
+    "total_debt": 5286099968,
+    "total_cash": 3932800000
   },
   "MNST": {
     "ticker": "MNST",
@@ -1701,7 +2124,10 @@
     "de": 0.99,
     "sales5y": 20.2,
     "roic_proxy": 0.257,
-    "fcf_margin": 0.182
+    "fcf_margin": 0.182,
+    "net_debt_to_ebitda": -1.13,
+    "total_debt": 92932000,
+    "total_cash": 3419256064
   },
   "ODFL": {
     "ticker": "ODFL",
@@ -1713,7 +2139,10 @@
     "de": 0.44,
     "sales5y": 10.4,
     "roic_proxy": 0.248,
-    "fcf_margin": 0.173
+    "fcf_margin": 0.173,
+    "net_debt_to_ebitda": -0.15,
+    "total_debt": 19997000,
+    "total_cash": 283939008
   },
   "NXPI": {
     "ticker": "NXPI",
@@ -1725,7 +2154,10 @@
     "de": 93.33,
     "sales5y": 19.5,
     "roic_proxy": 0.279,
-    "fcf_margin": 0.27
+    "fcf_margin": 0.27,
+    "net_debt_to_ebitda": 1.53,
+    "total_debt": 10976000000,
+    "total_cash": 3222000128
   },
   "ORLY": {
     "ticker": "ORLY",
@@ -1737,7 +2169,10 @@
     "de": 50.0,
     "sales5y": 8.1,
     "roic_proxy": 0.205,
-    "fcf_margin": 0.085
+    "fcf_margin": 0.085,
+    "net_debt_to_ebitda": 2.24,
+    "total_debt": 9587433472,
+    "total_cash": 262180992
   },
   "PCAR": {
     "ticker": "PCAR",
@@ -1749,7 +2184,10 @@
     "de": 72.91,
     "sales5y": 0.5,
     "roic_proxy": 0.128,
-    "fcf_margin": 0.07
+    "fcf_margin": 0.07,
+    "net_debt_to_ebitda": 1.88,
+    "total_debt": 14816300032,
+    "total_cash": 8667400192
   },
   "PAYX": {
     "ticker": "PAYX",
@@ -1761,7 +2199,10 @@
     "de": 124.7,
     "sales5y": 5.9,
     "roic_proxy": 0.471,
-    "fcf_margin": 0.286
+    "fcf_margin": 0.286,
+    "net_debt_to_ebitda": 1.2,
+    "total_debt": 4620899840,
+    "total_cash": 934200000
   },
   "MPWR": {
     "ticker": "MPWR",
@@ -1773,7 +2214,10 @@
     "de": 0.49,
     "sales5y": 47.6,
     "roic_proxy": 0.22,
-    "fcf_margin": 0.136
+    "fcf_margin": 0.136,
+    "net_debt_to_ebitda": -1.39,
+    "total_debt": 18934000,
+    "total_cash": 1413761024
   },
   "PYPL": {
     "ticker": "PYPL",
@@ -1785,7 +2229,10 @@
     "de": 71.75,
     "sales5y": 4.8,
     "roic_proxy": 0.245,
-    "fcf_margin": 0.13
+    "fcf_margin": 0.13,
+    "net_debt_to_ebitda": 0.46,
+    "total_debt": 14220999680,
+    "total_cash": 11256000512
   },
   "ROP": {
     "ticker": "ROP",
@@ -1797,7 +2244,10 @@
     "de": 60.53,
     "sales5y": 8.5,
     "roic_proxy": 0.131,
-    "fcf_margin": 0.274
+    "fcf_margin": 0.274,
+    "net_debt_to_ebitda": 3.38,
+    "total_debt": 11319400448,
+    "total_cash": 364900000
   },
   "PDD": {
     "ticker": "PDD",
@@ -1809,7 +2259,10 @@
     "de": 1.08,
     "sales5y": 8.1,
     "roic_proxy": 0.227,
-    "fcf_margin": 0.166
+    "fcf_margin": 0.166,
+    "net_debt_to_ebitda": -4.56,
+    "total_debt": 4844000256,
+    "total_cash": 456414003200
   },
   "RKLB": {
     "ticker": "RKLB",
@@ -1821,7 +2274,10 @@
     "de": 3.83,
     "sales5y": 62.0,
     "roic_proxy": 0.15,
-    "fcf_margin": -0.328
+    "fcf_margin": -0.328,
+    "net_debt_to_ebitda": -0.33,
+    "total_debt": 133691000,
+    "total_cash": 2302184960
   },
   "ROST": {
     "ticker": "ROST",
@@ -1833,7 +2289,10 @@
     "de": 70.28,
     "sales5y": 13.3,
     "roic_proxy": 0.426,
-    "fcf_margin": 0.082
+    "fcf_margin": 0.082,
+    "net_debt_to_ebitda": 0.12,
+    "total_debt": 4739150848,
+    "total_cash": 4288123904
   },
   "REGN": {
     "ticker": "REGN",
@@ -1845,7 +2304,10 @@
     "de": 8.54,
     "sales5y": 16.7,
     "roic_proxy": 0.14,
-    "fcf_margin": 0.197
+    "fcf_margin": 0.197,
+    "net_debt_to_ebitda": -1.12,
+    "total_debt": 2706599936,
+    "total_cash": 7994599936
   },
   "SHOP": {
     "ticker": "SHOP",
@@ -1857,7 +2319,10 @@
     "de": 1.4,
     "sales5y": 33.7,
     "roic_proxy": 0.155,
-    "fcf_margin": 0.12
+    "fcf_margin": 0.12,
+    "net_debt_to_ebitda": -1.99,
+    "total_debt": 178000000,
+    "total_cash": 4946999808
   },
   "MSTR": {
     "ticker": "MSTR",
@@ -1869,7 +2334,10 @@
     "de": 14.94,
     "sales5y": 6.9,
     "roic_proxy": 0.15,
-    "fcf_margin": -45.325
+    "fcf_margin": -45.325,
+    "net_debt_to_ebitda": 0.37,
+    "total_debt": 6770777088,
+    "total_cash": 2447982080
   },
   "SPCX": {
     "ticker": "SPCX",
@@ -1881,7 +2349,10 @@
     "de": 31.21,
     "sales5y": 91.9,
     "roic_proxy": 0.15,
-    "fcf_margin": -0.357
+    "fcf_margin": -0.357,
+    "net_debt_to_ebitda": -10.23,
+    "total_debt": 39708000256,
+    "total_cash": 100009000960
   },
   "SNPS": {
     "ticker": "SNPS",
@@ -1893,7 +2364,10 @@
     "de": 34.8,
     "sales5y": 42.4,
     "roic_proxy": 0.037,
-    "fcf_margin": 0.364
+    "fcf_margin": 0.364,
+    "net_debt_to_ebitda": 3.49,
+    "total_debt": 10841789440,
+    "total_cash": 3607668992
   },
   "NBIS": {
     "ticker": "NBIS",
@@ -1905,7 +2379,10 @@
     "de": 98.6,
     "sales5y": 454.0,
     "roic_proxy": 0.006,
-    "fcf_margin": -7.095
+    "fcf_margin": -7.095,
+    "net_debt_to_ebitda": 8.35,
+    "total_debt": 10195300352,
+    "total_cash": 8042100224
   },
   "STX": {
     "ticker": "STX",
@@ -1917,7 +2394,10 @@
     "de": 179.88,
     "sales5y": 48.5,
     "roic_proxy": 3.715,
-    "fcf_margin": 0.159
+    "fcf_margin": 0.159,
+    "net_debt_to_ebitda": 0.49,
+    "total_debt": 3897999872,
+    "total_cash": 1704000000
   },
   "TRI": {
     "ticker": "TRI",
@@ -1929,7 +2409,10 @@
     "de": 28.81,
     "sales5y": 9.5,
     "roic_proxy": 0.142,
-    "fcf_margin": 0.269
+    "fcf_margin": 0.269,
+    "net_debt_to_ebitda": 1.1,
+    "total_debt": 3204999936,
+    "total_cash": 693000000
   },
   "GRID": {
     "ticker": "GRID",
@@ -1941,7 +2424,10 @@
     "de": 50.0,
     "sales5y": 12.0,
     "roic_proxy": 0.15,
-    "fcf_margin": 0.18
+    "fcf_margin": 0.18,
+    "net_debt_to_ebitda": 0.0,
+    "total_debt": null,
+    "total_cash": null
   },
   "WDAY": {
     "ticker": "WDAY",
@@ -1953,7 +2439,10 @@
     "de": 58.39,
     "sales5y": 12.8,
     "roic_proxy": 0.16,
-    "fcf_margin": 0.3
+    "fcf_margin": 0.3,
+    "net_debt_to_ebitda": 0.23,
+    "total_debt": 3772000000,
+    "total_cash": 3403000064
   },
   "WDC": {
     "ticker": "WDC",
@@ -1965,7 +2454,10 @@
     "de": 13.44,
     "sales5y": 43.8,
     "roic_proxy": 1.309,
-    "fcf_margin": 0.176
+    "fcf_margin": 0.176,
+    "net_debt_to_ebitda": -0.08,
+    "total_debt": 1191000064,
+    "total_cash": 1579000064
   },
   "BEPC": {
     "ticker": "BEPC",
@@ -1977,7 +2469,10 @@
     "de": 229.01,
     "sales5y": 13.0,
     "roic_proxy": 0.016,
-    "fcf_margin": 0.271
+    "fcf_margin": 0.271,
+    "net_debt_to_ebitda": 7.19,
+    "total_debt": 15448999936,
+    "total_cash": 815000000
   },
   "VRTX": {
     "ticker": "VRTX",
@@ -1989,7 +2484,10 @@
     "de": 9.77,
     "sales5y": 12.5,
     "roic_proxy": 0.235,
-    "fcf_margin": 0.209
+    "fcf_margin": 0.209,
+    "net_debt_to_ebitda": -1.15,
+    "total_debt": 1977600000,
+    "total_cash": 7852400128
   },
   "TER": {
     "ticker": "TER",
@@ -2001,7 +2499,10 @@
     "de": 2.88,
     "sales5y": 103.9,
     "roic_proxy": 0.365,
-    "fcf_margin": 0.098
+    "fcf_margin": 0.098,
+    "net_debt_to_ebitda": -0.17,
+    "total_debt": 100127000,
+    "total_cash": 354828992
   },
   "ARE": {
     "ticker": "ARE",
@@ -2013,7 +2514,10 @@
     "de": 68.67,
     "sales5y": -11.9,
     "roic_proxy": 0.014,
-    "fcf_margin": 0.474
+    "fcf_margin": 0.474,
+    "net_debt_to_ebitda": 7.13,
+    "total_debt": 13167778816,
+    "total_cash": 470448992
   },
   "TTWO": {
     "ticker": "TTWO",
@@ -2025,7 +2529,10 @@
     "de": 81.61,
     "sales5y": 2.0,
     "roic_proxy": 0.005,
-    "fcf_margin": 0.188
+    "fcf_margin": 0.188,
+    "net_debt_to_ebitda": 1.46,
+    "total_debt": 2944699904,
+    "total_cash": 1826599936
   },
   "XEL": {
     "ticker": "XEL",
@@ -2037,7 +2544,10 @@
     "de": 173.13,
     "sales5y": -5.1,
     "roic_proxy": 0.099,
-    "fcf_margin": -0.541
+    "fcf_margin": -0.541,
+    "net_debt_to_ebitda": 6.47,
+    "total_debt": 41650999296,
+    "total_cash": 2018000000
   },
   "LYTE": {
     "ticker": "LYTE",
@@ -2049,7 +2559,10 @@
     "de": 50.0,
     "sales5y": 12.0,
     "roic_proxy": 0.15,
-    "fcf_margin": 0.18
+    "fcf_margin": 0.18,
+    "net_debt_to_ebitda": 0.0,
+    "total_debt": null,
+    "total_cash": null
   },
   "VTI": {
     "ticker": "VTI",
@@ -2061,7 +2574,10 @@
     "de": 50.0,
     "sales5y": 12.0,
     "roic_proxy": 0.15,
-    "fcf_margin": 0.18
+    "fcf_margin": 0.18,
+    "net_debt_to_ebitda": 0.0,
+    "total_debt": null,
+    "total_cash": null
   },
   "SCHD": {
     "ticker": "SCHD",
@@ -2073,7 +2589,10 @@
     "de": 50.0,
     "sales5y": 12.0,
     "roic_proxy": 0.15,
-    "fcf_margin": 0.18
+    "fcf_margin": 0.18,
+    "net_debt_to_ebitda": 0.0,
+    "total_debt": null,
+    "total_cash": null
   },
   "DTCR": {
     "ticker": "DTCR",
@@ -2085,7 +2604,10 @@
     "de": 50.0,
     "sales5y": 12.0,
     "roic_proxy": 0.15,
-    "fcf_margin": 0.18
+    "fcf_margin": 0.18,
+    "net_debt_to_ebitda": 0.0,
+    "total_debt": null,
+    "total_cash": null
   },
   "TSM": {
     "ticker": "TSM",
@@ -2097,7 +2619,10 @@
     "de": 16.5,
     "sales5y": 36.0,
     "roic_proxy": 0.4,
-    "fcf_margin": 0.165
+    "fcf_margin": 0.165,
+    "net_debt_to_ebitda": -0.89,
+    "total_debt": 818380013568,
+    "total_cash": 4016980099072
   },
   "IONQ": {
     "ticker": "IONQ",
@@ -2109,7 +2634,10 @@
     "de": 1.63,
     "sales5y": 286.8,
     "roic_proxy": 0.15,
-    "fcf_margin": -0.356
+    "fcf_margin": -0.356,
+    "net_debt_to_ebitda": -0.81,
+    "total_debt": 54498000,
+    "total_cash": 2118968960
   },
   "CWEN": {
     "ticker": "CWEN",
@@ -2121,6 +2649,9 @@
     "de": 176.9,
     "sales5y": 22.7,
     "roic_proxy": 0.015,
-    "fcf_margin": 0.268
+    "fcf_margin": 0.268,
+    "net_debt_to_ebitda": 8.23,
+    "total_debt": 9900999680,
+    "total_cash": 284000000
   }
 }

@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'slider-min-sales5y', badgeId: 'val-min-sales5y', suffix: '%', decimals: 1 },
         { id: 'slider-min-roic', badgeId: 'val-min-roic', suffix: '%', decimals: 1 },
         { id: 'slider-max-pe', badgeId: 'val-max-pe', suffix: 'x', decimals: 1 },
-        { id: 'slider-max-de', badgeId: 'val-max-de', suffix: '%', decimals: 1 },
+        { id: 'slider-max-de', badgeId: 'val-max-de', suffix: 'x', decimals: 1 },
         { id: 'slider-min-insider', badgeId: 'val-min-insider', prefix: '$', decimals: 0, isCurrency: true },
         { id: 'slider-max-alloc', badgeId: 'val-max-alloc', suffix: '%', decimals: 1 },
         { id: 'slider-cash-buffer', badgeId: 'val-cash-buffer', suffix: '%', decimals: 1 },
@@ -155,19 +155,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Strategy Presets
     const presets = {
         'munger-strict': {
-            min_munger: 2.0, min_sales5y: 10, min_roic: 15, max_pe: 35, max_de: 150,
+            min_munger: 2.0, min_sales5y: 10, min_roic: 15, max_pe: 35, max_de: 2.5,
             conjunctive: true, value_trap: true, gating200w: false
         },
         'deep-value': {
-            min_munger: 1.5, min_sales5y: 5, min_roic: 12, max_pe: 22, max_de: 100,
+            min_munger: 1.5, min_sales5y: 5, min_roic: 12, max_pe: 22, max_de: 1.5,
             conjunctive: true, value_trap: true, gating200w: false
         },
         'growth-compounder': {
-            min_munger: 3.0, min_sales5y: 18, min_roic: 25, max_pe: 45, max_de: 200,
+            min_munger: 3.0, min_sales5y: 18, min_roic: 25, max_pe: 45, max_de: 3.0,
             conjunctive: true, value_trap: true, gating200w: false
         },
         'relaxed-screen': {
-            min_munger: 1.0, min_sales5y: 0, min_roic: 10, max_pe: 55, max_de: 300,
+            min_munger: 1.0, min_sales5y: 0, min_roic: 10, max_pe: 55, max_de: 4.5,
             conjunctive: false, value_trap: true, gating200w: false
         }
     };
@@ -531,9 +531,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${c.pe.toFixed(1)}x
                 </td>
 
-                <!-- Pillar 4: Debt/Equity -->
-                <td style="text-align: right;" class="mono ${passDe ? 'cell-pillar-pass' : 'cell-pillar-fail'}" title="${passDe ? 'Pillar 4 Pass: ≤ 55.2% median' : 'Pillar 4 Fail: > 55.2% median (Note buybacks)'}">
-                    ${c.de.toFixed(1)}%
+                <!-- Pillar 4: Net Debt / EBITDA -->
+                <td style="text-align: right;" class="mono ${passDe ? 'cell-pillar-pass' : 'cell-pillar-fail'}" title="${passDe ? 'Pillar 4 Pass: Net Debt/EBITDA ≤ 2.5x (Median: 1.06x)' : 'Pillar 4 Fail: Net Debt/EBITDA > 2.5x'}">
+                    ${c.nd_ebitda !== undefined ? (c.nd_ebitda <= 0 ? '<span style=\"color:#34d399;\">NET CASH</span>' : `${c.nd_ebitda.toFixed(1)}x`) : `${c.de.toFixed(1)}%`}
                 </td>
 
                 <!-- All 4 Pillars Gate -->
@@ -655,7 +655,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modal-sales5y').textContent = `${c.sales5y.toFixed(1)}%`;
         document.getElementById('modal-roic').textContent = `${c.roic.toFixed(1)}%`;
         document.getElementById('modal-valuation').textContent = `${c.pe.toFixed(1)}x / ${c.pb.toFixed(2)}x`;
-        document.getElementById('modal-solvency').textContent = `${c.de.toFixed(1)}%`;
+        if (c.nd_ebitda !== undefined) {
+            const ndStr = c.nd_ebitda <= 0 ? "Net Cash (Fortress)" : `${c.nd_ebitda.toFixed(2)}x`;
+            document.getElementById('modal-solvency').textContent = `${ndStr} (D/E: ${c.de.toFixed(1)}%)`;
+        } else {
+            document.getElementById('modal-solvency').textContent = `${c.de.toFixed(1)}%`;
+        }
 
         const badge = document.getElementById('modal-insider-badge');
         if (c.insider_mult > 1.0) {
@@ -1258,7 +1263,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const seed = [
             {
                 ticker: "GOOGL", name: "Alphabet Inc.", sector: "Communication Services", theme: "Search & Cloud Moat",
-                spot: 248.50, sales5y: 15.2, roic: 33.4, pe: 23.8, pb: 6.8, de: 11.2,
+                spot: 248.50, sales5y: 15.2, roic: 33.4, pe: 23.8, pb: 6.8, de: 11.2, nd_ebitda: -0.70,
                 raw_m: 7.42, clean_m: 7.42, insider_mult: 1.15, conviction_m: 8.53,
                 all_med: true, is_strike_zone: true, is_trap: false,
                 insider_notes: "Cluster Buying Boost (1.15x): 2 insiders bought $480k on open market.",
@@ -1268,7 +1273,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             {
                 ticker: "FTNT", name: "Fortinet Inc.", sector: "Technology", theme: "Cybersecurity Cash Compounder",
-                spot: 186.46, sales5y: 25.6, roic: 117.4, pe: 36.8, pb: 91.27, de: 24.1,
+                spot: 186.46, sales5y: 25.6, roic: 117.4, pe: 36.8, pb: 91.27, de: 24.1, nd_ebitda: -0.85,
                 raw_m: 4.33, clean_m: 10.24, insider_mult: 0.70, conviction_m: 7.17,
                 all_med: false, is_strike_zone: false, is_trap: false,
                 insider_notes: "C-suite open-market distribution flagged (0.70x haircut).",
@@ -1278,7 +1283,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             {
                 ticker: "NVDA", name: "NVIDIA Corp", sector: "Technology", theme: "Accelerated Computing",
-                spot: 214.13, sales5y: 65.2, roic: 68.4, pe: 42.1, pb: 28.5, de: 18.2,
+                spot: 214.13, sales5y: 65.2, roic: 68.4, pe: 42.1, pb: 28.5, de: 18.2, nd_ebitda: -0.12,
                 raw_m: 18.36, clean_m: 18.36, insider_mult: 1.00, conviction_m: 18.36,
                 all_med: false, is_strike_zone: false, is_trap: false,
                 insider_notes: "Neutral open-market insider profile.",
@@ -1288,17 +1293,17 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             {
                 ticker: "LLY", name: "Eli Lilly and Co.", sector: "Healthcare", theme: "Biopharma Moat",
-                spot: 1208.25, sales5y: 47.7, roic: 102.3, pe: 54.2, pb: 31.11, de: 112.5,
+                spot: 1208.25, sales5y: 47.7, roic: 102.3, pe: 54.2, pb: 31.11, de: 112.5, nd_ebitda: 1.45,
                 raw_m: 2.98, clean_m: 10.70, insider_mult: 1.00, conviction_m: 10.70,
                 all_med: false, is_strike_zone: false, is_trap: false,
                 insider_notes: "Neutral open-market insider profile.",
                 insider_buys_usd: 0, insider_sales_usd: 7638150,
-                radar: { growth: 95, roic: 98, valuation: 40, solvency: 65 },
-                pillar_pass: { growth: true, roic: true, pe: false, de: false }
+                radar: { growth: 95, roic: 98, valuation: 40, solvency: 85 },
+                pillar_pass: { growth: true, roic: true, pe: false, de: true }
             },
             {
                 ticker: "AAPL", name: "Apple Inc.", sector: "Technology", theme: "Consumer Moat",
-                spot: 345.85, sales5y: 16.4, roic: 148.8, pe: 39.1, pb: 46.33, de: 78.4,
+                spot: 345.85, sales5y: 16.4, roic: 148.8, pe: 39.1, pb: 46.33, de: 78.4, nd_ebitda: 0.13,
                 raw_m: 4.26, clean_m: 7.16, insider_mult: 0.70, conviction_m: 5.01,
                 all_med: false, is_strike_zone: false, is_trap: false,
                 insider_notes: "C-suite open-market sales flagged.",

@@ -259,14 +259,14 @@
                             <span class="control-hint">Ensures you do not overpay for moats. Guards against euphoric multiples.</span>
                         </div>
 
-                        <!-- Pillar 4: Max Debt-to-Equity -->
+                        <!-- Pillar 4: Max Net Debt / EBITDA -->
                         <div class="control-group">
                             <div class="control-label-row">
-                                <span class="control-label">🛡️ Pillar 4: Max Debt-to-Equity ($s$):</span>
-                                <span class="control-value-badge" id="val-max-de">150.0%</span>
+                                <span class="control-label">🛡️ Pillar 4: Max Net Debt / EBITDA ($s$):</span>
+                                <span class="control-value-badge" id="val-max-de">2.5x</span>
                             </div>
-                            <input type="range" class="slider-input" id="slider-max-de" min="20" max="500" step="10" value="150">
-                            <span class="control-hint">Solvency guardrail (Median: 55.2%). Note: aggressive share buybacks (e.g. Mastercard, Home Depot) reduce accounting book equity, inflating D/E even when cash flows are pristine. Set to 150%–300% to include buyback compounders.</span>
+                            <input type="range" class="slider-input" id="slider-max-de" min="0.5" max="6.0" step="0.1" value="2.5">
+                            <span class="control-hint">Operating cash solvency (Median: 1.06x). Replaces distorted Book D/E with buyback-immune cash coverage ($\text{Net Debt} = \text{Total Debt} - \text{Cash}$). $\le 2.5\text{x}$ is institutional investment-grade safety.</span>
                         </div>
                     </div>
 
@@ -457,7 +457,7 @@
                                     <th data-sort="sales5y" style="text-align: right;" title="Pillar 1: 5Y Revenue Growth (Median: 12.8%)">📈 5Y Sales</th>
                                     <th data-sort="roic" style="text-align: right;" title="Pillar 2: Return on Invested Capital (Median: 18.2%)">⚡ ROIC</th>
                                     <th data-sort="pe" style="text-align: right;" title="Pillar 3: Price-to-Earnings Ratio (Median: 27.4x)">💵 P/E</th>
-                                    <th data-sort="de" style="text-align: right;" title="Pillar 4: Debt-to-Equity Ratio (Median: 55.2%)">🛡️ D/E</th>
+                                    <th data-sort="nd_ebitda" style="text-align: right;" title="Pillar 4: Net Debt / EBITDA Ratio (Median: 1.06x - Buyback Immune)">🛡️ ND/EBITDA</th>
                                     <th data-sort="passed_count" style="text-align: center;" title="Conjunctive Hurdle: Must pass all 4 pillars simultaneously">All 4 Passed?</th>
                                     <th data-sort="raw_m" style="text-align: right;">Raw M</th>
                                     <th data-sort="clean_m" style="text-align: right;">Clean M</th>
@@ -793,10 +793,10 @@
 
                     <div class="control-group">
                         <div class="control-label-row">
-                            <span class="control-label">🛡️ Solvency (Debt/Equity):</span>
-                            <strong class="mono" id="modal-solvency">22.4%</strong>
+                            <span class="control-label">🛡️ Solvency (Net Debt / EBITDA):</span>
+                            <strong class="mono" id="modal-solvency">0.6x</strong>
                         </div>
-                        <span class="control-hint">Prudent capital structure with ample cash cushion.</span>
+                        <span class="control-hint">Operating cash solvency (Buyback-immune). &le; 2.5x is investment-grade.</span>
                     </div>
                 </div>
             </div>

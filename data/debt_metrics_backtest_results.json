@@ -1,0 +1,209 @@
+{
+  "timestamp": "2026-10-17T07:41:09.815691",
+  "period": "2008-2026",
+  "years": 18.8,
+  "summary": {
+    "Baseline (No Debt Filter)": {
+      "signals": 12875,
+      "win_rate_3m": 63.8,
+      "win_rate_1y": 73.5,
+      "ret_3m": 6.29,
+      "ret_6m": 13.63,
+      "ret_1y": 30.6,
+      "alpha_3m": 3.3,
+      "alpha_6m": 7.52,
+      "alpha_1y": 17.18,
+      "max_dd_3m": -14.83,
+      "max_dd_1y": -27.18,
+      "calmar": 1.13
+    },
+    "Model 1: Book Debt/Equity (<=100%)": {
+      "signals": 8544,
+      "win_rate_3m": 64.9,
+      "win_rate_1y": 73.4,
+      "ret_3m": 7.13,
+      "ret_6m": 15.49,
+      "ret_1y": 34.24,
+      "alpha_3m": 4.22,
+      "alpha_6m": 9.48,
+      "alpha_1y": 20.91,
+      "max_dd_3m": -15.48,
+      "max_dd_1y": -28.26,
+      "calmar": 1.21
+    },
+    "Model 2: Net Debt / EBITDA (<=2.5x)": {
+      "signals": 11647,
+      "win_rate_3m": 63.6,
+      "win_rate_1y": 72.6,
+      "ret_3m": 6.51,
+      "ret_6m": 14.16,
+      "ret_1y": 32.05,
+      "alpha_3m": 3.6,
+      "alpha_6m": 8.2,
+      "alpha_1y": 18.87,
+      "max_dd_3m": -15.31,
+      "max_dd_1y": -28.11,
+      "calmar": 1.14
+    },
+    "Model 3: Debt / Market Cap (<=25%)": {
+      "signals": 4161,
+      "win_rate_3m": 61.2,
+      "win_rate_1y": 64.8,
+      "ret_3m": 7.61,
+      "ret_6m": 16.93,
+      "ret_1y": 38.18,
+      "alpha_3m": 4.52,
+      "alpha_6m": 10.77,
+      "alpha_1y": 25.06,
+      "max_dd_3m": -16.63,
+      "max_dd_1y": -32.51,
+      "calmar": 1.17
+    },
+    "Model 4: Net Debt / FCF (<=3.5x)": {
+      "signals": 10870,
+      "win_rate_3m": 63.5,
+      "win_rate_1y": 72.5,
+      "ret_3m": 6.54,
+      "ret_6m": 14.26,
+      "ret_1y": 32.24,
+      "alpha_3m": 3.65,
+      "alpha_6m": 8.34,
+      "alpha_1y": 19.14,
+      "max_dd_3m": -15.45,
+      "max_dd_1y": -28.35,
+      "calmar": 1.14
+    },
+    "Model 5: Dual Solvency (ND/EBITDA<=2.5x & D/MC<=25%)": {
+      "signals": 4161,
+      "win_rate_3m": 61.2,
+      "win_rate_1y": 64.8,
+      "ret_3m": 7.61,
+      "ret_6m": 16.93,
+      "ret_1y": 38.18,
+      "alpha_3m": 4.52,
+      "alpha_6m": 10.77,
+      "alpha_1y": 25.06,
+      "max_dd_3m": -16.63,
+      "max_dd_1y": -32.51,
+      "calmar": 1.17
+    }
+  },
+  "compounder_retention": {
+    "Baseline (No Debt Filter)": {
+      "AAPL": 100.0,
+      "MA": 0.0,
+      "HD": 100.0,
+      "MSFT": 100.0,
+      "PEP": 0.0,
+      "GOOGL": 100.0,
+      "NVDA": 0.0,
+      "AZO": 0.0,
+      "ORCL": 100.0,
+      "COST": 0.0,
+      "avg_retention": 50.0
+    },
+    "Model 1: Book Debt/Equity (<=100%)": {
+      "AAPL": 100.0,
+      "MA": 0.0,
+      "HD": 0.0,
+      "MSFT": 100.0,
+      "PEP": 0.0,
+      "GOOGL": 100.0,
+      "NVDA": 0.0,
+      "AZO": 0.0,
+      "ORCL": 0.0,
+      "COST": 0.0,
+      "avg_retention": 30.0
+    },
+    "Model 2: Net Debt / EBITDA (<=2.5x)": {
+      "AAPL": 100.0,
+      "MA": 0.0,
+      "HD": 100.0,
+      "MSFT": 100.0,
+      "PEP": 0.0,
+      "GOOGL": 100.0,
+      "NVDA": 0.0,
+      "AZO": 0.0,
+      "ORCL": 0.0,
+      "COST": 0.0,
+      "avg_retention": 40.0
+    },
+    "Model 3: Debt / Market Cap (<=25%)": {
+      "AAPL": 58.9,
+      "MA": 0.0,
+      "HD": 0.0,
+      "MSFT": 2.3,
+      "PEP": 0.0,
+      "GOOGL": 100.0,
+      "NVDA": 0.0,
+      "AZO": 0.0,
+      "ORCL": 0.0,
+      "COST": 0.0,
+      "avg_retention": 16.1
+    },
+    "Model 4: Net Debt / FCF (<=3.5x)": {
+      "AAPL": 100.0,
+      "MA": 0.0,
+      "HD": 0.0,
+      "MSFT": 100.0,
+      "PEP": 0.0,
+      "GOOGL": 100.0,
+      "NVDA": 0.0,
+      "AZO": 0.0,
+      "ORCL": 100.0,
+      "COST": 0.0,
+      "avg_retention": 40.0
+    },
+    "Model 5: Dual Solvency (ND/EBITDA<=2.5x & D/MC<=25%)": {
+      "AAPL": 58.9,
+      "MA": 0.0,
+      "HD": 0.0,
+      "MSFT": 2.3,
+      "PEP": 0.0,
+      "GOOGL": 100.0,
+      "NVDA": 0.0,
+      "AZO": 0.0,
+      "ORCL": 0.0,
+      "COST": 0.0,
+      "avg_retention": 16.1
+    }
+  },
+  "crisis_stress_test": {
+    "Baseline (No Debt Filter)": {
+      "gfc_1y_ret": 14.71,
+      "gfc_max_dd": -37.93,
+      "covid_1y_ret": 25.12,
+      "covid_max_dd": -29.1
+    },
+    "Model 1: Book Debt/Equity (<=100%)": {
+      "gfc_1y_ret": 15.79,
+      "gfc_max_dd": -38.14,
+      "covid_1y_ret": 25.69,
+      "covid_max_dd": -30.24
+    },
+    "Model 2: Net Debt / EBITDA (<=2.5x)": {
+      "gfc_1y_ret": 14.37,
+      "gfc_max_dd": -38.28,
+      "covid_1y_ret": 25.2,
+      "covid_max_dd": -30.09
+    },
+    "Model 3: Debt / Market Cap (<=25%)": {
+      "gfc_1y_ret": -15.56,
+      "gfc_max_dd": -54.54,
+      "covid_1y_ret": 15.24,
+      "covid_max_dd": -33.42
+    },
+    "Model 4: Net Debt / FCF (<=3.5x)": {
+      "gfc_1y_ret": 14.11,
+      "gfc_max_dd": -39.89,
+      "covid_1y_ret": 24.25,
+      "covid_max_dd": -30.55
+    },
+    "Model 5: Dual Solvency (ND/EBITDA<=2.5x & D/MC<=25%)": {
+      "gfc_1y_ret": -15.56,
+      "gfc_max_dd": -54.54,
+      "covid_1y_ret": 15.24,
+      "covid_max_dd": -33.42
+    }
+  }
+}
