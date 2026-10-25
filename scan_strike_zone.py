@@ -37,25 +37,62 @@ from munger_engine import (
 )
 
 
-def run_strike_zone_scan() -> pd.DataFrame:
+def run_strike_zone_scan(universe: str = "sp900") -> pd.DataFrame:
     print("=" * 96)
     print(" MUNGER FACTOR SYSTEM: LIVE STRIKE-ZONE SCANNER & TAX-LOT RECONCILER (v2.3.0)")
     print("=" * 96)
 
-    # 1. Load Dataset
-    close_df, gspc_close, fund_dict, eps_dict, is_synthetic = load_or_generate_dataset("data")
+    # 1. Load Dataset (full master cache)
+    close_df_full, gspc_close, fund_dict, eps_dict, is_synthetic = load_or_generate_dataset("data")
 
-    # 2. Staleness Circuit Breaker
-    is_stale, lag_hours, latest_dt = check_data_freshness(close_df)
+    # 2. Staleness Circuit Breaker (run on full dataset BEFORE universe slicing to preserve all columns)
+    is_stale, lag_hours, latest_dt = check_data_freshness(close_df_full)
     if is_stale:
         print(f"\n[CIRCUIT BREAKER ALERT] Price cache is stale ({lag_hours:.1f} hours lag since {latest_dt.strftime('%Y-%m-%d %H:%M')}).")
-        close_df, gspc_close = refresh_live_intraday_prices(
-            close_df=close_df,
+        close_df_full, gspc_close = refresh_live_intraday_prices(
+            close_df=close_df_full,
             gspc_close=gspc_close,
             save_path="data/historical_prices_1970_2026.pkl.xz",
         )
     else:
         print(f"[CIRCUIT BREAKER] Price cache is fresh ({lag_hours:.1f}h lag; latest bar: {latest_dt.strftime('%Y-%m-%d')}).")
+
+    close_df = close_df_full
+
+    # Universe Selection
+    univ_choice = str(universe).lower().strip()
+    if univ_choice in ["sp900", "s&p900", "s&p 900"]:
+        sp900_file = ROOT_DIR / "data" / "sp900_tickers.json"
+        if sp900_file.exists():
+            import json
+            with open(sp900_file, "r", encoding="utf-8") as f:
+                sp900_set = set(json.load(f))
+            valid_cols = [c for c in close_df.columns if c in sp900_set]
+            if valid_cols:
+                close_df = close_df[valid_cols]
+                print(f"[UNIVERSE] Active Universe: S&P 900 ({len(close_df.columns)} verified constituents)")
+    elif univ_choice in ["sp500", "s&p500", "s&p 500"]:
+        sp500_file = ROOT_DIR / "data" / "sp500_tickers.json"
+        if sp500_file.exists():
+            import json
+            with open(sp500_file, "r", encoding="utf-8") as f:
+                sp500_set = set(json.load(f))
+            valid_cols = [c for c in close_df.columns if c in sp500_set]
+            if valid_cols:
+                close_df = close_df[valid_cols]
+                print(f"[UNIVERSE] Active Universe: S&P 500 ({len(close_df.columns)} verified constituents)")
+    elif univ_choice in ["composite", "combined"]:
+        comp_file = ROOT_DIR / "data" / "composite_176_tickers.json"
+        if comp_file.exists():
+            import json
+            with open(comp_file, "r", encoding="utf-8") as f:
+                comp_set = set(json.load(f))
+            valid_cols = [c for c in close_df.columns if c in comp_set]
+            if valid_cols:
+                close_df = close_df[valid_cols]
+                print(f"[UNIVERSE] Active Universe: S&P 100 + NASDAQ 100 Composite ({len(close_df.columns)} constituents)")
+    else:
+        print(f"[UNIVERSE] Active Universe: All Available Equities ({len(close_df.columns)} constituents)")
 
     latest_dates = close_df.index[-2:]
     dt_last = latest_dates[-1]
@@ -87,6 +124,17 @@ def run_strike_zone_scan() -> pd.DataFrame:
 
     clean_fund = sanitize_universe_fundamentals(fund_dict, eps_dict)
 
+    # Cross-sectional medians across all 4 Munger pillars (aligned with Web Control Center)
+    growth_s = pd.Series({t: float(clean_fund.get(t, {}).get("sales5y", 0.0)) for t in close_df.columns})
+    roic_s = pd.Series({t: float(fund_dict.get(t, {}).get("roic_proxy", 0.0)) * 100.0 for t in close_df.columns})
+    pe_s = pd.Series({t: float(fund_dict.get(t, {}).get("pe", 25.0)) for t in close_df.columns})
+    nd_ebitda_s = pd.Series({t: float(fund_dict.get(t, {}).get("net_debt_to_ebitda", 1.2)) for t in close_df.columns})
+
+    med_g = float(growth_s.median()) if not growth_s.empty else 10.0
+    med_r = float(roic_s.median()) if not roic_s.empty else 15.0
+    med_y = float(pe_s.median()) if not pe_s.empty else 25.0
+    med_nd = float(nd_ebitda_s.median()) if not nd_ebitda_s.empty else 1.5
+
     # 4. Identify Candidates for SEC Form 4 Insider Analysis
     # Pick top 15 clean candidates + any high raw score constituents blocked as cyclical traps
     clean_series = scores_clean.loc[dt_last].sort_values(ascending=False)
@@ -110,17 +158,26 @@ def run_strike_zone_scan() -> pd.DataFrame:
     for t in close_df.columns:
         raw_m = float(scores_raw.loc[dt_last, t]) if pd.notna(scores_raw.loc[dt_last, t]) else 0.0
         clean_m = float(scores_clean.loc[dt_last, t]) if pd.notna(scores_clean.loc[dt_last, t]) else 0.0
-        passed_med = bool(med_clean.loc[dt_last, t])
+
+        clean_s5y = round(float(clean_fund.get(t, {}).get("sales5y", 0.0)), 1)
+        roic = round(float(fund_dict.get(t, {}).get("roic_proxy", 0.0)) * 100.0, 1)
+        pe = round(float(fund_dict.get(t, {}).get("pe", 25.0)), 1)
+        pb = round(float(fund_dict.get(t, {}).get("pb", 0.0)), 2)
+        nd_ebitda = round(float(fund_dict.get(t, {}).get("net_debt_to_ebitda", 1.2)), 2)
+
+        passed_med = bool(
+            clean_m > 0.0
+            and clean_s5y >= med_g
+            and roic >= med_r
+            and (0.0 < pe <= med_y)
+            and (nd_ebitda <= med_nd and nd_ebitda <= 2.5)
+        )
         passed_med_dict[t] = passed_med
 
         insider_info = insider_data.get(t, {"multiplier": 1.0, "signal": "NEUTRAL", "notes": ""})
         insider_mult = float(insider_info.get("multiplier", 1.0))
         conviction_m = round(clean_m * insider_mult, 2)
         conviction_scores[t] = conviction_m
-
-        clean_s5y = float(clean_fund.get(t, {}).get("sales5y", 0.0))
-        roic = float(fund_dict.get(t, {}).get("roic_proxy", 0.0)) * 100.0
-        pb = float(fund_dict.get(t, {}).get("pb", 0.0))
 
         if clean_m >= 2.0 and passed_med:
             if insider_mult > 1.0:
@@ -137,9 +194,11 @@ def run_strike_zone_scan() -> pd.DataFrame:
         rows.append({
             "Ticker": t,
             "Spot ($)": round(float(close_df.loc[dt_last, t]), 2),
-            "Sales5Y_%": round(clean_s5y, 1),
-            "ROIC_%": round(roic, 1),
-            "P/B": round(pb, 2),
+            "Sales5Y_%": clean_s5y,
+            "ROIC_%": roic,
+            "P/E": pe,
+            "ND/EBITDA": nd_ebitda,
+            "P/B": pb,
             "Raw_M": round(raw_m, 2),
             "Trap_Filtered_M": round(clean_m, 2),
             "Insider_Mult": insider_mult,
@@ -148,7 +207,10 @@ def run_strike_zone_scan() -> pd.DataFrame:
             "Audit_Status": status,
         })
 
-    df = pd.DataFrame(rows).sort_values(by=["Conviction_M", "Trap_Filtered_M", "Raw_M"], ascending=False)
+    df = pd.DataFrame(rows).sort_values(
+        by=["All_Med", "Conviction_M", "Trap_Filtered_M", "Raw_M"],
+        ascending=[False, False, False, False],
+    )
 
     print(f"\nEvaluation Date: {dt_last.strftime('%Y-%m-%d')} | Top 15 Candidates by Conviction Munger Score:")
     print(df.head(15).to_string(index=False))
@@ -178,7 +240,7 @@ def run_strike_zone_scan() -> pd.DataFrame:
     print(" FIDELITY TAX-LOT RECONCILER: EXECUTION DIRECTIVES & LOT STATUS")
     print("=" * 96)
 
-    live_prices_s = close_df.loc[dt_last]
+    live_prices_s = close_df_full.loc[dt_last]
     fidelity_df = parse_fidelity_positions_csv(
         live_prices=live_prices_s,
         eval_date=dt_last,
@@ -188,9 +250,10 @@ def run_strike_zone_scan() -> pd.DataFrame:
 
     if not fidelity_df.empty:
         cols_to_print = [
-            "Symbol", "Shares", "Cost_Basis", "Live_Price", "Live_Value",
+            "Account", "Symbol", "Shares", "Cost_Basis", "Live_Price", "Live_Value",
             "Unrealized_Gain", "Days_Held", "LTCG_Status", "Action", "Rationale"
         ]
+        cols_to_print = [c for c in cols_to_print if c in fidelity_df.columns]
         print(fidelity_df[cols_to_print].to_string(index=False))
 
         total_val = fidelity_df["Live_Value"].sum()
@@ -218,4 +281,13 @@ def run_strike_zone_scan() -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    run_strike_zone_scan()
+    import argparse
+    parser = argparse.ArgumentParser(description="Live Munger Factor Strike-Zone Scanner (v2.3.0)")
+    parser.add_argument(
+        "--universe", "-u",
+        choices=["sp900", "sp500", "composite", "all"],
+        default="sp900",
+        help="Target constituent universe (default: sp900 [903 equities], sp500 [503 equities], composite [176 equities], all [927 equities])"
+    )
+    args = parser.parse_args()
+    run_strike_zone_scan(universe=args.universe)

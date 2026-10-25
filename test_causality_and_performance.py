@@ -268,6 +268,56 @@ class TestMungerFactorSystemAudit(unittest.TestCase):
         intc_row = df[df["Symbol"] == "INTC"].iloc[0]
         self.assertEqual(intc_row["Action"], "SELL (MOC)")
 
+    def test_fidelity_native_sentence_case_headers_and_multi_asset_accounts(self) -> None:
+        """
+        Verifies that native Fidelity.com sentence-case CSV headers ('Account name',
+        'Last price', 'Current value', 'Cost basis total', 'Average cost basis'),
+        Money Market funds ('FZDXX'), Fixed-Income CDs ('70153RPB8'), Index ETFs ('EFA'),
+        and Tax-Advantaged accounts ('ROTH IRA') are parsed and classified accurately.
+        """
+        import tempfile
+        from pathlib import Path
+
+        csv_content = (
+            "Account number,Account name,Symbol,Description,Quantity,Last price,Current value,Cost basis total,Average cost basis,Date Acquired\n"
+            "Z111,INDIVIDUAL - TOD,FZDXX,FIDELITY MMKT PREMIUM CLASS,223404.5,$1.00,$223404.50,$223404.50,$1.00,\n"
+            "Z111,INDIVIDUAL - TOD,70153RPB8,PATHWARD NATL ASSN CD 4.50000% 10/14/2027,40000,$99.669,$39867.60,$40000.00,$100.00,2026-06-01\n"
+            "Z111,INDIVIDUAL - TOD,EFA,ISHARES MSCI EAFE ETF,1200,$94.96,$113952.00,$90000.00,$75.00,2026-08-01\n"
+            "R222,ROTH IRA,MRK,MERCK & CO INC,100,$101.67,$10167.00,$8500.00,$85.00,2026-09-01\n"
+        )
+        with tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False, encoding="utf-8") as tf:
+            tf.write(csv_content)
+            tmp_path = Path(tf.name)
+
+        try:
+            df = parse_fidelity_positions_csv(
+                csv_path=tmp_path,
+                live_prices={"MRK": 102.0},
+                eval_date="2026-10-18",
+                munger_scores={"MRK": 0.95},
+                immunized_flags={"MRK": False},
+            )
+            self.assertEqual(len(df), 3)
+            syms = list(df["Symbol"])
+            self.assertNotIn("FZDXX", syms)
+
+            cd_row = df[df["Symbol"] == "70153RPB8"].iloc[0]
+            self.assertEqual(cd_row["Cost_Basis"], 40000.0)
+            self.assertEqual(cd_row["Live_Value"], 39867.60)
+            self.assertEqual(cd_row["Action"], "HOLD (FIXED INCOME / CD)")
+
+            etf_row = df[df["Symbol"] == "EFA"].iloc[0]
+            self.assertEqual(etf_row["Cost_Basis"], 90000.0)
+            self.assertEqual(etf_row["Action"], "HOLD (INDEX ETF)")
+
+            mrk_row = df[df["Symbol"] == "MRK"].iloc[0]
+            self.assertEqual(mrk_row["Account"], "ROTH IRA")
+            self.assertEqual(mrk_row["LTCG_Status"], "TAX-EXEMPT")
+            self.assertEqual(mrk_row["Action"], "SELL (MOC)")
+            self.assertIn("Tax-advantaged account", mrk_row["Rationale"])
+        finally:
+            tmp_path.unlink(missing_ok=True)
+
 
 def main() -> None:
     suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestMungerFactorSystemAudit)

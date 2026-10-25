@@ -172,6 +172,7 @@ def main():
         if rep_file.exists():
             try:
                 with open(rep_file, "r", encoding="utf-8") as rf:
+                    d = json.load(rf)
                     raw_metrics = d.get("metrics", {})
                     if isinstance(raw_metrics, dict):
                         for tk, m in raw_metrics.items():

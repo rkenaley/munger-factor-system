@@ -131,6 +131,10 @@ def sanitize_universe_fundamentals(fund_dict: Dict, eps_dict: Dict) -> Dict:
 def load_or_generate_dataset(data_dir: Path | str = "data") -> Tuple[pd.DataFrame, pd.Series, Dict, Dict, bool]:
     """Loads (close_df, gspc_close, fund_dict, eps_dict, is_synthetic) from `data_dir`."""
     data_path = Path(data_dir)
+    if not data_path.exists():
+        alt_path = Path(__file__).resolve().parent / data_dir
+        if alt_path.exists():
+            data_path = alt_path
     price_file_xz = data_path / "historical_prices_1970_2026.pkl.xz"
     price_file_gz = data_path / "historical_prices_1970_2026.pkl.gz"
     price_file = price_file_xz if price_file_xz.exists() else price_file_gz
@@ -846,12 +850,40 @@ def refresh_live_intraday_prices(
         if save_path:
             p = Path(save_path)
             try:
+                save_df = updated_close.copy()
+                # Preserve existing columns on disk if caller only refreshed a universe subset
+                if p.exists():
+                    try:
+                        if p.suffix == ".xz":
+                            with lzma.open(p, "rb") as rf:
+                                prev_obj = pickle.load(rf)
+                        elif p.suffix == ".gz":
+                            with gzip.open(p, "rb") as rf:
+                                prev_obj = pickle.load(rf)
+                        else:
+                            prev_obj = None
+                        prev_df = prev_obj.get("close") if isinstance(prev_obj, dict) else (prev_obj if isinstance(prev_obj, pd.DataFrame) else None)
+                        if isinstance(prev_df, pd.DataFrame) and not prev_df.empty:
+                            prev_df = prev_df.copy()
+                            prev_df.index = pd.to_datetime(prev_df.index).tz_localize(None).normalize()
+                            combined_idx = prev_df.index.union(save_df.index).sort_values()
+                            merged_df = prev_df.reindex(combined_idx)
+                            for col in save_df.columns:
+                                merged_df[col] = save_df[col].reindex(combined_idx)
+                            save_df = merged_df
+                    except Exception:
+                        pass
+                if gspc_close is not None:
+                    g_ser = gspc_close.copy()
+                    g_ser.index = pd.to_datetime(g_ser.index).tz_localize(None).normalize()
+                    g_ser = g_ser[~g_ser.index.duplicated(keep="last")]
+                    save_df["^GSPC"] = g_ser.reindex(save_df.index).ffill()
                 if p.suffix == ".xz":
                     with lzma.open(p, "wb") as f:
-                        pickle.dump({"close": updated_close}, f)
+                        pickle.dump({"close": save_df}, f)
                 elif p.suffix == ".gz":
                     with gzip.open(p, "wb") as f:
-                        pickle.dump({"close": updated_close}, f)
+                        pickle.dump({"close": save_df}, f)
             except Exception as e_save:
                 print(f"[CIRCUIT BREAKER] Cache write note: {e_save}")
 
@@ -934,7 +966,7 @@ def fetch_live_insider_activity(
                         if f_date_str:
                             f_date = pd.to_datetime(f_date_str)
                             if f_date < cutoff_dt:
-                                continue
+                                break
                         obj = f.obj()
                         if hasattr(obj, "to_dataframe"):
                             df = obj.to_dataframe()
@@ -1049,9 +1081,51 @@ def fetch_live_insider_activity(
 # ==============================================================================
 
 FIDELITY_CASH_SWEEP_SYMBOLS = {
-    "SPAXX", "FDRXX", "FCASH", "FDLXX", "SPRXX", "FZCXX",
-    "VMSXX", "CORE", "CASH", "HELD IN CASH", "HELD_IN_CASH", "PENDING ACTIVITY"
+    "SPAXX", "FDRXX", "FCASH", "FDLXX", "SPRXX", "FZCXX", "FZDXX", "FZFXX",
+    "FNSXX", "FTEXX", "FMPXX", "VMFXX", "VMMXX", "VMSXX", "SWVXX", "SNVXX",
+    "CORE", "CASH", "USD", "HELD IN CASH", "HELD_IN_CASH", "PENDING ACTIVITY"
 }
+
+BROAD_INDEX_ETF_SYMBOLS = {
+    "SPY", "VOO", "IVV", "VTI", "ITOT", "SCHB", "QQQ", "QQQM", "DIA", "IWM",
+    "IJH", "IJR", "MDY", "EFA", "IEFA", "VEA", "VEU", "VXUS", "IXUS", "EEM",
+    "IEMG", "VWO", "SCHD", "VIG", "VYM", "DGRO", "AGG", "BND", "TLT", "IEF",
+    "SHY", "SGOV", "BIL", "LQD", "HYG", "GLD", "IAU", "SLV", "VNQ", "XLK",
+    "XLF", "XLV", "XLE", "XLI", "XLY", "XLP", "XLU", "XLB", "XLRE", "XLC"
+}
+
+
+def _is_cash_or_sweep(clean_sym: str, desc_upper: str) -> bool:
+    if clean_sym in FIDELITY_CASH_SWEEP_SYMBOLS:
+        return True
+    if len(clean_sym) == 5 and clean_sym.endswith("XX"):
+        return True
+    if any(k in desc_upper for k in ("MONEY MARKET", "MMKT", "HELD IN FCASH", "CASH RESERVES", "PENDING ACTIVITY")):
+        return True
+    return False
+
+
+def _classify_holding_asset_type(clean_sym: str, desc_upper: str) -> str:
+    """Returns 'EQUITY', 'FIXED_INCOME_CD', 'RETIREMENT_TRUST', or 'INDEX_ETF'."""
+    is_cusip = len(clean_sym) == 9 and any(c.isdigit() for c in clean_sym)
+    if is_cusip:
+        if any(k in desc_upper for k in (" CD ", "CERT OF DEP", "TREAS", "BOND", "NOTE", "%")):
+            return "FIXED_INCOME_CD"
+        return "RETIREMENT_TRUST"
+    if any(k in desc_upper for k in ("INDEX 20", "TD T", "TARGET DATE", "COLLEGE", "529")):
+        return "RETIREMENT_TRUST"
+    if clean_sym in BROAD_INDEX_ETF_SYMBOLS or any(k in desc_upper for k in (" ETF", "ISHARES", "VANGUARD", "SPDR", "INVESCO QQQ", "INDEX FD")):
+        return "INDEX_ETF"
+    return "EQUITY"
+
+
+def _is_tax_advantaged_account(acc_name: str) -> bool:
+    u = str(acc_name or "").upper()
+    return any(k in u for k in (
+        "IRA", "ROTH", "ROLLOVER", "401K", "401(K)", "403B", "403(B)",
+        "529", "HSA", "SAVINGS PLAN", "PENSION", "KEOGH", "SEP", "SIMPLE", "COLLEGE"
+    ))
+
 
 def parse_fidelity_positions_csv(
     csv_path: Optional[Path | str] = None,
@@ -1061,24 +1135,30 @@ def parse_fidelity_positions_csv(
     immunized_flags: Optional[Dict[str, bool] | pd.Series] = None,
 ) -> pd.DataFrame:
     """
-    Parses an exported Fidelity Portfolio_Positions_*.csv file:
+    Parses an exported Fidelity Portfolio_Positions_*.csv file (supporting both
+    Title Case and Fidelity.com's native sentence-case headers):
       - Discovers file automatically across repo root or data/ if csv_path is None
-      - Strips money-market sweep positions (SPAXX**, FDRXX**, FCASH**)
-      - Replaces stale CSV export prices with live quotes
+      - Strips money-market sweep positions (SPAXX**, FDRXX**, FCASH**, FZDXX, etc.)
+      - Distinguishes single-stock equities from Fixed-Income CDs, 401k/529 Trusts, and Index ETFs
+      - Distinguishes Taxable accounts from Tax-Advantaged accounts (IRA, Roth IRA, 401k, 529)
+      - Replaces stale CSV export prices with live quotes (falling back to CSV price/value)
       - Computes holding duration against the 365-day LTCG tax hurdle
       - Reconciles tax lots with Munger Factor criteria, outputting exact execution orders:
           * STRONG HOLD / ADD: High-conviction compounder in Strike Zone
-          * HOLD FOR TAX DEFERRAL (Xd to LTCG): Short-term gain with sub-hurdle score;
+          * HOLD FOR TAX DEFERRAL (Xd to LTCG): Taxable short-term gain with sub-hurdle score;
             defers sale until LTCG reclassification to avoid ordinary income tax drag
-          * SELL (MOC): Position is either LTCG (safe to exit at MOC) or has an unrealized
-            loss (immediate tax-loss harvest with zero tax drag)
+          * SELL (MOC): Position is either LTCG, tax-advantaged (IRA/Roth), or has an unrealized
+            loss in a taxable account (immediate tax-loss harvest with zero tax drag)
     """
     if csv_path is None:
         candidate_paths = list(Path(".").glob("Portfolio_Positions*.csv")) + list(Path("data").glob("Portfolio_Positions*.csv"))
         if not candidate_paths:
             candidate_paths = list(Path(".").glob("*Positions*.csv")) + list(Path("data").glob("*Positions*.csv"))
         if candidate_paths:
-            non_samples = [p for p in candidate_paths if "sample" not in p.name.lower()]
+            non_samples = [
+                p for p in candidate_paths
+                if "sample" not in p.name.lower() and "latest" not in p.name.lower() and not p.name.startswith("_")
+            ]
             targets = non_samples if non_samples else candidate_paths
             targets.sort(key=lambda p: p.stat().st_mtime, reverse=True)
             csv_path = targets[0]
@@ -1087,14 +1167,19 @@ def parse_fidelity_positions_csv(
 
     path_obj = Path(csv_path)
     if not path_obj.exists():
-        return pd.DataFrame()
+        alt_obj = Path(__file__).resolve().parent / csv_path
+        if alt_obj.exists():
+            path_obj = alt_obj
+        else:
+            return pd.DataFrame()
 
     with open(path_obj, "r", encoding="utf-8-sig", errors="replace") as f:
         lines = f.readlines()
 
     header_idx = -1
     for idx, line in enumerate(lines):
-        if "Symbol" in line and ("Quantity" in line or "Current Value" in line or "Cost Basis" in line or "Account Name" in line):
+        line_low = line.lower()
+        if "symbol" in line_low and ("quantity" in line_low or "current value" in line_low or "cost basis" in line_low or "account name" in line_low):
             header_idx = idx
             break
 
@@ -1108,11 +1193,12 @@ def parse_fidelity_positions_csv(
     else:
         dt_eval = pd.to_datetime(eval_date)
 
-    from typing import Any
     def clean_num(v: Any) -> float:
-        if not v or pd.isna(v):
+        if v is None or v == "" or pd.isna(v):
             return 0.0
-        s = str(v).replace("$", "").replace(",", "").replace("%", "").strip()
+        s = str(v).replace("$", "").replace(",", "").replace("%", "").replace("+", "").strip()
+        if not s or s.lower() in ("--", "n/a", "nan", "none", "pending"):
+            return 0.0
         if s.startswith("(") and s.endswith(")"):
             s = "-" + s[1:-1]
         try:
@@ -1122,26 +1208,47 @@ def parse_fidelity_positions_csv(
 
     rows = []
     for r in reader:
-        raw_sym = str(r.get("Symbol", "")).strip().upper()
-        if not raw_sym or raw_sym.startswith("*") or "TOTAL" in raw_sym or "DISCLAIMER" in raw_sym:
+        if not r:
+            continue
+        r_low = {str(k).strip().lower(): v for k, v in r.items() if k is not None}
+
+        raw_sym = str(r_low.get("symbol") or "").strip().upper()
+        if not raw_sym or raw_sym in ("NONE", "NAN") or raw_sym.startswith("*") or "TOTAL" in raw_sym or "DISCLAIMER" in raw_sym or "PENDING" in raw_sym:
             continue
 
         clean_sym = raw_sym.replace("*", "").strip()
-        if clean_sym in FIDELITY_CASH_SWEEP_SYMBOLS or "MONEY MARKET" in str(r.get("Description", "")).upper() or clean_sym == "PENDING ACTIVITY":
+        desc_raw = str(r_low.get("description") or "").strip()
+        desc_upper = desc_raw.upper()
+
+        if _is_cash_or_sweep(clean_sym, desc_upper):
             continue
 
-        shares = clean_num(r.get("Quantity", 0))
+        shares = clean_num(r_low.get("quantity", 0))
         if shares <= 0:
             continue
 
-        csv_cost_basis = clean_num(r.get("Cost Basis Total", 0))
-        if csv_cost_basis == 0.0:
-            avg_basis = clean_num(r.get("Average Cost Basis", 0))
-            csv_cost_basis = shares * avg_basis
+        csv_cur_val = clean_num(r_low.get("current value", 0))
+        csv_cost_basis = clean_num(r_low.get("cost basis total", 0))
+        if csv_cost_basis <= 0.0:
+            avg_basis = clean_num(r_low.get("average cost basis", 0))
+            if avg_basis > 0.0:
+                csv_cost_basis = shares * avg_basis
+        if csv_cost_basis <= 0.0 and csv_cur_val > 0.0:
+            total_gl = clean_num(r_low.get("total gain/loss dollar", 0))
+            if total_gl != 0.0 and (csv_cur_val - total_gl) > 0.0:
+                csv_cost_basis = csv_cur_val - total_gl
+            else:
+                csv_cost_basis = csv_cur_val
+
+        # Account metadata
+        acc_name = str(r_low.get("account name") or "").strip()
+        acc_num = str(r_low.get("account number") or "").strip()
+        account_label = acc_name if acc_name else (acc_num if acc_num else "Default")
+        is_tax_advantaged = _is_tax_advantaged_account(account_label)
 
         # Date acquired
-        date_str = str(r.get("Date Acquired", r.get("Acquisition Date", ""))).strip()
-        if date_str and date_str not in ("--", "n/a", "Pending"):
+        date_str = str(r_low.get("date acquired") or r_low.get("acquisition date") or "").strip()
+        if date_str and date_str.lower() not in ("--", "n/a", "pending", "none", ""):
             try:
                 acq_date = pd.to_datetime(date_str)
                 days_held = max(0, (dt_eval.date() - acq_date.date()).days)
@@ -1150,8 +1257,9 @@ def parse_fidelity_positions_csv(
         else:
             days_held = 365
 
-        is_ltcg = days_held >= 365
-        days_to_ltcg = max(0, 365 - days_held)
+        is_ltcg = True if is_tax_advantaged else (days_held >= 365)
+        days_to_ltcg = 0 if is_tax_advantaged else max(0, 365 - days_held)
+        ltcg_status = "TAX-EXEMPT" if is_tax_advantaged else ("LTCG" if is_ltcg else "STCG")
 
         # Overlay live price
         live_price = 0.0
@@ -1163,9 +1271,23 @@ def parse_fidelity_positions_csv(
                 live_price = float(val) if pd.notna(val) else 0.0
 
         if live_price <= 0.0:
-            live_price = clean_num(r.get("Last Price", r.get("Current Price", 0)))
+            live_price = clean_num(r_low.get("last price") or r_low.get("current price") or 0)
+        if live_price <= 0.0 and csv_cur_val > 0.0 and shares > 0.0:
+            live_price = csv_cur_val / shares
 
-        live_val = shares * live_price
+        # Fixed-income CDs report price per $100 par (e.g. 99.669 with Quantity 40,000 -> Current value $39,867.60)
+        asset_type = _classify_holding_asset_type(clean_sym, desc_upper)
+        if asset_type == "RETIREMENT_TRUST":
+            is_tax_advantaged = True
+            is_ltcg = True
+            days_to_ltcg = 0
+            ltcg_status = "TAX-EXEMPT"
+        if asset_type == "FIXED_INCOME_CD" and csv_cur_val > 0.0:
+            live_val = csv_cur_val
+            live_price = csv_cur_val / shares
+        else:
+            live_val = shares * live_price if live_price > 0.0 else csv_cur_val
+
         unrealized_gain = live_val - csv_cost_basis
         gain_pct = (unrealized_gain / csv_cost_basis * 100.0) if csv_cost_basis > 0 else 0.0
 
@@ -1186,10 +1308,22 @@ def parse_fidelity_positions_csv(
         else:
             passed_hurdle = m_score >= 2.0
 
-        # Action directives
-        if m_score >= 2.0 and passed_hurdle:
+        # Action directives by asset class & tax regime
+        if asset_type == "FIXED_INCOME_CD":
+            action = "HOLD (FIXED INCOME / CD)"
+            rationale = f"Fixed-income certificate/bond ({desc_raw[:42]}). Hold to maturity; exempt from single-stock hurdle."
+        elif asset_type == "RETIREMENT_TRUST":
+            action = "HOLD (PLAN / TARGET DATE)"
+            rationale = f"Plan trust / target-date allocation ({desc_raw[:42]}). Core plan holding; exempt from single-stock hurdle."
+        elif asset_type == "INDEX_ETF":
+            action = "HOLD (INDEX ETF)"
+            rationale = f"Broad index ETF allocation ({desc_raw[:42] or clean_sym}). Diversified core sleeve; exempt from single-stock hurdle."
+        elif m_score >= 2.0 and passed_hurdle:
             action = "STRONG HOLD / ADD"
             rationale = f"Tier-1 Compounder (M={m_score:.2f}). Intact compounding moat; add on pullbacks."
+        elif is_tax_advantaged:
+            action = "SELL (MOC)"
+            rationale = f"Tax-advantaged account ({account_label}): zero capital-gains tax friction. Sub-hurdle score (M={m_score:.2f}); reallocate to Strike Zone."
         else:
             if not is_ltcg and unrealized_gain > 0:
                 action = f"HOLD FOR TAX DEFERRAL ({days_to_ltcg}d to LTCG)"
@@ -1202,7 +1336,8 @@ def parse_fidelity_positions_csv(
                     rationale = f"Sub-hurdle score (M={m_score:.2f}). Position is LTCG ({days_held}d held). Reallocate capital to Strike Zone."
 
         rows.append({
-            "Account": r.get("Account Name", r.get("Account Number", "Default")),
+            "Account": account_label,
+            "Asset_Type": asset_type,
             "Symbol": clean_sym,
             "Shares": shares,
             "Cost_Basis": round(csv_cost_basis, 2),
@@ -1211,7 +1346,7 @@ def parse_fidelity_positions_csv(
             "Unrealized_Gain": round(unrealized_gain, 2),
             "Gain_Pct": round(gain_pct, 1),
             "Days_Held": days_held,
-            "LTCG_Status": "LTCG" if is_ltcg else "STCG",
+            "LTCG_Status": ltcg_status,
             "Days_to_LTCG": days_to_ltcg,
             "Munger_Score": round(m_score, 2),
             "Action": action,

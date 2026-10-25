@@ -38,6 +38,14 @@ def main() -> None:
     print("=" * 88)
 
     close_df, gspc_close, fund_dict, eps_dict, is_synthetic = load_or_generate_dataset("data")
+    comp_file = Path("data/composite_176_tickers.json")
+    if comp_file.exists():
+        with open(comp_file, "r", encoding="utf-8") as f:
+            comp_set = set(json.load(f))
+        valid_cols = [c for c in close_df.columns if c in comp_set]
+        if valid_cols:
+            close_df = close_df[valid_cols]
+            fund_dict = {k: v for k, v in fund_dict.items() if k in comp_set}
     mode_label = "SYNTHETIC CI FIXTURE" if is_synthetic else "REPOSITORY HISTORICAL CACHE"
     print(f"Dataset Source : {mode_label}")
     print(f"Active Universe: {len(close_df.columns)} verified constituents ({close_df.index[0].date()} -> {close_df.index[-1].date()})")

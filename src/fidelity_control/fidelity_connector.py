@@ -10,8 +10,9 @@ from typing import Dict, Any, List, Tuple
 
 # Known Fidelity cash and money market symbols
 FIDELITY_CASH_SYMBOLS = {
-    'SPAXX', 'FDRXX', 'FCASH', 'FDLXX', 'SPRXX', 'FZCXX', 
-    'VMSXX', 'CORE', 'CASH', 'HELD_IN_CASH', 'HELD IN CASH'
+    'SPAXX', 'FDRXX', 'FCASH', 'FDLXX', 'SPRXX', 'FZCXX', 'FZDXX', 'FZFXX',
+    'FNSXX', 'FTEXX', 'FMPXX', 'VMFXX', 'VMMXX', 'VMSXX', 'SWVXX', 'SNVXX',
+    'CORE', 'CASH', 'USD', 'HELD_IN_CASH', 'HELD IN CASH', 'PENDING ACTIVITY'
 }
 
 
@@ -45,14 +46,16 @@ def parse_fidelity_positions_csv(csv_content: str | Path) -> Dict[str, Any]:
     # Find the header row (Fidelity CSVs often have disclaimer rows at top)
     header_idx = -1
     for idx, line in enumerate(lines):
-        if "Symbol" in line and ("Quantity" in line or "Current Value" in line or "Account Name" in line):
+        line_low = line.lower()
+        if "symbol" in line_low and ("quantity" in line_low or "current value" in line_low or "account name" in line_low):
             header_idx = idx
             break
             
     if header_idx == -1:
         # Try finding standard comma line
         for idx, line in enumerate(lines):
-            if "Account Number" in line or "Symbol" in line:
+            line_low = line.lower()
+            if "account number" in line_low or "symbol" in line_low:
                 header_idx = idx
                 break
                 
@@ -65,20 +68,25 @@ def parse_fidelity_positions_csv(csv_content: str | Path) -> Dict[str, Any]:
     total_net_worth = 0.0
     
     for row in reader:
-        # Fidelity footer starts with notes or empty symbol
-        symbol = str(row.get('Symbol', '')).strip().upper()
-        if not symbol or symbol.startswith('*') or 'TOTAL' in symbol or 'DISCLAIMER' in symbol:
+        if not row:
             continue
+        r_low = {str(k).strip().lower(): v for k, v in row.items() if k is not None}
+
+        # Fidelity footer starts with notes or empty symbol
+        raw_sym = str(r_low.get('symbol') or '').strip().upper()
+        if not raw_sym or raw_sym in ('NONE', 'NAN') or raw_sym.startswith('*') or 'TOTAL' in raw_sym or 'DISCLAIMER' in raw_sym:
+            continue
+        symbol = raw_sym.replace('*', '').strip()
             
-        acc_name = str(row.get('Account Name', 'Fidelity Account')).strip()
-        acc_num = str(row.get('Account Number', '')).strip()
+        acc_name = str(r_low.get('account name') or 'Fidelity Account').strip()
+        acc_num = str(r_low.get('account number') or '').strip()
         acc_key = f"{acc_name}_{acc_num}" if acc_num else acc_name
         
         # Determine account tax type from name
         acc_lower = acc_name.lower()
         if 'roth' in acc_lower:
             tax_type = 'Roth'
-        elif 'ira' in acc_lower or '401' in acc_lower or 'rollover' in acc_lower or 'traditional' in acc_lower:
+        elif any(k in acc_lower for k in ('ira', '401', '403', 'rollover', 'traditional', '529', 'hsa', 'savings plan', 'college')):
             tax_type = 'Traditional'
         else:
             tax_type = 'Taxable'
@@ -95,9 +103,11 @@ def parse_fidelity_positions_csv(csv_content: str | Path) -> Dict[str, Any]:
             
         # Parse numeric values safely
         def to_float(val: Any) -> float:
-            if not val:
+            if val is None or val == "":
                 return 0.0
-            cleaned = str(val).replace('$', '').replace(',', '').replace('%', '').strip()
+            cleaned = str(val).replace('$', '').replace(',', '').replace('%', '').replace('+', '').strip()
+            if not cleaned or cleaned.lower() in ('--', 'n/a', 'nan', 'none', 'pending'):
+                return 0.0
             if cleaned.startswith('(') and cleaned.endswith(')'):
                 cleaned = '-' + cleaned[1:-1]
             try:
@@ -105,15 +115,26 @@ def parse_fidelity_positions_csv(csv_content: str | Path) -> Dict[str, Any]:
             except ValueError:
                 return 0.0
 
-        current_val = to_float(row.get('Current Value', 0))
-        qty = to_float(row.get('Quantity', 0))
-        cost_basis = to_float(row.get('Cost Basis Total', 0))
-        gain_loss = to_float(row.get('Total Gain/Loss Dollar', 0))
+        current_val = to_float(r_low.get('current value', 0))
+        qty = to_float(r_low.get('quantity', 0))
+        cost_basis = to_float(r_low.get('cost basis total', 0))
+        if cost_basis <= 0.0:
+            avg_basis = to_float(r_low.get('average cost basis', 0))
+            if avg_basis > 0.0 and qty > 0.0:
+                cost_basis = qty * avg_basis
+        gain_loss = to_float(r_low.get('total gain/loss dollar', 0))
+        desc_str = str(r_low.get('description') or symbol).strip()
+        desc_upper = desc_str.upper()
         
         total_net_worth += current_val
         accounts[acc_key]['total_value_usd'] += current_val
         
-        if symbol in FIDELITY_CASH_SYMBOLS or 'MONEY MARKET' in str(row.get('Description', '')).upper():
+        is_cash = (
+            symbol in FIDELITY_CASH_SYMBOLS
+            or (len(symbol) == 5 and symbol.endswith('XX'))
+            or any(k in desc_upper for k in ('MONEY MARKET', 'MMKT', 'HELD IN FCASH', 'CASH RESERVES', 'PENDING ACTIVITY'))
+        )
+        if is_cash:
             accounts[acc_key]['cash_usd'] += current_val
         else:
             accounts[acc_key]['holdings'][symbol] = {
@@ -121,7 +142,7 @@ def parse_fidelity_positions_csv(csv_content: str | Path) -> Dict[str, Any]:
                 "est_value_usd": current_val,
                 "cost_basis_usd": cost_basis,
                 "unrealized_gain_usd": gain_loss,
-                "description": row.get('Description', symbol)
+                "description": desc_str
             }
 
     return {

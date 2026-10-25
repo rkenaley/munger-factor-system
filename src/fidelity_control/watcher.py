@@ -50,11 +50,14 @@ def is_valid_fidelity_csv(path: Path) -> bool:
     try:
         if not path.is_file() or path.stat().st_size < 50:
             return False
+        name_low = path.name.lower()
+        if "sample" in name_low or "latest" in name_low or name_low.startswith("_"):
+            return False
         with open(path, "r", encoding="utf-8", errors="replace") as f:
             sample = f.read(4096)
-        # Fidelity CSV markers
-        markers = ["Account Number", "Symbol", "Current Price", "Quantity", "Cost Basis", "Fidelity"]
-        return any(m in sample for m in markers)
+        sample_low = sample.lower()
+        markers = ["account number", "symbol", "current price", "last price", "quantity", "cost basis", "fidelity"]
+        return any(m in sample_low for m in markers)
     except Exception:
         return False
 
@@ -66,15 +69,17 @@ def process_fidelity_csv_file(csv_path: Path) -> Optional[Dict[str, Any]]:
         with open(csv_path, "r", encoding="utf-8", errors="replace") as f:
             csv_text = f.read()
 
-        # Archive copy into data/
+        # Archive copy into data/ only if file originated outside data/ (e.g. ~/Downloads)
         DATA_DIR.mkdir(parents=True, exist_ok=True)
-        archive_name = f"Portfolio_Positions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-        archive_path = DATA_DIR / archive_name
         latest_path = DATA_DIR / "Portfolio_Positions_latest.csv"
 
         try:
-            shutil.copy2(csv_path, archive_path)
-            shutil.copy2(csv_path, latest_path)
+            if csv_path.resolve().parent != DATA_DIR.resolve():
+                archive_name = f"Portfolio_Positions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+                archive_path = DATA_DIR / archive_name
+                shutil.copy2(csv_path, archive_path)
+            if csv_path.resolve() != latest_path.resolve():
+                shutil.copy2(csv_path, latest_path)
         except Exception as e:
             logger.warning("Could not create local archive copy of CSV: %s", e)
 

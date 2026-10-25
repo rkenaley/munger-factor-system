@@ -44,7 +44,11 @@ from munger_engine import (
     bsm_call,
     implied_vol_with_skew,
 )
-from .fidelity_connector import generate_fidelity_deeplink, generate_fidelity_research_link
+from .fidelity_connector import (
+    generate_fidelity_deeplink,
+    generate_fidelity_research_link,
+    parse_fidelity_positions_csv as parse_fidelity_accounts_summary,
+)
 
 def bsm_put(S: float, K: float, T: float, r: float, sigma: float, q: float = 0.01) -> Dict[str, float]:
     """Closed-form European Put price via BSM Put-Call Parity."""
@@ -64,7 +68,7 @@ _LAST_SCAN_CACHE: Dict[str, Any] = {}
 def _get_dataset():
     """Retrieves or loads cached dataset."""
     global _DATASET_CACHE
-    if not _DATASET_CACHE or "close_df" not in _DATASET_CACHE:
+    if not _DATASET_CACHE or "close_df" not in _DATASET_CACHE or len(_DATASET_CACHE.get("close_df", pd.DataFrame()).columns) < 500:
         data_dir = ROOT_DIR / "data"
         close_df, gspc_close, fund_dict, eps_dict, is_synthetic = load_or_generate_dataset(data_dir)
         clean_fund = sanitize_universe_fundamentals(fund_dict, eps_dict)
@@ -153,6 +157,33 @@ def refresh_prices_api() -> Dict[str, Any]:
     }
 
 
+SP500_SET: set[str] = set()
+sp500_path = ROOT_DIR / "data" / "sp500_tickers.json"
+if sp500_path.exists():
+    try:
+        with open(sp500_path, "r", encoding="utf-8") as f:
+            SP500_SET = set(json.load(f))
+    except Exception:
+        pass
+
+SP900_SET: set[str] = set()
+sp900_path = ROOT_DIR / "data" / "sp900_tickers.json"
+if sp900_path.exists():
+    try:
+        with open(sp900_path, "r", encoding="utf-8") as f:
+            SP900_SET = set(json.load(f))
+    except Exception:
+        pass
+
+COMPOSITE_SET: set[str] = set()
+comp_path = ROOT_DIR / "data" / "composite_176_tickers.json"
+if comp_path.exists():
+    try:
+        with open(comp_path, "r", encoding="utf-8") as f:
+            COMPOSITE_SET = set(json.load(f))
+    except Exception:
+        pass
+
 NASDAQ_100_SET = {
     "AAPL", "ABNB", "ADBE", "ADI", "ADP", "ADSK", "AEP", "AMAT", "AMD", "AMGN", "AMZN", "ANSS", "APP", "ARM", "ASML",
     "AVGO", "AXON", "BIIB", "BKNG", "BKR", "CCEP", "CDNS", "CDW", "CEG", "CHTR", "CPRT", "CRWD", "CSCO", "CSGP",
@@ -174,7 +205,7 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
     min_sales5y = float(params.get("min_sales5y", 0.0))
     min_roic = float(params.get("min_roic", 0.0))
     max_pe = float(params.get("max_pe", 80.0))
-    max_de = float(params.get("max_de", 250.0))
+    max_de = float(params.get("max_de", 2.5))
     winsorize = bool(params.get("winsorize", True))
     enforce_full_cycle = bool(params.get("enforce_full_cycle", True))
     use_cyclically_adjusted_ey = bool(params.get("use_cyclically_adjusted_ey", True))
@@ -183,7 +214,7 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
     csuite_haircut_enabled = bool(params.get("csuite_haircut", True))
     min_insider_buys = float(params.get("min_insider_buys", 0.0))
     gating_200w_enabled = bool(params.get("gating_200w", False))
-    universe_choice = str(params.get("universe", "combined")).lower().strip()
+    universe_choice = str(params.get("universe", "sp900")).lower().strip()
 
     ds = _get_dataset()
     close_df = ds["close_df"]
@@ -191,13 +222,28 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
     clean_fund = ds["clean_fund"]
     eps_dict = ds["eps_dict"]
 
-    if universe_choice in ["nasdaq", "nasdaq100"]:
+    if universe_choice in ["sp900", "sp_900", "s&p900", "s&p 900"]:
+        if SP900_SET:
+            valid_cols = [c for c in close_df.columns if c in SP900_SET]
+            if valid_cols:
+                close_df = close_df[valid_cols]
+    elif universe_choice in ["sp500", "sp_500", "s&p500", "s&p 500"]:
+        if SP500_SET:
+            valid_cols = [c for c in close_df.columns if c in SP500_SET]
+            if valid_cols:
+                close_df = close_df[valid_cols]
+    elif universe_choice in ["combined", "composite", "sp100_nasdaq100"]:
+        if COMPOSITE_SET:
+            valid_cols = [c for c in close_df.columns if c in COMPOSITE_SET]
+            if valid_cols:
+                close_df = close_df[valid_cols]
+    elif universe_choice in ["nasdaq", "nasdaq100"]:
         valid_cols = [c for c in close_df.columns if c in NASDAQ_100_SET]
         if valid_cols:
             close_df = close_df[valid_cols]
     elif universe_choice in ["sp100", "sp_100"]:
         sp100_overlap = {"AAPL", "MSFT", "AMZN", "GOOGL", "GOOG", "META", "NVDA", "TSLA", "AVGO", "COST", "CSCO", "ADBE", "NFLX", "AMD", "INTC", "QCOM", "TXN", "AMAT", "PEP", "LIN", "HON", "GILD", "SBUX", "MDLZ", "BKNG", "ISRG", "VRTX", "REGN", "LRCX", "MU"}
-        valid_cols = [c for c in close_df.columns if c not in (NASDAQ_100_SET - sp100_overlap)]
+        valid_cols = [c for c in close_df.columns if c not in (NASDAQ_100_SET - sp100_overlap) and (not SP500_SET or c in SP500_SET)]
         if valid_cols:
             close_df = close_df[valid_cols]
 
@@ -275,9 +321,9 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
     if gating_200w_enabled or True:  # always precompute for detail modal
         for t in close_df.columns:
             s_close = close_df[t].dropna()
-            if len(s_close) >= 200 * 5:
-                # 200 weeks approx 1000 daily trading bars
-                sma_200w = s_close.iloc[-1000:].mean()
+            if len(s_close) >= 50:
+                # 200 weeks approx 1000 daily trading bars (or full available window if <1000)
+                sma_200w = s_close.iloc[-min(len(s_close), 1000):].mean()
                 cur_p = float(s_close.iloc[-1])
                 dist = ((cur_p / sma_200w) - 1.0) * 100.0
                 sma_200w_dist[t] = round(dist, 1)
@@ -364,7 +410,7 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
 
         if enforce_conjunctive and not passed_all_med:
             passes_sliders = False
-        if gating_200w_enabled and sma_200w_dist.get(t, 0.0) > 25.0:
+        if gating_200w_enabled and sma_200w_dist.get(t, 0.0) > 20.0:
             passes_sliders = False
         if min_insider_buys > 0.0 and float(insider_info.get("buys_usd", 0.0)) < min_insider_buys:
             passes_sliders = False
@@ -502,6 +548,7 @@ def reconcile_fidelity_api(csv_text: Optional[str] = None) -> Dict[str, Any]:
             f.write(csv_text)
         csv_path = temp_file
 
+    cash_balance = 0.0
     try:
         fidelity_df = parse_fidelity_positions_csv(
             csv_path=csv_path,
@@ -510,6 +557,21 @@ def reconcile_fidelity_api(csv_text: Optional[str] = None) -> Dict[str, Any]:
             munger_scores=conviction_scores,
             immunized_flags=immunized_flags,
         )
+        try:
+            target_for_cash = csv_path if csv_path is not None else (ROOT_DIR / "data" / "Portfolio_Positions_Sample.csv")
+            if csv_path is None:
+                cands = [
+                    p for p in (list(ROOT_DIR.glob("Portfolio_Positions*.csv")) + list((ROOT_DIR / "data").glob("Portfolio_Positions*.csv")))
+                    if "sample" not in p.name.lower() and "latest" not in p.name.lower() and not p.name.startswith("_")
+                ]
+                if cands:
+                    cands.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+                    target_for_cash = cands[0]
+            if target_for_cash and Path(target_for_cash).exists():
+                acc_summary = parse_fidelity_accounts_summary(target_for_cash)
+                cash_balance = sum(float(a.get("cash_usd", 0.0)) for a in acc_summary.get("accounts", {}).values())
+        except Exception:
+            pass
     finally:
         if temp_file and temp_file.exists():
             try:
@@ -532,6 +594,8 @@ def reconcile_fidelity_api(csv_text: Optional[str] = None) -> Dict[str, Any]:
     potential_tax_savings = 0.0
 
     for idx, row in fidelity_df.iterrows():
+        acc_label = str(row.get("Account", "Default")).strip()
+        asset_type = str(row.get("Asset_Type", "EQUITY")).strip()
         sym = str(row.get("Symbol", "")).strip().upper()
         shares = float(row.get("Shares", 0.0))
         cost_basis = float(row.get("Cost_Basis", 0.0))
@@ -544,7 +608,7 @@ def reconcile_fidelity_api(csv_text: Optional[str] = None) -> Dict[str, Any]:
         action = str(row.get("Action", "HOLD"))
         rationale = str(row.get("Rationale", ""))
 
-        days_to_ltcg = max(0, 365 - days_held)
+        days_to_ltcg = 0 if ltcg_status == "TAX-EXEMPT" else max(0, 365 - days_held)
         # Tax drag savings estimation: ordinary income (approx 37-40.8%) vs LTCG (20%) = ~17-20.8% savings
         est_tax_savings = 0.0
         if "HOLD FOR TAX DEFERRAL" in action and gain > 0:
@@ -552,15 +616,17 @@ def reconcile_fidelity_api(csv_text: Optional[str] = None) -> Dict[str, Any]:
             potential_tax_savings += est_tax_savings
 
         # Buy-Hold-Sell Moat status
-        if days_held < 365:
+        if "HOLD FOR TAX DEFERRAL" in action or (days_held < 365 and ltcg_status != "TAX-EXEMPT"):
             moat_status = "LTCG_SHIELD_ACTIVE"
-        elif "STRONG HOLD" in action or "COMPOUND" in action:
+        elif "STRONG HOLD" in action or "COMPOUND" in action or action.startswith("HOLD ("):
             moat_status = "MOAT_INTACT_RECOMPOUND"
         else:
             moat_status = "DYNAMIC_MOAT_EXIT"
 
         lots.append({
             "lot_id": idx + 1,
+            "account": acc_label,
+            "asset_type": asset_type,
             "symbol": sym,
             "shares": shares,
             "cost_basis": round(cost_basis, 2),
@@ -590,6 +656,8 @@ def reconcile_fidelity_api(csv_text: Optional[str] = None) -> Dict[str, Any]:
         "lots": lots,
         "summary": {
             "total_value": round(total_val, 2),
+            "cash_balance": round(cash_balance, 2),
+            "total_portfolio_value": round(total_val + cash_balance, 2),
             "total_basis": round(total_basis, 2),
             "total_gain": round(total_gain, 2),
             "total_gain_pct": total_gain_pct,

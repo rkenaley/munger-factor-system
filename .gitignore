@@ -51,5 +51,18 @@ docs/*.xdv
 docs/*.synctex.gz
 
 # Large uncompressed cache (>50MB GitHub warning limit)
-# Note: The compressed 28MB archive 'data/historical_prices_1970_2026.pkl.gz' is tracked instead
+# Note: The compressed archive 'data/historical_prices_1970_2026.pkl.xz' is tracked instead
 data/historical_prices_1970_2026.pkl
+data/historical_prices_1970_2026.pkl.gz
+
+# Protect live client/personal Fidelity position exports & execution tickets from ever being committed
+Portfolio_Positions_*.csv
+data/Portfolio_Positions_*.csv
+!data/Portfolio_Positions_Sample.csv
+data/execution_tickets_*.csv
+data/reconciliation_*.json
+
+# Local scratch / temporary scripts
+scratch/
+analyze_broadcom_factors.py
+avgo_collar.py

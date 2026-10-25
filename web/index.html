@@ -124,8 +124,24 @@
                         <div>
                             <h3 style="font-size: 0.92rem; margin-bottom: 0.75rem; color: var(--text-secondary);">1. SELECT CONSTITUENT UNIVERSE</h3>
                             <div style="display: flex; flex-direction: column; gap: 10px;">
-                                <label class="toggle-card active" id="univ-combined-label">
-                                    <input type="radio" name="universe-choice" value="combined" checked>
+                                <label class="toggle-card active" id="univ-sp900-label">
+                                    <input type="radio" name="universe-choice" value="sp900" checked>
+                                    <div class="toggle-card-content">
+                                        <div class="toggle-title">🏛️ S&P 900 (Large-Cap + MidCap 400 Composite, 903 Equities)</div>
+                                        <div class="toggle-desc">Combines the S&P 500 and S&P MidCap 400 to capture established leaders and high-ROIC mid-cap compounders.</div>
+                                    </div>
+                                </label>
+
+                                <label class="toggle-card" id="univ-sp500-label">
+                                    <input type="radio" name="universe-choice" value="sp500">
+                                    <div class="toggle-card-content">
+                                        <div class="toggle-title">🌟 S&P 500 (503 Large-Cap US Equities)</div>
+                                        <div class="toggle-desc">The benchmark institutional universe covering the 500 leading publicly traded companies in the US equity market.</div>
+                                    </div>
+                                </label>
+
+                                <label class="toggle-card" id="univ-combined-label">
+                                    <input type="radio" name="universe-choice" value="combined">
                                     <div class="toggle-card-content">
                                         <div class="toggle-title">⭐ S&P 100 + NASDAQ 100 Composite (176 Large-Cap Compounders)</div>
                                         <div class="toggle-desc">The audited institutional universe spanning secular technology, healthcare, and industrial market leaders with survivorship-free history.</div>
@@ -1054,6 +1070,38 @@
     </div>
 
     <!-- Scripts -->
-    <script src="app.js"></script>
+    <script>
+    (function() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const step = parseInt(params.get('step') || '0');
+            if (step >= 1 && step <= 7) {
+                document.querySelectorAll('.stage-panel').forEach(p => p.classList.remove('active'));
+                const p = document.getElementById('stage-' + step);
+                if (p) p.classList.add('active');
+
+                document.querySelectorAll('.wizard-step').forEach(btn => {
+                    const s = parseInt(btn.getAttribute('data-step'));
+                    btn.classList.toggle('active', s === step);
+                    btn.classList.toggle('completed', s < step);
+                });
+                document.querySelectorAll('.app-tab-btn').forEach(tab => {
+                    const target = parseInt(tab.getAttribute('data-target-step'));
+                    tab.classList.toggle('active', target === step);
+                });
+            }
+            const filter = params.get('filter');
+            if (filter) {
+                window.addEventListener('load', () => {
+                    setTimeout(() => {
+                        const chip = document.querySelector(`.filter-chip[data-filter="${filter}"]`);
+                        if (chip) chip.click();
+                    }, 600);
+                });
+            }
+        } catch(e) {}
+    })();
+    </script>
+    <script src="app.js?v=2.3.1"></script>
 </body>
 </html>

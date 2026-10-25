@@ -340,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 6. LIVE MUNGER SCANNER API
     // --------------------------------------------------------------------------
     function gatherScanParameters() {
-        const selectedUniv = document.querySelector('input[name="universe-choice"]:checked')?.value || 'combined';
+        const selectedUniv = document.querySelector('input[name="universe-choice"]:checked')?.value || 'sp900';
         return {
             universe: selectedUniv,
             min_munger: parseFloat(document.getElementById('slider-min-munger').value),
@@ -379,6 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (resp.ok) {
                 const data = await resp.json();
                 state.candidates = data.candidates || [];
+                state.medians = data.medians || { sales5y: 12.8, roic: 18.2, pe: 27.4, nd_ebitda: 1.06, de: 55.2 };
                 updateKPICards(data);
                 renderScreenerTable();
                 showToast(`Screened ${data.total_screened} stocks! Found ${data.strike_zone_count} in Strike Zone.`, "🎯");
@@ -480,6 +481,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const medG = (state.medians && state.medians.sales5y !== undefined) ? state.medians.sales5y : 12.8;
+        const medR = (state.medians && state.medians.roic !== undefined) ? state.medians.roic : 18.2;
+        const medPe = (state.medians && state.medians.pe !== undefined) ? state.medians.pe : 27.4;
+        const medNd = (state.medians && state.medians.nd_ebitda !== undefined) ? state.medians.nd_ebitda : 1.06;
+
         tbody.innerHTML = '';
         filtered.forEach(c => {
             const tr = document.createElement('tr');
@@ -487,14 +493,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isSelected) tr.classList.add('selected');
 
             // 4-Pillar Qualifications against Universe Medians & Sliders:
-            // Median 1: Growth >= 12.8%
-            // Median 2: ROIC >= 18.2%
-            // Median 3: PE <= 27.4x
-            // Median 4: DE <= 55.2%
-            const passGrowth = c.pillar_pass ? c.pillar_pass.growth : (c.sales5y >= 12.8 && c.sales5y >= sMinGrowth);
-            const passRoic = c.pillar_pass ? c.pillar_pass.roic : (c.roic >= 18.2 && c.roic >= sMinRoic);
-            const passPe = c.pillar_pass ? c.pillar_pass.pe : (c.pe > 0 && c.pe <= 27.4 && c.pe <= sMaxPe);
-            const passDe = c.pillar_pass ? c.pillar_pass.de : (c.de <= 55.2 && c.de <= sMaxDe);
+            const passGrowth = c.pillar_pass ? c.pillar_pass.growth : (c.sales5y >= medG && c.sales5y >= sMinGrowth);
+            const passRoic = c.pillar_pass ? c.pillar_pass.roic : (c.roic >= medR && c.roic >= sMinRoic);
+            const passPe = c.pillar_pass ? c.pillar_pass.pe : (c.pe > 0 && c.pe <= medPe && c.pe <= sMaxPe);
+            const passDe = c.pillar_pass ? c.pillar_pass.de : ((c.nd_ebitda !== undefined ? c.nd_ebitda <= medNd : c.de <= 55.2) && (c.nd_ebitda !== undefined ? c.nd_ebitda <= sMaxDe : c.de <= sMaxDe));
 
             const passedCount = (passGrowth ? 1 : 0) + (passRoic ? 1 : 0) + (passPe ? 1 : 0) + (passDe ? 1 : 0);
             const passAll = Boolean(c.all_med || passedCount === 4);
@@ -503,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (passAll) {
                 all4Badge = `<span class="badge badge-pass-all" title="Passed all 4 factor hurdles simultaneously!">✅ 4/4 PASS</span>`;
             } else if (passedCount === 3) {
-                const missed = !passGrowth ? 'Growth' : (!passRoic ? 'ROIC' : (!passPe ? 'P/E' : 'D/E'));
+                const missed = !passGrowth ? 'Growth' : (!passRoic ? 'ROIC' : (!passPe ? 'P/E' : 'Solvency'));
                 all4Badge = `<span class="badge badge-pass-partial" title="Passed 3 of 4 pillars (Missed: ${missed})">⚠️ 3/4 (${missed})</span>`;
             } else {
                 all4Badge = `<span class="badge badge-pass-fail" title="Passed ${passedCount} of 4 factor hurdles">❌ ${passedCount}/4</span>`;
@@ -540,22 +542,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td style="text-align: right;" class="mono">$${c.spot.toFixed(2)}</td>
 
                 <!-- Pillar 1: Growth -->
-                <td style="text-align: right;" class="mono ${passGrowth ? 'cell-pillar-pass' : 'cell-pillar-fail'}" title="${passGrowth ? 'Pillar 1 Pass: ≥ 12.8% median' : 'Pillar 1 Fail: < 12.8% median'}">
+                <td style="text-align: right;" class="mono ${passGrowth ? 'cell-pillar-pass' : 'cell-pillar-fail'}" title="${passGrowth ? `Pillar 1 Pass: ≥ ${medG}% median` : `Pillar 1 Fail: < ${medG}% median`}">
                     ${c.sales5y.toFixed(1)}%
                 </td>
 
                 <!-- Pillar 2: ROIC -->
-                <td style="text-align: right;" class="mono ${passRoic ? 'cell-pillar-pass' : 'cell-pillar-fail'}" title="${passRoic ? 'Pillar 2 Pass: ≥ 18.2% median' : 'Pillar 2 Fail: < 18.2% median'}">
+                <td style="text-align: right;" class="mono ${passRoic ? 'cell-pillar-pass' : 'cell-pillar-fail'}" title="${passRoic ? `Pillar 2 Pass: ≥ ${medR}% median` : `Pillar 2 Fail: < ${medR}% median`}">
                     ${c.roic.toFixed(1)}%
                 </td>
 
                 <!-- Pillar 3: P/E -->
-                <td style="text-align: right;" class="mono ${passPe ? 'cell-pillar-pass' : 'cell-pillar-fail'}" title="${passPe ? 'Pillar 3 Pass: ≤ 27.4x median' : 'Pillar 3 Fail: > 27.4x median'}">
+                <td style="text-align: right;" class="mono ${passPe ? 'cell-pillar-pass' : 'cell-pillar-fail'}" title="${passPe ? `Pillar 3 Pass: ≤ ${medPe}x median` : `Pillar 3 Fail: > ${medPe}x median`}">
                     ${c.pe.toFixed(1)}x
                 </td>
 
                 <!-- Pillar 4: Net Debt / EBITDA -->
-                <td style="text-align: right;" class="mono ${passDe ? 'cell-pillar-pass' : 'cell-pillar-fail'}" title="${passDe ? 'Pillar 4 Pass: Net Debt/EBITDA ≤ 2.5x (Median: 1.06x)' : 'Pillar 4 Fail: Net Debt/EBITDA > 2.5x'}">
+                <td style="text-align: right;" class="mono ${passDe ? 'cell-pillar-pass' : 'cell-pillar-fail'}" title="${passDe ? `Pillar 4 Pass: Net Debt/EBITDA ≤ ${sMaxDe}x (Median: ${medNd}x)` : `Pillar 4 Fail: Net Debt/EBITDA > ${sMaxDe}x or > ${medNd}x median`}">
                     ${c.nd_ebitda !== undefined ? (c.nd_ebitda <= 0 ? '<span style=\"color:#34d399;\">NET CASH</span>' : `${c.nd_ebitda.toFixed(1)}x`) : `${c.de.toFixed(1)}%`}
                 </td>
 
@@ -797,16 +799,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderFidelityLots(data) {
         const sum = data.summary || {};
+        state.portfolioSummary = sum;
         const totalVal = sum.total_value || 222482.63;
+        const totalPortVal = sum.total_portfolio_value || totalVal;
         const totalBasis = sum.total_basis || 54500.0;
-        const totalGain = sum.total_gain || 167982.63;
-        const gainPct = sum.total_gain_pct || 308.22;
-        const taxSavings = sum.potential_tax_savings || 34500.0;
+        const totalGain = sum.total_gain !== undefined ? sum.total_gain : 167982.63;
+        const gainPct = sum.total_gain_pct !== undefined ? sum.total_gain_pct : 308.22;
+        const taxSavings = sum.potential_tax_savings !== undefined ? sum.potential_tax_savings : 34500.0;
 
-        document.getElementById('header-net-worth').textContent = `$${Math.round(totalVal).toLocaleString()}`;
+        if (sum.cash_balance !== undefined && sum.cash_balance > 0) {
+            const cashInput = document.getElementById('order-avail-cash');
+            if (cashInput) cashInput.value = Math.round(sum.cash_balance);
+        }
+
+        document.getElementById('header-net-worth').textContent = `$${Math.round(totalPortVal).toLocaleString()}`;
         document.getElementById('port-total-val').textContent = `$${totalVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         document.getElementById('port-total-basis').textContent = `$${totalBasis.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        document.getElementById('port-total-gain').textContent = `+$${totalGain.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (+${gainPct.toFixed(1)}%)`;
+        document.getElementById('port-total-gain').textContent = `${totalGain >= 0 ? '+' : ''}$${totalGain.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${gainPct >= 0 ? '+' : ''}${gainPct.toFixed(1)}%)`;
         document.getElementById('port-tax-savings').textContent = `$${taxSavings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
         const tbody = document.getElementById('fidelity-lots-body');
@@ -839,12 +848,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const daysLeft = lot.days_to_ltcg !== undefined ? lot.days_to_ltcg : Math.max(0, 365 - lot.days_held);
-            const taxBadge = lot.ltcg_status === 'LTCG' 
-                ? `<span class="badge badge-ltcg" title="LTCG Qualified: Max federal tax rate 23.8%">💎 LTCG (≥365d)</span>` 
-                : `<span class="badge badge-stcg" title="STCG: Ordinary income tax rate up to 40.8%. Hold to day 366.">⏳ STCG (${daysLeft}d left)</span>`;
+            let taxBadge = '';
+            if (lot.ltcg_status === 'TAX-EXEMPT') {
+                taxBadge = `<span class="badge badge-ltcg" title="Tax-Advantaged Account (IRA / Roth / 401k / 529): Zero capital-gains tax friction">🛡️ TAX-EXEMPT</span>`;
+            } else if (lot.ltcg_status === 'LTCG') {
+                taxBadge = `<span class="badge badge-ltcg" title="LTCG Qualified: Max federal tax rate 23.8%">💎 LTCG (≥365d)</span>`;
+            } else {
+                taxBadge = `<span class="badge badge-stcg" title="STCG: Ordinary income tax rate up to 40.8%. Hold to day 366.">⏳ STCG (${daysLeft}d left)</span>`;
+            }
+
+            const accSub = (lot.account && lot.account !== 'Default')
+                ? `<div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">${lot.account}</div>`
+                : '';
 
             tr.innerHTML = `
-                <td><strong class="mono" style="color: #60a5fa;">${lot.symbol}</strong></td>
+                <td>
+                    <strong class="mono" style="color: #60a5fa;">${lot.symbol}</strong>
+                    ${accSub}
+                </td>
                 <td style="text-align: right;" class="mono">${lot.shares.toFixed(1)}</td>
                 <td style="text-align: right;" class="mono">$${lot.cost_basis.toFixed(2)}</td>
                 <td style="text-align: right;" class="mono">$${lot.live_price.toFixed(2)}</td>
@@ -1042,12 +1063,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Collect lots to sell (lots with Action == SELL (MOC))
         const sells = state.lots.filter(l => l.action.includes('SELL'));
+        const availCash = parseFloat(document.getElementById('order-avail-cash').value) || 100000;
+        const lotsValue = (state.lots && state.lots.length > 0)
+            ? state.lots.reduce((acc, l) => acc + (parseFloat(l.live_value) || 0), 0)
+            : 0;
+        const dynPortVal = (state.portfolioSummary && state.portfolioSummary.total_portfolio_value)
+            ? state.portfolioSummary.total_portfolio_value
+            : (lotsValue > 0 ? (lotsValue + availCash) : Math.max(222482.63, availCash));
 
         const payload = {
             selected_buys: buys,
             lots_to_sell: sells,
-            available_cash: parseFloat(document.getElementById('order-avail-cash').value) || 100000,
-            total_portfolio_value: 222482.63,
+            available_cash: availCash,
+            total_portfolio_value: dynPortVal,
             max_alloc_pct: parseFloat(document.getElementById('slider-max-alloc').value) || 15.0,
             cash_buffer_pct: parseFloat(document.getElementById('slider-cash-buffer').value) || 5.0,
             overlay_8020: state.overlay8020Active,
@@ -1633,5 +1661,12 @@ document.addEventListener('DOMContentLoaded', () => {
         setInterval(() => {
             pollWatcherStatus(false);
         }, 3500);
+    }
+
+    // Support deep-linking to specific step via URL query parameter (e.g. ?step=4)
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialStep = urlParams.get('step');
+    if (initialStep) {
+        goToStep(initialStep);
     }
 });
