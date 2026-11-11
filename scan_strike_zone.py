@@ -126,9 +126,9 @@ def run_strike_zone_scan(universe: str = "sp900") -> pd.DataFrame:
 
     # Cross-sectional medians across all 4 Munger pillars (aligned with Web Control Center)
     growth_s = pd.Series({t: float(clean_fund.get(t, {}).get("sales5y", 0.0)) for t in close_df.columns})
-    roic_s = pd.Series({t: float(fund_dict.get(t, {}).get("roic_proxy", 0.0)) * 100.0 for t in close_df.columns})
-    pe_s = pd.Series({t: float(fund_dict.get(t, {}).get("pe", 25.0)) for t in close_df.columns})
-    nd_ebitda_s = pd.Series({t: float(fund_dict.get(t, {}).get("net_debt_to_ebitda", 1.2)) for t in close_df.columns})
+    roic_s = pd.Series({t: float(clean_fund.get(t, {}).get("roic_proxy", 0.0)) * 100.0 for t in close_df.columns})
+    pe_s = pd.Series({t: float(clean_fund.get(t, {}).get("pe", 25.0)) for t in close_df.columns})
+    nd_ebitda_s = pd.Series({t: float(clean_fund.get(t, {}).get("net_debt_to_ebitda", 1.2)) for t in close_df.columns})
 
     med_g = float(growth_s.median()) if not growth_s.empty else 10.0
     med_r = float(roic_s.median()) if not roic_s.empty else 15.0
@@ -140,11 +140,11 @@ def run_strike_zone_scan(universe: str = "sp900") -> pd.DataFrame:
     clean_series = scores_clean.loc[dt_last].sort_values(ascending=False)
     top_candidates = list(clean_series.head(15).index)
 
-    raw_series = scores_raw.loc[dt_last]
+    raw_series = scores_raw.loc[dt_last].sort_values(ascending=False)
     cyclical_traps_flagged = [
-        t for t in close_df.columns
+        t for t in raw_series.index
         if float(raw_series.get(t, 0.0)) >= 2.0 and float(clean_series.get(t, 0.0)) == 0.0
-    ]
+    ][:5]
 
     insider_query_tickers = list(dict.fromkeys(top_candidates + cyclical_traps_flagged))
 
@@ -160,10 +160,10 @@ def run_strike_zone_scan(universe: str = "sp900") -> pd.DataFrame:
         clean_m = float(scores_clean.loc[dt_last, t]) if pd.notna(scores_clean.loc[dt_last, t]) else 0.0
 
         clean_s5y = round(float(clean_fund.get(t, {}).get("sales5y", 0.0)), 1)
-        roic = round(float(fund_dict.get(t, {}).get("roic_proxy", 0.0)) * 100.0, 1)
-        pe = round(float(fund_dict.get(t, {}).get("pe", 25.0)), 1)
-        pb = round(float(fund_dict.get(t, {}).get("pb", 0.0)), 2)
-        nd_ebitda = round(float(fund_dict.get(t, {}).get("net_debt_to_ebitda", 1.2)), 2)
+        roic = round(float(clean_fund.get(t, {}).get("roic_proxy", 0.0)) * 100.0, 1)
+        pe = round(float(clean_fund.get(t, {}).get("pe", 25.0)), 1)
+        pb = round(float(clean_fund.get(t, {}).get("pb", 0.0)), 2)
+        nd_ebitda = round(float(clean_fund.get(t, {}).get("net_debt_to_ebitda", 1.2)), 2)
 
         passed_med = bool(
             clean_m > 0.0

@@ -109,21 +109,157 @@ def get_historical_sp500_div_yield(year: int) -> float:
 # DATA LOADING, SANITIZATION & SYNTHETIC FIXTURE FALLBACK
 # ==============================================================================
 
+CAPITAL_LIGHT_FINANCIAL_TICKERS = {
+    "V", "MA", "AXP", "SPGI", "MCO", "MSCI", "FDS", "CME", "ICE", "NDAQ",
+    "CBOE", "MKTX", "MMC", "AJG", "AON", "BRO", "WTW", "RYAN", "FI", "FIS",
+    "GPN", "JKHY", "CPAY", "WEX", "PYPL", "BR", "ERIE",
+}
+
+CAPITAL_LIGHT_FINANCIAL_THEMES = {
+    "Transaction & Payment Processing Services",
+    "Financial Exchanges & Data",
+    "Insurance Brokers",
+}
+
+INSURANCE_AND_BANK_KEYWORDS = (
+    "insurance", "reinsurance", "bank", "thrift", "mortgage",
+    "consumer finance", "multi-sector holdings", "diversified financial",
+)
+
+COMMODITY_CYCLICAL_KEYWORDS = (
+    "oil & gas", "refining", "fertilizer", "aluminum", "steel", "copper",
+    "gold", "silver", "metals & mining", "commodity chemical", "coal",
+    "forest product", "paper",
+)
+
+
+def classify_balance_sheet_profile(ticker: str, meta: Dict[str, Any]) -> str:
+    """
+    Classifies a constituent's balance-sheet structure to guard against:
+      1. Insurance float & bank deposit leverage distorting ROE/ROIC and P/E
+      2. Commodity boom-bust peak earnings distorting trailing P/E and 1Y revenue spikes
+      3. Preserves capital-light financial tollbooths (Visa, Mastercard, S&P Global, Moody's)
+    """
+    tk = str(ticker).upper().strip()
+    sector = str(meta.get("sector", "")).strip()
+    theme = str(meta.get("theme", "")).strip()
+    theme_low = theme.lower()
+
+    if theme == "Core" or tk.startswith("EQ"):
+        return "STANDARD"
+
+    if tk in CAPITAL_LIGHT_FINANCIAL_TICKERS or theme in CAPITAL_LIGHT_FINANCIAL_THEMES:
+        return "CAPITAL_LIGHT_TOLLBOOTH"
+
+    if any(k in theme_low for k in INSURANCE_AND_BANK_KEYWORDS):
+        return "INSURANCE_OR_BANK"
+
+    if sector == "Financials":
+        if tk in {"BAC", "JPM", "WFC", "C", "GS", "MS", "USB", "BNY", "COF", "SCHW", "BRK-B", "AMP"}:
+            return "INSURANCE_OR_BANK"
+        return "OTHER_FINANCIAL"
+
+    if sector in {"Energy", "Materials", "Basic Materials"} or any(k in theme_low for k in COMMODITY_CYCLICAL_KEYWORDS):
+        return "COMMODITY_CYCLICAL"
+
+    return "STANDARD"
+
+
 def sanitize_universe_fundamentals(fund_dict: Dict, eps_dict: Dict) -> Dict:
     """
     Sanitizes scraper artifacts in `sp100_nasdaq100_universe.json` without mutating
     raw files unless requested:
-      - Caps single-quarter YoY revenue spikes misrecorded as 5-year CAGRs (e.g.,
-        MU's `sales5y: 379.3`, which was Q4 FY26 YoY quarterly revenue growth,
-        converting `(1 + 3.793)**(1/5) - 1 = 36.8%` annualized 5Y equivalent).
+      1. Caps single-quarter/1-year YoY revenue spikes misrecorded as 5-year CAGRs:
+         - Tech/Healthcare outliers > 65% (e.g., MU's `sales5y: 379.3` -> `36.8%`)
+         - Financials & Commodity Cyclicals > 18% where 1Y GAAP mark-to-market
+           investment gains (ASU 2016-01), M&A, or commodity rebounds were scraped
+           from `revenueGrowth` (e.g., CINF `31.6%` -> `5.65%`, EOG `58.7%` -> `9.68%`).
+      2. De-leverages ROE-based `roic_proxy` for Balance-Sheet Financials (Insurers/Banks)
+         where policyholder float and deposit liabilities create 4x-10x equity leverage
+         and peak underwriting cycles inflate ROE (e.g., ALL `46.1%` -> `13.5%`).
+      3. Book-Anchored Normalized P/E Floor for Insurers, Banks & Commodity Cyclicals:
+         Prevents peak-cycle earnings windfalls (`PE = 5.0x` at `P/B = 2.0x`) from
+         masquerading as secular value bargains by anchoring normalized P/E to
+         `P/B / Normalized_Through_Cycle_ROE`.
+      4. De-leverages non-financial buyback/debt cannibals where tiny GAAP book equity
+         inflates ROE (`P/B > 12x` and `D/E > 60%`).
     """
     cleaned = {}
     for t, meta in fund_dict.items():
         m = dict(meta)
+        profile = classify_balance_sheet_profile(t, m)
+        m["balance_sheet_profile"] = profile
+
         raw_s5y = float(m.get("sales5y", 10.0))
-        if raw_s5y > 65.0:
+        raw_roic = float(m.get("roic_proxy", 0.15))
+        raw_pe = float(m.get("pe", 20.0))
+        pb = float(m.get("pb", 3.0))
+        raw_de = float(m.get("de", 50.0))
+        raw_nd = float(m.get("net_debt_to_ebitda", 1.2))
+        sector = str(m.get("sector", ""))
+
+        # 1. Revenue Growth Spike Sanitization (1Y YoY spike -> 5Y annualized equivalent)
+        if profile in {"INSURANCE_OR_BANK", "OTHER_FINANCIAL", "COMMODITY_CYCLICAL"}:
+            s5y_cap_trigger = 18.0
+        elif sector not in {"Technology", "Information Technology", "Communication Services", "Health Care"}:
+            s5y_cap_trigger = 32.0
+        else:
+            s5y_cap_trigger = 65.0
+
+        if raw_s5y > s5y_cap_trigger:
             m["sales5y_raw_unadjusted"] = raw_s5y
             m["sales5y"] = round(((1.0 + raw_s5y / 100.0) ** (1.0 / 5.0) - 1.0) * 100.0, 2)
+
+        # 2. Balance-Sheet Float / Leverage ROIC & P/E Normalization
+        if profile == "INSURANCE_OR_BANK":
+            # Policyholder float / deposit leverage adjustment (cap at 13.5% through-cycle franchise return)
+            m["roic_raw_unadjusted"] = raw_roic
+            m["roic_proxy"] = round(min(raw_roic / 2.2, 0.135), 3)
+
+            # Book-anchored normalized P/E floor: Normalized P/E >= P/B / 0.135
+            book_norm_pe = min(18.5, pb / 0.135) if pb > 0 else 14.5
+            if 0 < raw_pe < book_norm_pe:
+                m["pe_raw_unadjusted"] = raw_pe
+                m["pe"] = round(max(raw_pe, book_norm_pe), 2)
+
+            # Statutory reserves are pledged against policyholder claims, not excess corporate cash
+            if raw_de < 55.0:
+                m["de_raw_unadjusted"] = raw_de
+                m["de"] = 55.0
+            if raw_nd < 1.35:
+                m["nd_raw_unadjusted"] = raw_nd
+                m["net_debt_to_ebitda"] = 1.35
+
+        elif profile == "OTHER_FINANCIAL":
+            # Custody/Asset managers & brokerages with balance-sheet or buyback leverage
+            lev_divisor = max(1.25, 1.0 + max(0.0, raw_de / 100.0) + max(0.0, (pb - 2.0) * 0.15))
+            if raw_roic > 0.165:
+                m["roic_raw_unadjusted"] = raw_roic
+                m["roic_proxy"] = round(min(raw_roic / lev_divisor, 0.165), 3)
+            if pb > 0 and 0 < raw_pe < min(16.0, pb / 0.15):
+                m["pe_raw_unadjusted"] = raw_pe
+                m["pe"] = round(min(16.0, pb / 0.15), 2)
+
+        elif profile == "COMMODITY_CYCLICAL":
+            if raw_roic > 0.145:
+                m["roic_raw_unadjusted"] = raw_roic
+                m["roic_proxy"] = round(min(raw_roic / 1.5, 0.145), 3)
+            book_norm_pe = min(17.5, pb / 0.12) if pb > 0 else 14.0
+            if 0 < raw_pe < book_norm_pe:
+                m["pe_raw_unadjusted"] = raw_pe
+                m["pe"] = round(max(raw_pe, book_norm_pe), 2)
+
+        elif (
+            profile == "STANDARD"
+            and sector not in {"Technology", "Information Technology", "Communication Services"}
+            and pb > 12.0
+            and raw_de > 50.0
+            and raw_roic > 0.40
+        ):
+            # Non-tech buyback/debt cannibal where tiny GAAP book equity inflates ROE (e.g. EXPE)
+            m["roic_raw_unadjusted"] = raw_roic
+            m["roic_proxy"] = round(min(raw_roic / (1.0 + raw_de / 100.0), 0.25), 3)
+
         cleaned[t] = m
     return cleaned
 
@@ -320,6 +456,8 @@ def build_point_in_time_ttm_eps_matrix(
     full_cycle_profitable_df = pd.DataFrame(True, index=eval_dates, columns=tickers, dtype=bool)
 
     for t in tickers:
+        meta = fund_dict.get(t, {})
+        profile = meta.get("balance_sheet_profile") or classify_balance_sheet_profile(t, meta)
         q_raw = eps_dict.get(t, {})
         if q_raw:
             s = pd.Series(q_raw, dtype=float)
@@ -329,7 +467,13 @@ def build_point_in_time_ttm_eps_matrix(
             ttm_s = ttm_s[~ttm_s.index.duplicated(keep="last")]
 
             min_5y_ttm = ttm_s.rolling(20, min_periods=4).min()
-            prof_s = (min_5y_ttm > 0.0).astype(float)
+            if profile == "INSURANCE_OR_BANK" and not allow_legacy_lookahead:
+                # For balance-sheet insurers/banks, any negative reported quarter in trailing 5Y
+                # or negative TTM window flags underwriting/catastrophe/mark-to-market loss cycle
+                min_5y_q = s[~s.index.duplicated(keep="last")].rolling(20, min_periods=4).min()
+                prof_s = ((min_5y_ttm > 0.0) & (min_5y_q > 0.0)).astype(float)
+            else:
+                prof_s = (min_5y_ttm > 0.0).astype(float)
             full_cycle_profitable_df[t] = prof_s.reindex(eval_dates, method="ffill").fillna(1.0).astype(bool)
 
             if use_cyclically_adjusted_ey and not allow_legacy_lookahead:
@@ -339,6 +483,13 @@ def build_point_in_time_ttm_eps_matrix(
                 eff_eps_s = ttm_s
 
             ttm_eps_df[t] = eff_eps_s.reindex(eval_dates, method="ffill")
+
+        if not allow_legacy_lookahead and profile in {"INSURANCE_OR_BANK", "COMMODITY_CYCLICAL"}:
+            raw_pe = float(meta.get("pe_raw_unadjusted", meta.get("pe", 20.0)))
+            raw_roic = float(meta.get("roic_raw_unadjusted", meta.get("roic_proxy", 0.15)))
+            if 0.0 < raw_pe < 10.5 and raw_roic >= 0.18:
+                # Peak-cycle underwriting / GAAP mark-to-market / commodity windfall trap
+                full_cycle_profitable_df[t] = False
 
     prices_at_eval = close_df.reindex(eval_dates, method="ffill")
 
@@ -363,11 +514,17 @@ def build_point_in_time_ttm_eps_matrix(
     else:
         trailing_3y_mean_price = close_df.rolling(window=252 * 3, min_periods=21).mean().reindex(eval_dates, method="ffill")
         for t in tickers:
-            base_pe = float(fund_dict.get(t, {}).get("pe", 20.0))
+            meta = fund_dict.get(t, {})
+            profile = meta.get("balance_sheet_profile") or classify_balance_sheet_profile(t, meta)
+            base_pe = float(meta.get("pe", 20.0))
             safe_pe = base_pe if base_pe > 0 else 20.0
             causal_eps = trailing_3y_mean_price[t] / safe_pe
             mask = ttm_eps_df[t].isna() | (ttm_eps_df[t] <= 0)
             ttm_eps_df.loc[mask, t] = causal_eps.loc[mask]
+            if use_cyclically_adjusted_ey and profile in {"INSURANCE_OR_BANK", "OTHER_FINANCIAL", "COMMODITY_CYCLICAL"}:
+                # Cap point-in-time EPS by Book-Anchored Normalized P/E ceiling
+                norm_eps_cap = prices_at_eval[t] / safe_pe
+                ttm_eps_df[t] = np.minimum(ttm_eps_df[t], norm_eps_cap)
 
     inactive_mask = prices_at_eval.isna() | (prices_at_eval <= 0)
     ttm_eps_df = ttm_eps_df.mask(inactive_mask, np.nan)

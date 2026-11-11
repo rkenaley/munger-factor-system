@@ -149,6 +149,15 @@ class TestMungerFactorSystemAudit(unittest.TestCase):
         self.assertEqual(mu_clean, 0.0, "Value Trap filter must block MU due to FY2023 negative TTM EPS")
         self.assertFalse(bool(med_immunized.loc[dt_last, "MU"]))
 
+        # Also verify P&C insurance peak-cycle ROE/PE traps (ALL and CINF) are blocked
+        for ins_tk in ["ALL", "CINF"]:
+            if ins_tk in self.close_df.columns:
+                raw_ins = float(scores_raw.loc[dt_last, ins_tk])
+                clean_ins = float(scores_immunized.loc[dt_last, ins_tk])
+                self.assertGreater(raw_ins, 2.0, f"Raw mode should show inflated peak-cycle score for {ins_tk}")
+                self.assertEqual(clean_ins, 0.0, f"Safeguard must block peak-cycle insurance trap {ins_tk}")
+                self.assertFalse(bool(med_immunized.loc[dt_last, ins_tk]))
+
     def test_analytical_delta_strike_inversion_accuracy_and_speed(self) -> None:
         """
         Verifies that O(1) analytical delta inversion matches 50-step binary search

@@ -279,11 +279,11 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
     # Identify candidate tickers for insider data
     clean_series = scores_clean.loc[dt_last].sort_values(ascending=False)
     top_candidates = list(clean_series.head(20).index)
-    raw_series = scores_raw.loc[dt_last]
+    raw_series = scores_raw.loc[dt_last].sort_values(ascending=False)
     cyclical_traps_flagged = [
-        t for t in close_df.columns
+        t for t in raw_series.index
         if float(raw_series.get(t, 0.0)) >= 2.0 and float(clean_series.get(t, 0.0)) == 0.0
-    ]
+    ][:5]
 
     insider_query_tickers = list(dict.fromkeys(top_candidates + cyclical_traps_flagged + ["NVDA", "AAPL", "MU", "LLY", "FTNT", "MSFT", "GOOGL"]))
 
@@ -298,10 +298,10 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
 
     # Build cross-sectional percentile rankings for the radar view
     growth_vals = {t: float(clean_fund.get(t, {}).get("sales5y", 0.0)) for t in close_df.columns}
-    roic_vals = {t: float(fund_dict.get(t, {}).get("roic_proxy", 0.0)) * 100.0 for t in close_df.columns}
-    pe_vals = {t: float(fund_dict.get(t, {}).get("pe", 25.0)) for t in close_df.columns}
-    de_vals = {t: float(fund_dict.get(t, {}).get("de", 50.0)) for t in close_df.columns}
-    nd_ebitda_vals = {t: float(fund_dict.get(t, {}).get("net_debt_to_ebitda", 1.2)) for t in close_df.columns}
+    roic_vals = {t: float(clean_fund.get(t, {}).get("roic_proxy", 0.0)) * 100.0 for t in close_df.columns}
+    pe_vals = {t: float(clean_fund.get(t, {}).get("pe", 25.0)) for t in close_df.columns}
+    de_vals = {t: float(clean_fund.get(t, {}).get("de", 50.0)) for t in close_df.columns}
+    nd_ebitda_vals = {t: float(clean_fund.get(t, {}).get("net_debt_to_ebitda", 1.2)) for t in close_df.columns}
 
     growth_s = pd.Series(growth_vals)
     roic_s = pd.Series(roic_vals)
@@ -343,7 +343,7 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
     csuite_haircuts_count = 0
 
     for t in close_df.columns:
-        meta = fund_dict.get(t, {})
+        meta = clean_fund.get(t, fund_dict.get(t, {}))
         name = meta.get("name", t)
         sector = meta.get("sector", "General")
         theme = meta.get("theme", sector)
@@ -352,7 +352,7 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
         clean_m = float(scores_clean.loc[dt_last, t]) if pd.notna(scores_clean.loc[dt_last, t]) else 0.0
 
         spot_price = round(float(close_df.loc[dt_last, t]), 2)
-        sales5y = round(float(clean_fund.get(t, {}).get("sales5y", 0.0)), 1)
+        sales5y = round(float(meta.get("sales5y", 0.0)), 1)
         roic = round(float(meta.get("roic_proxy", 0.0)) * 100.0, 1)
         pe = round(float(meta.get("pe", 25.0)), 1)
         pb = round(float(meta.get("pb", 3.0)), 2)
