@@ -167,6 +167,16 @@ class ControlCenterHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(res).encode("utf-8"))
             return
 
+        # API: Munger 30-DTE Options VRP (25d CSP, Jade Lizard & IVR>=50 Iron Condor)
+        if self.path.startswith("/api/munger/options-vrp"):
+            from .munger_api import get_options_vrp_entries_api
+            res = get_options_vrp_entries_api()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(res).encode("utf-8"))
+            return
+
         # API: Audited Buffett Showdown Dataset
         if self.path.startswith("/api/munger/buffett-showdown"):
             from .munger_api import get_buffett_showdown_api

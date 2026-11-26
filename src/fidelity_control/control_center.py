@@ -17,7 +17,11 @@ except ImportError:
 
 from .models import SecurityMetrics, DailyTradeOrder, FidelityAlert
 from .config import load_config
-from .sentiment_momentum import compute_rsi, compute_residual_momentum, compute_zscore, compute_extremizing_index
+from .sentiment_momentum import (
+    compute_52w_drawdown_pct,
+    classify_structural_drawdown,
+    compute_residual_momentum,
+)
 from .munger_gating import evaluate_munger_gating
 from .screener import run_extremizing_screener, FALLBACK_FUNDAMENTALS
 from .valuation_dcf import calculate_owner_earnings_dcf
@@ -54,7 +58,9 @@ def run_pipeline(config_path: str | Path | None = None, output_dir: str | Path |
             spy_t = yf.Ticker("SPY")
             spy_hist = spy_t.history(period="2y", interval="1d")
             if not spy_hist.empty:
-                spy_daily = spy_hist['Close']
+                spy_s = spy_hist['Close'].dropna()
+                if not spy_s.empty:
+                    spy_daily = spy_s
         except Exception:
             spy_daily = None
 
@@ -74,13 +80,14 @@ def run_pipeline(config_path: str | Path | None = None, output_dir: str | Path |
                 # Daily history
                 d_hist = t.history(period="2y", interval="1d")
                 if not d_hist.empty:
-                    daily_close = d_hist['Close']
-                    current_price = float(daily_close.iloc[-1])
+                    daily_close = d_hist['Close'].dropna()
+                    if not daily_close.empty:
+                        current_price = float(daily_close.iloc[-1])
                     
                 # Weekly history
                 w_hist = t.history(period="5y", interval="1wk")
                 if not w_hist.empty:
-                    weekly_close = w_hist['Close']
+                    weekly_close = w_hist['Close'].dropna()
             except Exception:
                 pass
                 
@@ -110,21 +117,18 @@ def run_pipeline(config_path: str | Path | None = None, output_dir: str | Path |
             buffer_ratio=cfg['risk_limits'].get('munger_buy_buffer_ratio', 1.05)
         )
         
-        # Momentum & Sentiment Extremizing
-        rsi = compute_rsi(daily_close, period=14)
-        zscore_50d = compute_zscore(daily_close, window=50)
+        # Structural Drawdown & 12-1 Residual Momentum (RSI/ExtIdx retired)
+        dd_52w = compute_52w_drawdown_pct(daily_close)
+        dist_100w = munger_res['dist_100w_pct']
         dist_200d = munger_res['dist_200d_pct']
         dist_200w = munger_res['dist_200w_pct']
         res_mom = compute_residual_momentum(daily_close, spy_daily)
-        
-        ext_index, ext_status = compute_extremizing_index(
-            rsi14=rsi,
-            zscore_50d=zscore_50d,
-            dist_200d_pct=dist_200d,
-            residual_mom=res_mom,
-            dist_200w_pct=dist_200w
+        structural_regime = classify_structural_drawdown(
+            dd_52w_pct=dd_52w,
+            dist_100w_pct=dist_100w,
+            dist_200w_pct=dist_200w,
         )
-        
+
         # Valuation DCF
         fcf_share = (current_price / fund['pe']) * fund['fcf_margin'] * 1.5 if fund['pe'] < 500 else 0.0
         dcf = calculate_owner_earnings_dcf(
@@ -132,17 +136,17 @@ def run_pipeline(config_path: str | Path | None = None, output_dir: str | Path |
             fcf_per_share=fcf_share,
             initial_growth_rate=fund['sales5y'] / 100.0
         )
-        
-        # Master Signal
-        if munger_res['gating_open'] or ext_status == "EXTREME_OVERSOLD":
-            master_signal = "BUY (EXTREME VALUE / GATING OPEN)"
-        elif ext_status == "OVERSOLD" or munger_res['policy_status'] == "PULLBACK_ZONE":
-            master_signal = "ACCUMULATE (DIP BUY)"
-        elif ext_status == "EXTREME_OVERBOUGHT" or current_price >= dcf['trim_above']:
-            master_signal = "TRIM / WRITE COVERED CALL"
+
+        # Master Signal (driven strictly by Munger Two-Tier SMA, 52W structural drawdown, and DCF valuation)
+        if munger_res['gating_open'] or structural_regime == "DEEP_STRUCTURAL_DISCOUNT":
+            master_signal = "BUY (STRUCTURAL DISCOUNT / GATING OPEN)"
+        elif structural_regime == "PULLBACK_ZONE" or munger_res['policy_status'] == "PULLBACK_ZONE":
+            master_signal = "ACCUMULATE (PULLBACK ZONE)"
+        elif structural_regime == "EXTENDED" or current_price >= dcf['trim_above']:
+            master_signal = "TRIM / REVIEW EXTENSION"
         else:
             master_signal = "HOLD / TRANCHE ACCUMULATE"
-            
+
         metrics_map[ticker] = SecurityMetrics(
             ticker=ticker,
             name=fund.get('name', ticker),
@@ -157,15 +161,18 @@ def run_pipeline(config_path: str | Path | None = None, output_dir: str | Path |
             roic_proxy=fund['roic_proxy'],
             sma50d=round(munger_res['sma50d'], 2),
             sma200d=round(munger_res['sma200d'], 2),
+            sma50w=round(munger_res['sma50w'], 2),
+            sma100w=round(munger_res['sma100w'], 2),
             sma200w=round(munger_res['sma200w'], 2),
+            dist_100w_pct=round(dist_100w, 1),
             dist_200w_pct=round(dist_200w, 1),
             dist_200d_pct=round(dist_200d, 1),
             munger_gating_open=bool(munger_res['gating_open']),
-            rsi14=round(rsi, 1),
+            gating_tier=str(munger_res['gating_tier']),
+            dd_52w_pct=round(dd_52w, 1),
             residual_mom_12_1=round(res_mom * 100.0, 1),
             sentiment_score=round(50.0 + (res_mom * 50.0), 1),
-            extremizing_index=round(ext_index, 1),
-            extremizing_status=ext_status,
+            structural_regime=structural_regime,
             intrinsic_value=dcf['intrinsic_value'],
             buy_below=dcf['buy_below'],
             strong_buy_below=dcf['strong_buy_below'],
@@ -190,13 +197,22 @@ def run_pipeline(config_path: str | Path | None = None, output_dir: str | Path |
     # 5. Generate Technical Alert Levels
     alerts: List[FidelityAlert] = []
     for ticker, m in metrics_map.items():
-        # Munger 200w Alert
+        # Munger Tier 1 (100w SMA - 50% Deployment) Alert
+        alerts.append(FidelityAlert(
+            ticker=ticker,
+            alert_type="100W_SMA_TIER1_GATING",
+            trigger_level=round(m.sma100w * 1.05, 2),
+            condition="price <= trigger_level",
+            purpose="Munger Two-Tier Sweet Spot (50% Tranche Deployment)",
+            active=m.gating_tier not in ("TIER1_BUY_50%", "TIER2_BUY_100%")
+        ))
+        # Munger Tier 2 (200w SMA - 100% Deployment) Alert
         alerts.append(FidelityAlert(
             ticker=ticker,
             alert_type="200W_SMA_GATING",
             trigger_level=round(m.sma200w * 1.05, 2),
             condition="price <= trigger_level",
-            purpose="Munger Secular Support Gating (Institutional Floor)",
+            purpose="Munger Secular Support Gating (Tier 2 Institutional Floor)",
             active=not m.munger_gating_open
         ))
         # 200d SMA Pullback

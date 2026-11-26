@@ -170,9 +170,9 @@ def generate_options_recommendations(
 
     # B. Bear Put Vertical Spreads for overextended/fragile stocks (e.g., DASH, SNPS, IDXX)
     fragility_candidates = [
-        {'ticker': 'DASH', 'name': 'DoorDash Inc.', 'pe': 135.0, 'rsi': 74.0, 'reason': 'PE 135x with decelerating margins & 34% extension over 200 SMA'},
-        {'ticker': 'IDXX', 'name': 'IDEXX Laboratories', 'pe': 48.0, 'rsi': 80.0, 'reason': 'RSI 80 extreme overbought & 48% extension over 200 SMA'},
-        {'ticker': 'SNPS', 'name': 'Synopsys Inc.', 'pe': 112.0, 'rsi': 70.0, 'reason': 'PE 112x valuation detachment with slowing forward top-line'}
+        {'ticker': 'DASH', 'name': 'DoorDash Inc.', 'pe': 135.0, 'reason': 'PE 135x with decelerating margins & 34% extension over 200D SMA'},
+        {'ticker': 'IDXX', 'name': 'IDEXX Laboratories', 'pe': 48.0, 'reason': 'PE 48x with 48% extension over 200D SMA'},
+        {'ticker': 'SNPS', 'name': 'Synopsys Inc.', 'pe': 112.0, 'reason': 'PE 112x valuation detachment with slowing forward top-line'}
     ]
     
     for f in fragility_candidates:

@@ -6,10 +6,10 @@ import numpy as np
 from pathlib import Path
 
 from fidelity_control.sentiment_momentum import (
-    compute_rsi,
+    compute_52w_drawdown_pct,
+    classify_structural_drawdown,
     compute_residual_momentum,
     compute_zscore,
-    compute_extremizing_index
 )
 from fidelity_control.munger_gating import evaluate_munger_gating
 from fidelity_control.valuation_dcf import calculate_owner_earnings_dcf
@@ -20,18 +20,18 @@ from fidelity_control.config import load_config
 from fidelity_control.control_center import run_pipeline
 
 
-def test_rsi_calculation():
-    # Constant prices -> RSI 50
+def test_52w_drawdown_calculation():
+    # Flat prices -> 0% drawdown
     series = pd.Series([100.0] * 30)
-    assert compute_rsi(series) == 50.0
-    
-    # Monotonically increasing -> RSI 100
+    assert compute_52w_drawdown_pct(series) == 0.0
+
+    # Peak 200, current 150 -> -25% drawdown
+    drop_series = pd.Series([100.0] * 20 + [200.0] + [150.0])
+    assert compute_52w_drawdown_pct(drop_series) == pytest.approx(-25.0)
+
+    # Monotonically increasing -> 0% drawdown
     inc_series = pd.Series(range(1, 35), dtype=float)
-    assert compute_rsi(inc_series) > 85.0
-    
-    # Monotonically decreasing -> RSI near 0
-    dec_series = pd.Series(range(35, 1, -1), dtype=float)
-    assert compute_rsi(dec_series) < 15.0
+    assert compute_52w_drawdown_pct(inc_series) == 0.0
 
 
 def test_residual_momentum():
@@ -42,41 +42,48 @@ def test_residual_momentum():
     assert mom > 0.0 # stock outperformed benchmark
 
 
-def test_extremizing_index():
-    # Extreme oversold inputs: low RSI, negative zscore, near 200w SMA
-    idx, status = compute_extremizing_index(
-        rsi14=22.0,
-        zscore_50d=-2.5,
-        dist_200d_pct=-18.0,
-        residual_mom=-0.10,
-        dist_200w_pct=2.0
-    )
-    assert idx <= -50.0
-    assert status == "EXTREME_OVERSOLD"
-    
-    # Extreme overbought inputs: high RSI, positive zscore, extended from 200d
-    idx_high, status_high = compute_extremizing_index(
-        rsi14=82.0,
-        zscore_50d=2.8,
-        dist_200d_pct=35.0,
-        residual_mom=0.45,
-        dist_200w_pct=40.0
-    )
-    assert idx_high >= 60.0
-    assert status_high in ["OVERBOUGHT", "EXTREME_OVERBOUGHT"]
+def test_structural_drawdown_classification():
+    # Near/below 200w SMA -> deep structural discount
+    assert classify_structural_drawdown(dd_52w_pct=-30.0, dist_100w_pct=-15.0, dist_200w_pct=2.0) == "DEEP_STRUCTURAL_DISCOUNT"
+
+    # Pullback near 100w SMA -> pullback zone
+    assert classify_structural_drawdown(dd_52w_pct=-18.0, dist_100w_pct=3.0, dist_200w_pct=22.0) == "PULLBACK_ZONE"
+
+    # Stretched well above 100w SMA near 52W highs -> extended
+    assert classify_structural_drawdown(dd_52w_pct=-1.0, dist_100w_pct=45.0, dist_200w_pct=65.0) == "EXTENDED"
+
+    # Normal trend -> neutral
+    assert classify_structural_drawdown(dd_52w_pct=-8.0, dist_100w_pct=15.0, dist_200w_pct=30.0) == "NEUTRAL"
 
 
 def test_munger_gating():
-    # When price is below 1.05 * 200w SMA, gating is open
+    # When price is below 1.05 * 200w SMA, gating is open (Tier 2)
     weekly = pd.Series([100.0] * 210)
     res = evaluate_munger_gating(current_price=102.0, weekly_history=weekly)
     assert res['gating_open'] is True
     assert res['policy_status'] == "GATING_OPEN_BUY"
-    
+    assert res['gating_tier'] == "TIER2_BUY_100%"
+    assert res['deploy_tranche_pct'] == 100
+
     # When price is extended 50% above 200w SMA, gating is closed
     res_ext = evaluate_munger_gating(current_price=150.0, weekly_history=weekly)
     assert res_ext['gating_open'] is False
     assert res_ext['policy_status'] == "EXTENDED_HOLD"
+    assert res_ext['gating_tier'] == "HOLD_CASH"
+
+    # Two-Tier sweet spot: SMA100w = 140, SMA200w ~ 118 -> price=142 hits TIER1_BUY_50%
+    w_step = pd.Series([100.0] * 120 + [140.0] * 100)
+    res_t1 = evaluate_munger_gating(current_price=142.0, weekly_history=w_step)
+    assert res_t1['tier1_open'] is True
+    assert res_t1['tier2_open'] is False
+    assert res_t1['gating_tier'] == "TIER1_BUY_50%"
+    assert res_t1['deploy_tranche_pct'] == 50
+
+    # CSP / Jade Lizard zone: SMA50w = 160, SMA100w ~ 130 -> price=155 hits CSP_LIZARD_ZONE
+    w_csp = pd.Series([100.0] * 170 + [160.0] * 50)
+    res_csp = evaluate_munger_gating(current_price=155.0, weekly_history=w_csp)
+    assert res_csp['csp_lizard_zone'] is True
+    assert res_csp['gating_tier'] == "CSP_LIZARD_ZONE"
 
 
 def test_valuation_dcf():
@@ -105,4 +112,10 @@ def test_full_pipeline(tmp_path):
     assert Path(res['orders_csv']).exists()
     assert Path(res['alerts_csv']).exists()
     assert Path(res['watchlist_csv']).exists()
+    wl_header = Path(res['watchlist_csv']).read_text(encoding="utf-8").splitlines()[0]
+    assert "52W Drawdown (%)" in wl_header
+    assert "vs 100W SMA (%)" in wl_header
+    assert "vs 200W SMA (%)" in wl_header
+    assert "RSI" not in wl_header
+    assert "Extremizing" not in wl_header
     assert Path(res['json_report']).exists()

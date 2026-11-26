@@ -312,8 +312,8 @@
                         <label class="toggle-card" id="chk-gating200w-card">
                             <input type="checkbox" id="chk-gating200w">
                             <div class="toggle-card-content">
-                                <div class="toggle-title">📉 200-Week SMA Pullback Gating</div>
-                                <div class="toggle-desc">Strike Zone entries are gated to stocks trading within 20% of their 200-week moving average (or RSI &lt; 50) to enforce buying on pullbacks.</div>
+                                <div class="toggle-title">📉 Two-Tier Pullback Gating (100W / 200W)</div>
+                                <div class="toggle-desc">Gates Strike Zone entries to Tier 1 (<code>&le; 1.05&times; SMA_100w</code>, 50% tranche) or Tier 2 (<code>&le; 1.05&times; SMA_200w</code>, 100% tranche) to prevent buying extended tops while avoiding excessive cash drag.</div>
                             </div>
                         </label>
                     </div>
@@ -365,7 +365,7 @@
                         </div>
                     </div>
 
-                    <div class="grid-2">
+                    <div class="grid-3">
                         <!-- Noise Filter Card -->
                         <div class="toggle-card active" style="cursor: default;">
                             <input type="checkbox" checked disabled>
@@ -376,6 +376,17 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Rule 10b5-1 Exclusion Card -->
+                        <label class="toggle-card active" id="chk-exclude-10b5-1-card">
+                            <input type="checkbox" id="chk-exclude-10b5-1" checked>
+                            <div class="toggle-card-content">
+                                <div class="toggle-title">📜 Strip Rule 10b5-1 Scheduled Plans</div>
+                                <div class="toggle-desc">
+                                    Reads <code>&lt;aff10b5One&gt;</code> in SEC Form 4 XML to exclude pre-scheduled automatic executive sales from triggering false C-suite distribution haircuts.
+                                </div>
+                            </div>
+                        </label>
 
                         <!-- Minimum Insider Buying Volume Slider -->
                         <div class="control-group">
@@ -457,6 +468,7 @@
                             <button class="filter-chip active" data-filter="all">All Candidates (<span id="cnt-all">176</span>)</button>
                             <button class="filter-chip" data-filter="strike">⭐ Strike Zone (<span id="cnt-strike">2</span>)</button>
                             <button class="filter-chip" data-filter="all-passed">✅ All 4 Passed (<span id="cnt-all-passed">0</span>)</button>
+                            <button class="filter-chip" data-filter="nearmiss">⚠️ 3/4 Near-Miss (<span id="cnt-nearmiss">0</span>)</button>
                             <button class="filter-chip" data-filter="insider">🕵️ High Insider Conviction (<span id="cnt-insider">0</span>)</button>
                             <button class="filter-chip" data-filter="traps">🛡️ Value Traps Blocked (<span id="cnt-traps">12</span>)</button>
                             <button class="filter-chip" data-filter="cluster">🚀 Cluster Buys (<span id="cnt-cluster">0</span>)</button>
@@ -743,12 +755,15 @@
                             <h2 class="card-title">🛡️ Stage 7: Options Architecture (80/20 Spreads &amp; Collars)</h2>
                             <p class="card-subtitle">Amplify compounder upside via defined-risk call spreads or protect generational gains with zero-cost collars.</p>
                         </div>
-                        <div style="display: flex; gap: 8px;">
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                             <button class="btn-action btn-primary" id="btn-tab-call-spreads" style="padding: 4px 12px; font-size: 0.8rem;">
                                 🚀 80/20 Bull Call Spreads
                             </button>
                             <button class="btn-action btn-secondary" id="btn-tab-collars" style="padding: 4px 12px; font-size: 0.8rem;">
                                 🛡️ Protective Collars
+                            </button>
+                            <button class="btn-action btn-secondary" id="btn-tab-vrp" style="padding: 4px 12px; font-size: 0.8rem;">
+                                🦎 Cash-Gated CSP &amp; Jade Lizards
                             </button>
                         </div>
                     </div>
@@ -839,6 +854,43 @@
                         </div>
                     </div>
 
+                    <!-- Strategy 3: 30-DTE Cash-Gated CSP, Jade Lizard & IVR>=50 Condor Panel -->
+                    <div id="panel-options-vrp" style="display: none;">
+                        <div style="background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; padding: 1.25rem; margin-bottom: 1.25rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
+                                <h3 style="font-size: 0.95rem; font-weight: 600; color: #34d399;">🦎 30-DTE Cash-Secured Puts, Zero-Upside-Risk Jade Lizards &amp; IVR-Gated Iron Condors</h3>
+                                <span class="badge badge-boost" id="vrp-vol-regime-badge">Vol Regime: Loading...</span>
+                            </div>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5;" id="vrp-tax-note">
+                                Sell 25-delta CSPs or Zero-Upside-Risk Jade Lizards (<code>Net Credit &ge; Call Spread Width</code>) backed by T-bills while waiting for Tier-1/Tier-2 pullbacks. Iron Condors activate strictly when <code>1Y IVR &ge; 50%</code>.
+                            </p>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="terminal-table" id="vrp-table">
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Role / Gate</th>
+                                        <th style="text-align: right;">Spot ($)</th>
+                                        <th style="text-align: center;">1Y IVR</th>
+                                        <th>25d CSP (Ann%)</th>
+                                        <th>Jade Lizard (Zero-Up-Risk)</th>
+                                        <th>Iron Condor (IVR &ge; 50)</th>
+                                        <th style="text-align: center;">Trade</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vrp-table-body">
+                                    <tr>
+                                        <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                            Loading 30-DTE options VRP blueprints...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <div class="stepper-footer">
                         <button class="btn-action btn-secondary btn-nav-step" data-next-step="6">
                             <span>⬅ Back: Order Generator</span>
@@ -911,6 +963,14 @@
                         </div>
                         <span class="control-hint">Operating cash solvency (Buyback-immune). &le; 2.5x is investment-grade.</span>
                     </div>
+
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <span class="control-label">📉 Two-Tier Entry Gate &amp; 1Y IVR:</span>
+                            <strong class="mono" id="modal-gating-tier">HOLD_CASH</strong>
+                        </div>
+                        <span class="control-hint" id="modal-ivr">1Y IVR: --</span>
+                    </div>
                 </div>
             </div>
 
@@ -923,9 +983,10 @@
                 <p style="font-size: 0.8rem; color: var(--text-primary); margin-bottom: 6px;" id="modal-insider-notes">
                     No open-market C-suite distribution detected.
                 </p>
-                <div style="display: flex; gap: 16px; font-size: 0.76rem; color: var(--text-secondary);">
+                <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.76rem; color: var(--text-secondary);">
                     <span>Buys: <strong class="mono" id="modal-insider-buys" style="color: #34d399;">$0</strong></span>
-                    <span>C-Suite Sales: <strong class="mono" id="modal-insider-sales" style="color: #f87171;">$0</strong></span>
+                    <span>Discretionary Sales: <strong class="mono" id="modal-insider-sales" style="color: #f87171;">$0</strong></span>
+                    <span id="modal-insider-10b5" style="color: #94a3b8;"></span>
                 </div>
             </div>
 

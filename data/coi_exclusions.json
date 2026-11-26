@@ -1,0 +1,49 @@
+{
+  "enabled": true,
+  "policy_name": "Healthcare / Biotech & Pharma Sector Exclusion Policy",
+  "description": "Excludes configured Biotechnology and Pharmaceutical equities from Strike Zone buys, watchlist candidates, and automated screener outputs.",
+  "excluded_themes": [
+    "Biotechnology",
+    "Pharmaceuticals"
+  ],
+  "excluded_tickers": [
+    "ABBV",
+    "ALNY",
+    "AMGN",
+    "ARWR",
+    "AZN",
+    "BIIB",
+    "BMRN",
+    "BMY",
+    "CORT",
+    "CYTK",
+    "ELAN",
+    "EXEL",
+    "GILD",
+    "GSK",
+    "HALO",
+    "INCY",
+    "JAZZ",
+    "JNJ",
+    "KRYS",
+    "LLY",
+    "MRK",
+    "MRNA",
+    "NBIX",
+    "NVO",
+    "PFE",
+    "REGN",
+    "RGEN",
+    "ROIV",
+    "SNY",
+    "UTHR",
+    "VRTX",
+    "VTRS",
+    "ZTS"
+  ],
+  "medtech_review_tickers": [
+    "ISRG",
+    "SIBN"
+  ],
+  "medtech_review_note": "Optional medical-device review tickers; verify institutional COI policy if medical devices are also restricted."
+}

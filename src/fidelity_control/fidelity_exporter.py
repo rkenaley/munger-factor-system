@@ -64,13 +64,13 @@ def export_fidelity_alerts_csv(alerts: List[FidelityAlert], output_dir: Path) ->
 
 
 def export_fidelity_watchlist_csv(metrics_map: Dict[str, SecurityMetrics], output_dir: Path) -> Path:
-    """Exports high-conviction watchlist with extremizing indicators and Munger gating."""
+    """Exports high-conviction watchlist with 52W drawdown and Munger SMA100w/200w gating."""
     output_dir.mkdir(parents=True, exist_ok=True)
     target = output_dir / "fidelity_watchlist.csv"
     
     headers = [
-        "Symbol", "Company Name", "Theme", "Current Price ($)", "RSI (14d)", 
-        "Extremizing Status", "Extremizing Index", "Munger 200w Gating", 
+        "Symbol", "Company Name", "Theme", "Current Price ($)", "52W Drawdown (%)",
+        "vs 100W SMA (%)", "vs 200W SMA (%)", "Structural Regime", "Munger 200w Gating",
         "Buy Below ($)", "Trim Above ($)", "Master Signal"
     ]
     
@@ -83,9 +83,10 @@ def export_fidelity_watchlist_csv(metrics_map: Dict[str, SecurityMetrics], outpu
                 m.name,
                 m.theme,
                 f"{m.current_price:.2f}",
-                f"{m.rsi14:.1f}",
-                m.extremizing_status,
-                f"{m.extremizing_index:.1f}",
+                f"{m.dd_52w_pct:.1f}",
+                f"{m.dist_100w_pct:+.1f}",
+                f"{m.dist_200w_pct:+.1f}",
+                m.structural_regime,
                 "OPEN (BUY)" if m.munger_gating_open else f"CLOSED (+{m.dist_200w_pct:.1f}%)",
                 f"{m.buy_below:.2f}",
                 f"{m.trim_above:.2f}",

@@ -21,16 +21,61 @@ import json
 import lzma
 import math
 import pickle
+import re
+import time
+import xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from statistics import NormalDist
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 
 _NORM = NormalDist(0.0, 1.0)
 EXCLUDED_TICKERS = {"SNDK"}
+
+
+def load_coi_excluded_tickers(data_dir: Path | str = "data") -> set[str]:
+    """Load physician conflict-of-interest (Biotech/Pharma) ticker exclusions."""
+    data_path = Path(data_dir)
+    if not data_path.exists():
+        alt_path = Path(__file__).resolve().parent / data_dir
+        if alt_path.exists():
+            data_path = alt_path
+
+    coi_file = data_path / "coi_exclusions.json"
+    if not coi_file.exists():
+        return set()
+
+    try:
+        with open(coi_file, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+    except Exception:
+        return set()
+
+    if not cfg.get("enabled", True):
+        return set()
+
+    excluded = {str(t).upper().strip() for t in cfg.get("excluded_tickers", []) if t}
+    excluded_themes = {str(th).strip().lower() for th in cfg.get("excluded_themes", []) if th}
+
+    sp900_file = data_path / "sp900_universe.json"
+    if excluded_themes and sp900_file.exists():
+        try:
+            with open(sp900_file, "r", encoding="utf-8") as f:
+                univ = json.load(f)
+            if isinstance(univ, dict):
+                for ticker, meta in univ.items():
+                    if isinstance(meta, dict):
+                        theme = str(meta.get("theme", "")).strip().lower()
+                        if theme in excluded_themes:
+                            excluded.add(str(ticker).upper().strip())
+        except Exception:
+            pass
+
+    return excluded
 
 
 @dataclass
@@ -52,6 +97,7 @@ class BacktestConfig:
     winsorize_cross_section: bool = True  # Clips 2nd/98th percentiles to stop outliers (e.g. MU 379% sales) from crushing sigma
     enforce_full_cycle_profitability: bool = True  # Disqualifies boom-bust cyclicals with negative TTM EPS in trailing 5Y
     use_cyclically_adjusted_ey: bool = True  # Blends TTM EPS with 5Y median EPS to prevent cyclical peak P/E traps
+    apply_anti_crest_guard: bool = True  # Damps peak-windfall/blow-off scores and blocks broken-EPS downtrend traps
 
 
 def get_historical_rf_rate(year: int) -> float:
@@ -323,6 +369,11 @@ def load_or_generate_dataset(data_dir: Path | str = "data") -> Tuple[pd.DataFram
             if t in close_df.columns and t not in EXCLUDED_TICKERS and t not in {"^GSPC", "SPY"}
         ]
         close_df = close_df[valid_tickers]
+        # Drop incomplete/after-hours sparse phantom bars (e.g. <50% ticker coverage)
+        while not close_df.empty and float(close_df.iloc[-1].notna().mean()) < 0.50:
+            close_df = close_df.iloc[:-1]
+        if not close_df.empty:
+            gspc_close = gspc_close.reindex(close_df.index).ffill().bfill()
         return close_df, gspc_close, fund_dict, eps_dict, False
 
     return _generate_synthetic_fixture()
@@ -531,6 +582,214 @@ def build_point_in_time_ttm_eps_matrix(
     return ttm_eps_df, full_cycle_profitable_df
 
 
+def compute_cycle_and_trend_diagnostics(
+    close_df: pd.DataFrame,
+    eval_dates: pd.DatetimeIndex,
+    eps_dict: Dict,
+    reporting_lag_days: int = 45,
+) -> Dict[str, pd.DataFrame]:
+    """
+    Computes strictly causal (zero-lookahead) price-cycle and EPS-slope diagnostics
+    aligned on `eval_dates` to guard against late-cycle blow-offs, peak windfall
+    margins, and post-crest broken downtrends.
+
+    Anti-crest multiplier components:
+      - Peak Windfall damping: scales score by 1 / (1 + 0.35 * max(0, TTM/Med5Y - 1.50))
+        when trailing TTM EPS exceeds 1.50x its trailing 5-year median across all sectors.
+      - Parabolic Blow-Off damping: applies a 0.70x haircut when trailing 12-1M return >= +60%.
+      - Broken EPS+Trend gate: zeroes score (0.0x) and disqualifies Strike Zone eligibility
+        when fundamentals are rolling over (latest Q EPS YoY < -10% or TTM EPS < 0.85x 3Y peak)
+        AND price trend is confirmed broken (Close < 200D SMA and 3M SMA200 slope < 0).
+      - Cresting warning flag (`is_cresting`): 2Y run-up >= +80%, 52W drawdown <= -10%,
+        and trailing 3M return < 0.
+    """
+    eval_dates = pd.DatetimeIndex(eval_dates)
+    tickers = list(close_df.columns)
+    c = close_df.sort_index().ffill()
+
+    mom_12_1 = ((c.shift(21) / c.shift(252)) - 1.0).reindex(eval_dates, method="ffill")
+    ret_3m = c.pct_change(63, fill_method=None).reindex(eval_dates, method="ffill")
+    ret_6m = c.pct_change(126, fill_method=None).reindex(eval_dates, method="ffill")
+
+    high_52w = c.rolling(252, min_periods=63).max()
+    low_2y = c.rolling(504, min_periods=126).min()
+    dd_52w = ((c / high_52w) - 1.0).reindex(eval_dates, method="ffill")
+    runup_2y = ((high_52w / low_2y) - 1.0).reindex(eval_dates, method="ffill")
+
+    sma200 = c.rolling(200, min_periods=100).mean()
+    pct_vs_sma200 = ((c / sma200) - 1.0).reindex(eval_dates, method="ffill")
+    sma200_slope_3m = ((sma200 / sma200.shift(63)) - 1.0).reindex(eval_dates, method="ffill")
+
+    lag = pd.Timedelta(days=reporting_lag_days)
+    windfall_cols: Dict[str, pd.Series] = {}
+    vs_peak_cols: Dict[str, pd.Series] = {}
+    ttm_yoy_cols: Dict[str, pd.Series] = {}
+    q_yoy_cols: Dict[str, pd.Series] = {}
+
+    for t in tickers:
+        q_raw = eps_dict.get(t, {})
+        if not q_raw or len(q_raw) < 4:
+            continue
+        s = pd.Series(q_raw, dtype=float)
+        s.index = pd.to_datetime(s.index).tz_localize(None) + lag
+        s = s.sort_index()
+        s = s[~s.index.duplicated(keep="last")]
+        if len(s) < 4:
+            continue
+
+        ttm_s = s.rolling(4, min_periods=4).sum()
+        med_5y = ttm_s.rolling(20, min_periods=4).median()
+        peak_3y = ttm_s.rolling(12, min_periods=4).max()
+        ttm_prev4 = ttm_s.shift(4)
+        q_prev4 = s.shift(4)
+
+        wf_s = pd.Series(np.nan, index=s.index, dtype=float)
+        wf_ok = med_5y > 0.05
+        wf_s[wf_ok] = ttm_s[wf_ok] / med_5y[wf_ok]
+
+        pk_s = pd.Series(np.nan, index=s.index, dtype=float)
+        pk_ok = peak_3y > 0.05
+        pk_s[pk_ok] = ttm_s[pk_ok] / peak_3y[pk_ok]
+
+        tyoy_s = pd.Series(np.nan, index=s.index, dtype=float)
+        tyoy_ok = ttm_prev4 > 0.05
+        tyoy_s[tyoy_ok] = (ttm_s[tyoy_ok] / ttm_prev4[tyoy_ok]) - 1.0
+
+        qyoy_s = pd.Series(np.nan, index=s.index, dtype=float)
+        qyoy_ok = q_prev4 > 0.05
+        qyoy_s[qyoy_ok] = (s[qyoy_ok] / q_prev4[qyoy_ok]) - 1.0
+
+        windfall_cols[t] = wf_s.reindex(eval_dates, method="ffill")
+        vs_peak_cols[t] = pk_s.reindex(eval_dates, method="ffill")
+        ttm_yoy_cols[t] = tyoy_s.reindex(eval_dates, method="ffill")
+        q_yoy_cols[t] = qyoy_s.reindex(eval_dates, method="ffill")
+
+    windfall_ratio = pd.DataFrame(windfall_cols, index=eval_dates).reindex(columns=tickers)
+    ttm_vs_3y_peak = pd.DataFrame(vs_peak_cols, index=eval_dates).reindex(columns=tickers)
+    ttm_eps_yoy = pd.DataFrame(ttm_yoy_cols, index=eval_dates).reindex(columns=tickers)
+    q_eps_yoy = pd.DataFrame(q_yoy_cols, index=eval_dates).reindex(columns=tickers)
+
+    is_blowoff = (mom_12_1 >= 0.60).fillna(False)
+    is_peak_windfall = (windfall_ratio > 1.50).fillna(False)
+    is_cresting = ((runup_2y >= 0.80) & (dd_52w <= -0.10) & (ret_3m < 0.0)).fillna(False)
+    is_eps_rollover = ((q_eps_yoy < -0.10) | (ttm_vs_3y_peak < 0.85)).fillna(False)
+    is_broken_trend = ((pct_vs_sma200 < 0.0) & (sma200_slope_3m < 0.0)).fillna(False)
+    is_broken_eps_trend = is_eps_rollover & is_broken_trend
+
+    windfall_excess = (windfall_ratio.clip(lower=1.0).fillna(1.0) - 1.50).clip(lower=0.0)
+    windfall_mult = 1.0 / (1.0 + 0.35 * windfall_excess)
+    blowoff_mult = pd.DataFrame(np.where(is_blowoff, 0.70, 1.0), index=eval_dates, columns=tickers)
+    anti_crest_mult = (windfall_mult * blowoff_mult).where(~is_broken_eps_trend, 0.0)
+
+    return {
+        "mom_12_1": mom_12_1,
+        "ret_3m": ret_3m,
+        "ret_6m": ret_6m,
+        "dd_52w": dd_52w,
+        "runup_2y": runup_2y,
+        "pct_vs_sma200": pct_vs_sma200,
+        "sma200_slope_3m": sma200_slope_3m,
+        "windfall_ratio": windfall_ratio,
+        "ttm_vs_3y_peak": ttm_vs_3y_peak,
+        "ttm_eps_yoy": ttm_eps_yoy,
+        "q_eps_yoy": q_eps_yoy,
+        "is_blowoff": is_blowoff,
+        "is_peak_windfall": is_peak_windfall,
+        "is_cresting": is_cresting,
+        "is_eps_rollover": is_eps_rollover,
+        "is_broken_trend": is_broken_trend,
+        "is_broken_eps_trend": is_broken_eps_trend,
+        "anti_crest_mult": anti_crest_mult,
+    }
+
+
+def extract_ticker_cycle_snapshot(
+    diag: Dict[str, pd.DataFrame],
+    dt: pd.Timestamp,
+    ticker: str,
+) -> Dict[str, Any]:
+    """Extracts scalar cycle, momentum, and anti-crest metrics for a single ticker/date."""
+    def _val(key: str) -> Optional[float]:
+        df = diag.get(key)
+        if df is None or ticker not in df.columns or dt not in df.index:
+            return None
+        v = df.loc[dt, ticker]
+        return float(v) if pd.notna(v) else None
+
+    def _flag(key: str) -> bool:
+        df = diag.get(key)
+        if df is None or ticker not in df.columns or dt not in df.index:
+            return False
+        return bool(df.loc[dt, ticker])
+
+    flags: List[str] = []
+    if _flag("is_broken_eps_trend"):
+        flags.append("BROKEN_EPS_TREND")
+    else:
+        if _flag("is_eps_rollover"):
+            flags.append("EPS_ROLLOVER")
+        if _flag("is_broken_trend"):
+            flags.append("BELOW_FALLING_200D")
+    if _flag("is_cresting"):
+        flags.append("CRESTING")
+    if _flag("is_blowoff"):
+        flags.append("BLOWOFF>=60%")
+    if _flag("is_peak_windfall"):
+        flags.append("PEAK_WINDFALL")
+
+    return {
+        "mom_12_1_pct": round((_val("mom_12_1") or 0.0) * 100.0, 1) if _val("mom_12_1") is not None else None,
+        "ret_3m_pct": round((_val("ret_3m") or 0.0) * 100.0, 1) if _val("ret_3m") is not None else None,
+        "dd_52w_pct": round((_val("dd_52w") or 0.0) * 100.0, 1) if _val("dd_52w") is not None else None,
+        "vs_sma200_pct": round((_val("pct_vs_sma200") or 0.0) * 100.0, 1) if _val("pct_vs_sma200") is not None else None,
+        "sma200_slope_pct": round((_val("sma200_slope_3m") or 0.0) * 100.0, 1) if _val("sma200_slope_3m") is not None else None,
+        "windfall_ratio": round(_val("windfall_ratio"), 2) if _val("windfall_ratio") is not None else None,
+        "ttm_vs_3y_peak": round(_val("ttm_vs_3y_peak"), 2) if _val("ttm_vs_3y_peak") is not None else None,
+        "q_eps_yoy_pct": round((_val("q_eps_yoy") or 0.0) * 100.0, 1) if _val("q_eps_yoy") is not None else None,
+        "anti_crest_mult": round(_val("anti_crest_mult") if _val("anti_crest_mult") is not None else 1.0, 2),
+        "is_broken_eps_trend": _flag("is_broken_eps_trend"),
+        "is_cresting": _flag("is_cresting"),
+        "is_blowoff": _flag("is_blowoff"),
+        "is_peak_windfall": _flag("is_peak_windfall"),
+        "cycle_flags": flags,
+        "cycle_label": ",".join(flags) if flags else "OK",
+    }
+
+
+def classify_candidate_audit_status(
+    raw_m: float,
+    clean_m: float,
+    is_strike_zone: bool,
+    insider_mult: float,
+    cyc: Dict[str, Any],
+    fallback_watchlist_label: str = "Watchlist",
+) -> Tuple[str, bool]:
+    """
+    Returns `(audit_status, is_trap)` shared by CLI scanner and REST API so trap,
+    insider, and anti-crest warning annotations never drift apart.
+    """
+    warn_tags = []
+    if cyc.get("is_cresting"):
+        warn_tags.append("CREST_WARN")
+    if cyc.get("is_blowoff"):
+        warn_tags.append("BLOWOFF")
+    if cyc.get("is_peak_windfall"):
+        warn_tags.append("WINDFALL")
+    tag_suffix = f" [{'/'.join(warn_tags)}]" if warn_tags else ""
+
+    if cyc.get("is_broken_eps_trend"):
+        return "CREST/EPS TRAP BLOCKED", True
+    if is_strike_zone:
+        if insider_mult > 1.0:
+            return f"STRIKE ZONE (CLUSTER BUY {insider_mult:.2f}x){tag_suffix}", False
+        if insider_mult < 1.0:
+            return f"STRIKE ZONE (C-SUITE HAIRCUT {insider_mult:.2f}x){tag_suffix}", False
+        return f"STRIKE ZONE{tag_suffix}", False
+    if raw_m >= 2.0 and clean_m == 0.0:
+        return "CYCLICAL TRAP BLOCKED", True
+    return f"{fallback_watchlist_label}{tag_suffix}", False
+
+
 def compute_vectorized_munger_scores(
     close_df: pd.DataFrame,
     eval_dates: pd.DatetimeIndex,
@@ -542,9 +801,16 @@ def compute_vectorized_munger_scores(
     winsorize_cross_section: bool = True,
     enforce_full_cycle_profitability: bool = True,
     use_cyclically_adjusted_ey: bool = True,
+    apply_anti_crest_guard: bool = True,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Vectorized computation of composite Munger scores across all `eval_dates` and `tickers`.
+
+    NOTE (Adversarial Audit Disclosure):
+      Even when `allow_legacy_lookahead=False`, `sales_prior`, `roic_prior`, and `de_prior`
+      draw from `fund_dict` (a live cross-sectional fundamental snapshot). This is valid for
+      live screening and advisory ranking, but historical backtests using a static end-of-period
+      `fund_dict` carry static-prior lookahead and universe survivorship bias.
     """
     eval_dates = pd.DatetimeIndex(eval_dates)
     tickers = list(close_df.columns)
@@ -619,6 +885,16 @@ def compute_vectorized_munger_scores(
     if enforce_full_cycle_profitability and not allow_legacy_lookahead:
         above_med_df = above_med_df & full_cycle_prof_df
         scores_df = scores_df.where(full_cycle_prof_df, 0.0).where(active_mask, np.nan)
+
+    if apply_anti_crest_guard and not allow_legacy_lookahead:
+        diag = compute_cycle_and_trend_diagnostics(
+            close_df=close_df,
+            eval_dates=eval_dates,
+            eps_dict=eps_dict,
+            reporting_lag_days=reporting_lag_days,
+        )
+        above_med_df = above_med_df & (~diag["is_broken_eps_trend"])
+        scores_df = (scores_df * diag["anti_crest_mult"]).where(active_mask, np.nan)
 
     return scores_df, above_med_df, ey_df
 
@@ -721,6 +997,8 @@ def run_portfolio_simulation(
                 & np.isfinite(row_prices)
                 & (row_prices > 0)
             )
+            if config.require_above_median:
+                valid_mask = valid_mask & med_mat[step_idx]
             candidate_indices = np.where(valid_mask)[0]
             candidate_indices = [idx for idx in candidate_indices if idx not in holdings]
             candidate_indices.sort(key=lambda idx: row_scores[idx], reverse=True)
@@ -877,6 +1155,314 @@ def find_strike_by_delta_analytical(
     return K
 
 
+def bsm_put(S: float, K: float, T: float, r: float, sigma: float, q: float = 0.01) -> Dict[str, float]:
+    """Closed-form Black-Scholes-Merton European Put price and delta via Put-Call Parity."""
+    if T <= 0.0 or sigma <= 0.0:
+        intrinsic = max(0.0, K - S)
+        return {
+            "price": intrinsic,
+            "delta": -1.0 if S < K else 0.0,
+        }
+    call_res = bsm_call(S, K, T, r, sigma, q)
+    exp_qT = math.exp(-q * T)
+    exp_rT = math.exp(-r * T)
+    put_price = max(0.0, call_res["price"] - S * exp_qT + K * exp_rT)
+    return {
+        "price": put_price,
+        "delta": call_res["delta"] - exp_qT,
+    }
+
+
+def find_put_strike_by_delta_analytical(
+    S: float,
+    T: float,
+    r: float,
+    sigma: float,
+    target_abs_delta: float,
+    q: float = 0.01,
+) -> float:
+    """O(1) exact analytical inversion of Black-Scholes-Merton put |delta|."""
+    if T <= 0.0 or sigma <= 0.0:
+        return S
+    u = min(0.999999, max(1e-6, target_abs_delta * math.exp(q * T)))
+    d1 = -_NORM.inv_cdf(u)
+    K = S * math.exp(-d1 * sigma * math.sqrt(T) + (r - q + 0.5 * sigma * sigma) * T)
+    return K
+
+
+def compute_ivr_from_prices(daily_close: pd.Series, window: int = 252) -> Dict[str, Optional[float]]:
+    """Computes 21D realized volatility, VRP-adjusted IV proxy, and 1-year IV Rank (0-100)."""
+    s = pd.to_numeric(daily_close, errors="coerce").dropna()
+    s = s[s > 0]
+    if len(s) < 40:
+        return {"rv21_pct": None, "iv_proxy_pct": None, "ivr_1y": None}
+    log_r = np.log(s / s.shift(1)).dropna()
+    rv21 = log_r.rolling(21).std() * math.sqrt(252.0)
+    iv_proxy = (1.15 * rv21 + 0.025).clip(lower=0.12, upper=0.95)
+    iv_recent = iv_proxy.dropna()
+    rv_recent = rv21.dropna()
+    if len(iv_recent) < 15 or rv_recent.empty:
+        return {"rv21_pct": None, "iv_proxy_pct": None, "ivr_1y": None}
+    cur_rv = float(rv_recent.iloc[-1])
+    cur_iv = float(iv_recent.iloc[-1])
+    win = iv_recent.iloc[-window:]
+    iv_min, iv_max = float(win.min()), float(win.max())
+    ivr = ((cur_iv - iv_min) / (iv_max - iv_min)) * 100.0 if (iv_max - iv_min) > 1e-6 else 50.0
+    return {
+        "rv21_pct": round(cur_rv * 100.0, 1),
+        "iv_proxy_pct": round(cur_iv * 100.0, 1),
+        "ivr_1y": round(float(np.clip(ivr, 0.0, 100.0)), 1),
+    }
+
+
+def compute_two_tier_sma_status(price_series: pd.Series, buffer_ratio: float = 1.05) -> Dict[str, Any]:
+    """
+    Computes Two-Tier Munger Technical Gating (SMA-50w / SMA-100w / SMA-200w):
+      - TIER2_BUY_100%: Price <= 1.05 * SMA_200w (deep crash full deployment)
+      - TIER1_BUY_50%:  Price <= 1.05 * SMA_100w (backtest-optimal 8.12x sweet spot)
+      - CSP_LIZARD_ZONE: Price <= 1.00 * SMA_50w (sell 25d CSP / Jade Lizard)
+      - HOLD_CASH: Extended above SMA_50w
+    """
+    s = pd.to_numeric(price_series, errors="coerce").dropna()
+    s = s[s > 0]
+    if s.empty:
+        return {
+            "spot": 0.0,
+            "sma50w": 0.0,
+            "sma100w": 0.0,
+            "sma200w": 0.0,
+            "dist_50w_pct": 0.0,
+            "dist_100w_pct": 0.0,
+            "dist_200w_pct": 0.0,
+            "tier1_open": False,
+            "tier2_open": False,
+            "csp_lizard_zone": False,
+            "gating_tier": "HOLD_CASH",
+            "deploy_tranche_pct": 0,
+        }
+
+    spot = float(s.iloc[-1])
+    if isinstance(s.index, pd.DatetimeIndex) and len(s) > 400:
+        s_w = s.resample("W-FRI").last().dropna()
+    else:
+        s_w = s
+
+    sma50w = float(s_w.rolling(50).mean().iloc[-1]) if len(s_w) >= 50 else float(s_w.mean())
+    sma100w = float(s_w.rolling(100).mean().iloc[-1]) if len(s_w) >= 100 else (float(s_w.mean()) if len(s_w) > 50 else spot * 0.85)
+    sma200w = float(s_w.rolling(200).mean().iloc[-1]) if len(s_w) >= 200 else (float(s_w.mean()) if len(s_w) > 50 else spot * 0.85)
+
+    trig_100w = sma100w * buffer_ratio
+    trig_200w = sma200w * buffer_ratio
+    tier2_open = spot <= trig_200w
+    tier1_open = spot <= trig_100w
+    csp_zone = spot <= sma50w
+
+    if tier2_open:
+        gating_tier = "TIER2_BUY_100%"
+        deploy_pct = 100
+    elif tier1_open:
+        gating_tier = "TIER1_BUY_50%"
+        deploy_pct = 50
+    elif csp_zone:
+        gating_tier = "CSP_LIZARD_ZONE"
+        deploy_pct = 0
+    else:
+        gating_tier = "HOLD_CASH"
+        deploy_pct = 0
+
+    return {
+        "spot": round(spot, 2),
+        "sma50w": round(sma50w, 2),
+        "sma100w": round(sma100w, 2),
+        "sma200w": round(sma200w, 2),
+        "dist_50w_pct": round(((spot / (sma50w + 1e-9)) - 1.0) * 100.0, 1),
+        "dist_100w_pct": round(((spot / (sma100w + 1e-9)) - 1.0) * 100.0, 1),
+        "dist_200w_pct": round(((spot / (sma200w + 1e-9)) - 1.0) * 100.0, 1),
+        "tier1_open": bool(tier1_open),
+        "tier2_open": bool(tier2_open),
+        "csp_lizard_zone": bool(csp_zone),
+        "gating_tier": gating_tier,
+        "deploy_tranche_pct": deploy_pct,
+    }
+
+
+def build_csp_jade_lizard_blueprint(
+    ticker: str,
+    spot: float,
+    iv_pct: float,
+    ivr_1y: Optional[float],
+    tbill_rate: float = 0.042,
+    dte: int = 30,
+) -> Dict[str, Any]:
+    """
+    Computes 30-DTE options VRP blueprints via analytical Black-Scholes with skew:
+      1. 25-Delta Cash-Secured Put (collateralized in T-bills)
+      2. Zero-Upside-Risk Jade Lizard (Net Credit >= Call Spread Width)
+      3. IVR >= 50 Gated Iron Condor (15-delta short strangle + 5-delta wings)
+    """
+    T = max(dte, 1) / 365.0
+    sigma = max(0.14, (iv_pct or 28.0) / 100.0)
+    sig_put = sigma + 0.025
+    sig_call = max(0.12, sigma - 0.015)
+
+    inc = 5.0 if spot >= 400 else (2.5 if spot >= 50 else 1.0)
+
+    def _round_k(k: float) -> float:
+        return round(k / inc) * inc
+
+    # 1. 25-Delta Cash-Secured Put
+    kp_25 = max(inc, _round_k(find_put_strike_by_delta_analytical(spot, T, tbill_rate, sig_put, 0.25, q=0.0)))
+    csp_credit = round(max(0.05, bsm_put(spot, kp_25, T, tbill_rate, sig_put, q=0.0)["price"] * 0.94), 2)
+    csp_ann_yield = round(((csp_credit / kp_25) * (365.0 / max(dte, 1)) + tbill_rate) * 100.0, 1)
+    csp_ticket = f"SELL TO OPEN 1 {ticker} {dte} DTE ${kp_25:g} PUT @ LIMIT ${csp_credit:.2f} (T-Bill Collateral)"
+
+    # 2. Zero-Upside-Risk Jade Lizard (25d Put + OTM Call Spread where Call Width <= Net Credit)
+    kc_short = max(kp_25 + inc, _round_k(find_strike_by_delta_analytical(spot, T, tbill_rate, sig_call, 0.20, q=0.0)))
+    call_width = max(inc, math.floor((csp_credit * 0.95) / inc) * inc)
+    kc_long = kc_short + call_width
+    cs_credit = max(
+        0.05,
+        bsm_call(spot, kc_short, T, tbill_rate, sig_call, q=0.0)["price"]
+        - bsm_call(spot, kc_long, T, tbill_rate, sig_call, q=0.0)["price"],
+    )
+    jl_credit = round((csp_credit + cs_credit) * 0.96, 2)
+    zero_upside_ok = bool(jl_credit >= call_width)
+    jl_ann_yield = round(((jl_credit / kp_25) * (365.0 / max(dte, 1)) + tbill_rate) * 100.0, 1)
+    jl_ticket = (
+        f"JADE LIZARD {ticker} {dte} DTE: SELL ${kp_25:g}P + SELL ${kc_short:g}C / BUY ${kc_long:g}C "
+        f"@ NET CREDIT ${jl_credit:.2f}"
+    )
+
+    # 3. IVR >= 50 Gated Iron Condor (15-delta short strangle + 5-delta wings)
+    ic_active = bool(ivr_1y is not None and ivr_1y >= 50.0)
+    ic_kp_s = max(2.0 * inc, _round_k(find_put_strike_by_delta_analytical(spot, T, tbill_rate, sig_put, 0.15, q=0.0)))
+    ic_kp_l = max(inc, min(ic_kp_s - inc, _round_k(find_put_strike_by_delta_analytical(spot, T, tbill_rate, sig_put + 0.02, 0.05, q=0.0))))
+    ic_kc_s = max(ic_kp_s + inc, _round_k(find_strike_by_delta_analytical(spot, T, tbill_rate, sig_call, 0.15, q=0.0)))
+    ic_kc_l = max(ic_kc_s + inc, _round_k(find_strike_by_delta_analytical(spot, T, tbill_rate, sig_call, 0.05, q=0.0)))
+    ic_credit = round(
+        max(
+            0.05,
+            (
+                bsm_put(spot, ic_kp_s, T, tbill_rate, sig_put, q=0.0)["price"]
+                - bsm_put(spot, ic_kp_l, T, tbill_rate, sig_put + 0.02, q=0.0)["price"]
+                + bsm_call(spot, ic_kc_s, T, tbill_rate, sig_call, q=0.0)["price"]
+                - bsm_call(spot, ic_kc_l, T, tbill_rate, sig_call, q=0.0)["price"]
+            )
+            * 0.90,
+        ),
+        2,
+    )
+    ic_ticket = (
+        f"IRON CONDOR {ticker} {dte} DTE: {ic_kp_l:g}/{ic_kp_s:g}P + {ic_kc_s:g}/{ic_kc_l:g}C "
+        f"@ NET CREDIT ${ic_credit:.2f}"
+    )
+
+    return {
+        "ticker": ticker,
+        "spot": round(spot, 2),
+        "dte": dte,
+        "iv_proxy_pct": round(sigma * 100.0, 1),
+        "ivr_1y": round(ivr_1y, 1) if ivr_1y is not None else None,
+        "csp_25d": {
+            "short_put": kp_25,
+            "est_credit": csp_credit,
+            "breakeven": round(kp_25 - csp_credit, 2),
+            "ann_yield_incl_tbill_pct": csp_ann_yield,
+            "ticket": csp_ticket,
+        },
+        "jade_lizard": {
+            "short_put": kp_25,
+            "short_call": kc_short,
+            "long_call": kc_long,
+            "call_width": call_width,
+            "est_credit": jl_credit,
+            "zero_upside_risk_valid": zero_upside_ok,
+            "breakeven": round(kp_25 - jl_credit, 2),
+            "ann_yield_incl_tbill_pct": jl_ann_yield,
+            "ticket": jl_ticket,
+        },
+        "iron_condor": {
+            "signal": "ACTIVE_OPEN_CONDOR" if ic_active else "WAIT_LOW_IVR",
+            "put_spread": f"{ic_kp_l:g}/{ic_kp_s:g}P",
+            "call_spread": f"{ic_kc_s:g}/{ic_kc_l:g}C",
+            "est_credit": ic_credit,
+            "management": "Close at 50% max profit or 21 DTE",
+            "ticket": ic_ticket,
+        },
+    }
+
+
+def fetch_yahoo_v8_chart(
+    ticker: str,
+    range_str: str = "5d",
+    interval: str = "1d",
+    timeout: float = 10.0,
+) -> Tuple[pd.Series, Dict[str, Any]]:
+    """Direct Yahoo Finance v8 Chart API fetcher (zero yfinance dependency fallback)."""
+    try:
+        import requests
+    except ImportError:
+        return pd.Series(dtype=float), {}
+
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?range={range_str}&interval={interval}"
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+    for attempt in range(2):
+        try:
+            r = requests.get(url, headers=headers, timeout=timeout)
+            if r.status_code == 200:
+                results = r.json().get("chart", {}).get("result") or []
+                if not results:
+                    return pd.Series(dtype=float), {}
+                res = results[0]
+                meta = res.get("meta", {})
+                ts = res.get("timestamp") or []
+                if not ts:
+                    return pd.Series(dtype=float), meta
+                indicators = res.get("indicators", {})
+                adj = indicators.get("adjclose")
+                if adj and adj[0].get("adjclose"):
+                    vals = adj[0]["adjclose"]
+                else:
+                    vals = indicators.get("quote", [{}])[0].get("close", [])
+                idx = pd.to_datetime(ts, unit="s").tz_localize(None).normalize()
+                s = pd.Series(vals, index=idx, name=ticker, dtype=float).dropna()
+                s = s[~s.index.duplicated(keep="last")].sort_index()
+                return s, meta
+        except Exception:
+            if attempt == 0:
+                time.sleep(0.25)
+    return pd.Series(dtype=float), {}
+
+
+def fetch_vol_regime_snapshot() -> Dict[str, Any]:
+    """Fetches live ^VIX, ^VXN (1Y IVR), and BIL 3M T-bill collateral yield via Yahoo v8."""
+    snap: Dict[str, Any] = {
+        "vix": None,
+        "vix_ivr_1y": None,
+        "vxn": None,
+        "vxn_ivr_1y": None,
+        "tbill_yield_pct": 4.2,
+        "condor_regime": "WAIT (IVR < 50)",
+    }
+    for v_sym, key in [("^VIX", "vix"), ("^VXN", "vxn")]:
+        vs, vm = fetch_yahoo_v8_chart(v_sym, range_str="1y", interval="1d", timeout=8.0)
+        if len(vs) > 20:
+            cur_v = float(vm.get("regularMarketPrice") or vs.iloc[-1])
+            vmin, vmax = float(vs.min()), float(vs.max())
+            v_ivr = ((cur_v - vmin) / (vmax - vmin)) * 100.0 if (vmax - vmin) > 1e-6 else 50.0
+            snap[key] = round(cur_v, 2)
+            snap[f"{key}_ivr_1y"] = round(float(np.clip(v_ivr, 0.0, 100.0)), 1)
+
+    bil_s, _ = fetch_yahoo_v8_chart("BIL", range_str="6mo", interval="1d", timeout=8.0)
+    if len(bil_s) >= 63:
+        r_3m = float(bil_s.iloc[-1] / bil_s.iloc[-63] - 1.0)
+        snap["tbill_yield_pct"] = round(max(0.0, r_3m * 4.0) * 100.0, 2)
+
+    if snap["vix_ivr_1y"] is not None and snap["vix_ivr_1y"] >= 50.0:
+        snap["condor_regime"] = "OPEN (IVR >= 50)"
+    return snap
+
+
 # ==============================================================================
 # STALENESS CIRCUIT BREAKER & LIVE INTRADAY PRICE REFRESH (v2.2)
 # ==============================================================================
@@ -925,6 +1511,28 @@ def check_data_freshness(
     return is_stale, lag_hours, latest_dt
 
 
+def _yahoo_v8_batch(tickers: List[str], range_str: str = "5d", interval: str = "1d") -> pd.DataFrame:
+    """Fetches multi-ticker OHLCV close series concurrently via direct Yahoo Finance v8 API."""
+    if not tickers:
+        return pd.DataFrame()
+    series_map: Dict[str, pd.Series] = {}
+
+    def _fetch_one(sym: str) -> Tuple[str, pd.Series]:
+        s, _ = fetch_yahoo_v8_chart(sym, range_str=range_str, interval=interval, timeout=8.0)
+        return sym, s
+
+    with ThreadPoolExecutor(max_workers=min(8, max(1, len(tickers)))) as pool:
+        for sym, s in pool.map(_fetch_one, tickers):
+            if s is not None and not s.empty:
+                series_map[sym] = s
+
+    if not series_map:
+        return pd.DataFrame()
+    df = pd.DataFrame(series_map).sort_index()
+    df.index = pd.to_datetime(df.index).tz_localize(None).normalize()
+    return df
+
+
 def refresh_live_intraday_prices(
     close_df: pd.DataFrame,
     gspc_close: Optional[pd.Series] = None,
@@ -933,20 +1541,18 @@ def refresh_live_intraday_prices(
 ) -> Tuple[pd.DataFrame, Optional[pd.Series]]:
     """
     Triggers a multi-threaded yfinance.download pull (period="5d", interval="1d")
-    to append today's live session prices and any missing recent trading bars.
+    with automatic Yahoo Finance v8 Chart API fallback to append today's live session
+    prices and any missing recent trading bars.
     Safely preserves multi-decade historical data and handles network fallbacks.
     """
-    try:
-        import yfinance as yf
-    except ImportError:
-        print("[CIRCUIT BREAKER WARNING] yfinance is not installed; skipping live quote refresh.")
-        return close_df, gspc_close
-
     if tickers is None:
         tickers = [str(t) for t in close_df.columns if not str(t).startswith("^")]
 
-    print(f"[CIRCUIT BREAKER] Refreshing live quotes for {len(tickers)} symbols via multi-threaded yfinance...")
+    close_sub = pd.DataFrame()
+    used_yfinance = False
     try:
+        import yfinance as yf
+        print(f"[CIRCUIT BREAKER] Refreshing live quotes for {len(tickers)} symbols via multi-threaded yfinance...")
         data = yf.download(
             tickers=tickers,
             period="5d",
@@ -955,25 +1561,55 @@ def refresh_live_intraday_prices(
             progress=False,
             threads=True,
         )
-        if data is None or data.empty:
-            print("[CIRCUIT BREAKER WARNING] yfinance returned empty response. Retaining existing cache.")
+        if data is not None and not data.empty:
+            if isinstance(data.columns, pd.MultiIndex):
+                if "Close" in data.columns.levels[0]:
+                    close_sub = data["Close"].copy()
+                else:
+                    close_sub = data.xs("Close", axis=1, level=0).copy()
+            elif "Close" in data.columns:
+                close_sub = data[["Close"]].copy()
+                if len(tickers) == 1:
+                    close_sub.columns = [tickers[0]]
+            else:
+                close_sub = data.copy()
+            used_yfinance = not close_sub.empty
+    except Exception as e:
+        print(f"[CIRCUIT BREAKER] yfinance refresh note ({e}); falling back to Yahoo Finance v8 API...")
+
+    if close_sub.empty:
+        if used_yfinance:
+            print("[CIRCUIT BREAKER] yfinance returned empty data; trying Yahoo Finance v8 Chart API fallback...")
+        else:
+            print(f"[CIRCUIT BREAKER] Refreshing live quotes for {len(tickers)} symbols via Yahoo Finance v8 fallback...")
+        try:
+            close_sub = _yahoo_v8_batch(tickers, range_str="5d", interval="1d")
+        except Exception as e_v8:
+            print(f"[CIRCUIT BREAKER WARNING] Yahoo v8 fallback failed: {e_v8}. Retaining existing cache.")
             return close_df, gspc_close
 
-        if isinstance(data.columns, pd.MultiIndex):
-            if "Close" in data.columns.levels[0]:
-                close_sub = data["Close"].copy()
-            else:
-                close_sub = data.xs("Close", axis=1, level=0).copy()
-        elif "Close" in data.columns:
-            close_sub = data[["Close"]].copy()
-            if len(tickers) == 1:
-                close_sub.columns = [tickers[0]]
-        else:
-            close_sub = data.copy()
+    if close_sub.empty:
+        print("[CIRCUIT BREAKER WARNING] No live quotes returned from yfinance or Yahoo v8. Retaining existing cache.")
+        return close_df, gspc_close
 
-        close_sub.index = pd.to_datetime(close_sub.index).normalize()
+    try:
+        close_sub.index = pd.to_datetime(close_sub.index).tz_localize(None).normalize()
+        # Reject incomplete after-hours bulk download bars (<50% ticker coverage)
+        row_coverage = close_sub.notna().mean(axis=1)
+        valid_rows = row_coverage >= 0.50
+        if not valid_rows.all():
+            skipped_dts = [d.strftime("%Y-%m-%d") for d in close_sub.index[~valid_rows]]
+            print(f"[CIRCUIT BREAKER] Skipping sparse/incomplete market bars (<50% coverage): {', '.join(skipped_dts)}")
+            close_sub = close_sub.loc[valid_rows]
+
         updated_close = close_df.copy()
         updated_close.index = pd.to_datetime(updated_close.index).normalize()
+        while not updated_close.empty and float(updated_close.iloc[-1].notna().mean()) < 0.50:
+            updated_close = updated_close.iloc[:-1]
+
+        if close_sub.empty:
+            print("[CIRCUIT BREAKER] No complete daily bar available yet; keeping latest full close.")
+            return updated_close, gspc_close
 
         # Append new dates
         new_dates = close_sub.index.difference(updated_close.index)
@@ -985,22 +1621,35 @@ def refresh_live_intraday_prices(
         if len(overlap_dates) > 0:
             updated_close.update(close_sub.loc[overlap_dates])
 
-        # Benchmark ^GSPC refresh
+        while not updated_close.empty and float(updated_close.iloc[-1].notna().mean()) < 0.50:
+            updated_close = updated_close.iloc[:-1]
+
+        # Benchmark ^GSPC refresh (yfinance -> Yahoo v8 fallback)
         if gspc_close is not None:
+            g_close = pd.Series(dtype=float)
             try:
+                import yfinance as yf
                 gspc_data = yf.download("^GSPC", period="5d", interval="1d", auto_adjust=True, progress=False)
                 if gspc_data is not None and not gspc_data.empty:
                     g_close = gspc_data["Close"] if "Close" in gspc_data.columns else gspc_data.iloc[:, 0]
-                    g_close.index = pd.to_datetime(g_close.index).normalize()
-                    gspc_updated = gspc_close.copy()
-                    gspc_updated.index = pd.to_datetime(gspc_updated.index).normalize()
-                    g_new = g_close.index.difference(gspc_updated.index)
-                    if len(g_new) > 0:
-                        gspc_updated = pd.concat([gspc_updated, g_close.loc[g_new]]).sort_index()
-                    gspc_updated.update(g_close)
-                    gspc_close = gspc_updated
-            except Exception as e_gspc:
-                print(f"[CIRCUIT BREAKER] Benchmark refresh note: {e_gspc}")
+                    if isinstance(g_close, pd.DataFrame):
+                        g_close = g_close.iloc[:, 0]
+            except Exception:
+                g_close = pd.Series(dtype=float)
+
+            if g_close is None or g_close.empty:
+                g_close, _ = fetch_yahoo_v8_chart("^GSPC", range_str="5d", interval="1d", timeout=8.0)
+
+            if g_close is not None and not g_close.empty:
+                g_close = g_close.dropna()
+                g_close.index = pd.to_datetime(g_close.index).tz_localize(None).normalize()
+                gspc_updated = gspc_close.copy()
+                gspc_updated.index = pd.to_datetime(gspc_updated.index).tz_localize(None).normalize()
+                g_new = g_close.index.difference(gspc_updated.index)
+                if len(g_new) > 0:
+                    gspc_updated = pd.concat([gspc_updated, g_close.loc[g_new]]).sort_index()
+                gspc_updated.update(g_close)
+                gspc_close = gspc_updated
 
         print(f"[CIRCUIT BREAKER] Successfully updated cache through {updated_close.index[-1].strftime('%Y-%m-%d')}.")
 
@@ -1023,10 +1672,14 @@ def refresh_live_intraday_prices(
                         if isinstance(prev_df, pd.DataFrame) and not prev_df.empty:
                             prev_df = prev_df.copy()
                             prev_df.index = pd.to_datetime(prev_df.index).tz_localize(None).normalize()
+                            while not prev_df.empty and float(prev_df.iloc[-1].notna().mean()) < 0.50:
+                                prev_df = prev_df.iloc[:-1]
                             combined_idx = prev_df.index.union(save_df.index).sort_values()
                             merged_df = prev_df.reindex(combined_idx)
                             for col in save_df.columns:
                                 merged_df[col] = save_df[col].reindex(combined_idx)
+                            while not merged_df.empty and float(merged_df.iloc[-1].notna().mean()) < 0.50:
+                                merged_df = merged_df.iloc[:-1]
                             save_df = merged_df
                     except Exception:
                         pass
@@ -1052,63 +1705,314 @@ def refresh_live_intraday_prices(
 
 
 # ==============================================================================
-# SEC FORM 4 & FINVIZ INSIDER CONVICTION ENGINE (v2.2)
+# SEC FORM 4 (10b5-1 IMMUNE), SCHEDULE 13D & FINVIZ INSIDER ENGINE (v2.4)
 # ==============================================================================
+
+_CSUITE_TITLES = {"CEO", "CHIEF EXECUTIVE", "CFO", "CHIEF FINANCIAL", "COO", "CHIEF OPERATING", "PRESIDENT", "CHAIRMAN"}
+_SEC_TICKER_CIK_CACHE: Dict[str, str] = {}
+
+
+def _is_csuite_role(pos_str: Any) -> bool:
+    p = str(pos_str or "").upper()
+    return any(t in p for t in _CSUITE_TITLES)
+
+
+def parse_form4_xml(xml_text: str, exclude_10b5_1: bool = True) -> Dict[str, Any]:
+    """
+    Parses SEC Form 4 XML directly, isolating Open-Market Purchases (Code P)
+    and Open-Market Sales (Code S), tagging C-suite roles, and checking the
+    Rule 10b5-1 affirmative defense checkbox (<aff10b5One>: "1" or "true").
+    """
+    empty_res: Dict[str, Any] = {"ticker": "", "issuer": "", "is_10b5_1": False, "transactions": []}
+    if not xml_text or not isinstance(xml_text, str):
+        return empty_res
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError:
+        return empty_res
+
+    ticker = (root.findtext(".//issuer/issuerTradingSymbol") or "").strip().upper()
+    issuer = (root.findtext(".//issuer/issuerName") or "").strip()
+
+    owner_names: List[str] = []
+    roles: List[str] = []
+    csuite_hit = False
+    for ro in root.findall(".//reportingOwner"):
+        nm = (ro.findtext(".//reportingOwnerId/rptOwnerName") or "").strip()
+        if nm:
+            owner_names.append(nm)
+        title = (ro.findtext(".//reportingOwnerRelationship/officerTitle") or "").strip()
+        is_dir = (ro.findtext(".//reportingOwnerRelationship/isDirector") or "").strip().lower() in ("1", "true")
+        is_10 = (ro.findtext(".//reportingOwnerRelationship/isTenPercentOwner") or "").strip().lower() in ("1", "true")
+        r_str = title if title else ("10% Owner" if is_10 else ("Director" if is_dir else "Insider"))
+        roles.append(r_str)
+        if _is_csuite_role(r_str):
+            csuite_hit = True
+
+    owner_name = owner_names[0] if owner_names else "Unknown"
+    role = roles[0] if roles else "Insider"
+    is_10b5_1 = (root.findtext(".//aff10b5One") or "0").strip().lower() in ("1", "true")
+
+    if exclude_10b5_1 and is_10b5_1:
+        return {"ticker": ticker, "issuer": issuer, "is_10b5_1": True, "transactions": []}
+
+    txs: List[Dict[str, Any]] = []
+    for tx in root.findall(".//nonDerivativeTable/nonDerivativeTransaction"):
+        code = (tx.findtext(".//transactionCoding/transactionCode") or "").strip().upper()
+        if code not in {"P", "S"}:
+            continue
+        tx_date = (tx.findtext(".//transactionDate/value") or "").strip()
+        try:
+            shares = float(tx.findtext(".//transactionAmounts/transactionShares/value") or 0.0)
+            price = float(tx.findtext(".//transactionAmounts/transactionPricePerShare/value") or 0.0)
+        except (TypeError, ValueError):
+            continue
+        dollar_val = shares * price
+        if not (math.isfinite(dollar_val) and dollar_val > 0.0):
+            continue
+        txs.append({
+            "code": code,
+            "insider": owner_name,
+            "role": role,
+            "is_c_suite": csuite_hit,
+            "is_10b5_1": is_10b5_1,
+            "tx_date": tx_date,
+            "shares": round(shares, 4),
+            "price": round(price, 4),
+            "dollar_value": float(dollar_val),
+        })
+
+    return {"ticker": ticker, "issuer": issuer, "is_10b5_1": is_10b5_1, "transactions": txs}
+
+
+def _fetch_ticker_form4_xmls_direct(
+    ticker: str,
+    lookback_days: int = 180,
+    email_header: str = "QuantResearch quant@mungersystem.org",
+    max_filings: int = 35,
+) -> Tuple[List[Tuple[str, str]], bool]:
+    """
+    Direct SEC EDGAR Submissions API fallback fetching raw Form 4 XML filings
+    without requiring edgartools. Returns ([(filing_date, xml_text), ...], success).
+    """
+    try:
+        import requests
+    except ImportError:
+        return [], False
+
+    headers = {"User-Agent": email_header, "Accept-Encoding": "gzip, deflate"}
+    global _SEC_TICKER_CIK_CACHE
+    if not _SEC_TICKER_CIK_CACHE:
+        try:
+            r = requests.get("https://www.sec.gov/files/company_tickers.json", headers=headers, timeout=10)
+            if r.status_code == 200:
+                payload = r.json()
+                for entry in payload.values():
+                    tkr = str(entry.get("ticker", "")).upper().strip()
+                    cik_str = str(entry.get("cik_str", "")).strip()
+                    if tkr and cik_str:
+                        _SEC_TICKER_CIK_CACHE[tkr] = cik_str.zfill(10)
+        except Exception:
+            return [], False
+
+    t_up = ticker.upper().strip()
+    cik = (
+        _SEC_TICKER_CIK_CACHE.get(t_up)
+        or _SEC_TICKER_CIK_CACHE.get(t_up.replace("-", "."))
+        or _SEC_TICKER_CIK_CACHE.get(t_up.replace(".", "-"))
+    )
+    if not cik:
+        return [], False
+
+    try:
+        sub_url = f"https://data.sec.gov/submissions/CIK{cik}.json"
+        sr = requests.get(sub_url, headers=headers, timeout=10)
+        if sr.status_code != 200:
+            return [], False
+        recent = sr.json().get("filings", {}).get("recent", {})
+    except Exception:
+        return [], False
+
+    forms = recent.get("form", [])
+    dates = recent.get("filingDate", [])
+    adshs = recent.get("accessionNumber", [])
+    docs = recent.get("primaryDocument", [])
+    cutoff_str = (pd.Timestamp.now() - pd.Timedelta(days=lookback_days)).strftime("%Y-%m-%d")
+
+    xml_results: List[Tuple[str, str]] = []
+    cik_int = int(cik)
+    for form, fdate, adsh, pdoc in zip(forms, dates, adshs, docs):
+        if form != "4":
+            continue
+        if fdate and fdate < cutoff_str:
+            break
+        raw_xml_name = str(pdoc or "").split("/")[-1]
+        if not (adsh and raw_xml_name.lower().endswith(".xml")):
+            continue
+        adsh_nodash = adsh.replace("-", "")
+        xml_url = f"https://www.sec.gov/Archives/edgar/data/{cik_int}/{adsh_nodash}/{raw_xml_name}"
+        try:
+            xr = requests.get(xml_url, headers=headers, timeout=8)
+            if xr.status_code == 200 and "<ownershipDocument" in xr.text:
+                xml_results.append((str(fdate or ""), xr.text))
+        except Exception:
+            pass
+        time.sleep(0.12)
+        if len(xml_results) >= max_filings:
+            break
+
+    return xml_results, True
+
+
+def score_insider_transactions(
+    transactions: List[Dict[str, Any]],
+    exclude_10b5_1: bool = True,
+    reference_date: Optional[Any] = None,
+    source: str = "SEC EDGAR Form 4",
+) -> Dict[str, Any]:
+    """
+    Aggregates Form 4 Code P / Code S transactions into conviction multipliers,
+    isolating discretionary open-market activity from Rule 10b5-1 scheduled plans,
+    tagging C-suite open-market buys, and tracking Day 1-5 alpha-decay recency.
+    """
+    disc_buys = [t for t in transactions if t.get("code") == "P" and not t.get("is_10b5_1")]
+    plan_buys = [t for t in transactions if t.get("code") == "P" and t.get("is_10b5_1")]
+    disc_sales = [t for t in transactions if t.get("code") == "S" and not t.get("is_10b5_1")]
+    plan_sales = [t for t in transactions if t.get("code") == "S" and t.get("is_10b5_1")]
+
+    planned_buys_usd = float(sum(float(t.get("dollar_value", 0.0)) for t in plan_buys))
+    planned_sales_usd = float(sum(float(t.get("dollar_value", 0.0)) for t in plan_sales))
+    planned_csuite_sales_usd = float(sum(float(t.get("dollar_value", 0.0)) for t in plan_sales if t.get("is_c_suite")))
+    disc_sales_usd = float(sum(float(t.get("dollar_value", 0.0)) for t in disc_sales))
+    disc_csuite_sales_usd = float(sum(float(t.get("dollar_value", 0.0)) for t in disc_sales if t.get("is_c_suite")))
+
+    active_buys = disc_buys if exclude_10b5_1 else (disc_buys + plan_buys)
+    active_sales = disc_sales if exclude_10b5_1 else (disc_sales + plan_sales)
+
+    buys_usd = float(sum(float(t.get("dollar_value", 0.0)) for t in active_buys))
+    buyers = list(dict.fromkeys(str(t.get("insider", "")) for t in active_buys if t.get("insider")))
+    num_buyers = len(buyers)
+
+    csuite_buys = [t for t in active_buys if t.get("is_c_suite")]
+    csuite_buys_usd = float(sum(float(t.get("dollar_value", 0.0)) for t in csuite_buys))
+    csuite_buyers = list(dict.fromkeys(str(t.get("insider", "")) for t in csuite_buys if t.get("insider")))
+    csuite_buy_hit = bool(csuite_buyers and csuite_buys_usd > 0.0)
+
+    sales_usd = float(sum(float(t.get("dollar_value", 0.0)) for t in active_sales))
+    sellers = list(dict.fromkeys(str(t.get("insider", "")) for t in active_sales if t.get("insider")))
+    num_sellers = len(sellers)
+
+    csuite_sales = [t for t in active_sales if t.get("is_c_suite")]
+    csuite_sales_usd = float(sum(float(t.get("dollar_value", 0.0)) for t in csuite_sales))
+    csuite_sellers = list(dict.fromkeys(str(t.get("insider", "")) for t in csuite_sales if t.get("insider")))
+
+    # Recency window tracking (Day 1-5 alpha decay window)
+    ref_dt = pd.to_datetime(reference_date).normalize() if reference_date is not None else pd.Timestamp.now().normalize()
+    buy_dates: List[pd.Timestamp] = []
+    for t in active_buys:
+        dt_str = t.get("tx_date") or t.get("file_date")
+        if dt_str:
+            parsed_dt = pd.to_datetime(dt_str, errors="coerce")
+            if pd.notna(parsed_dt):
+                buy_dates.append(parsed_dt.normalize())
+
+    latest_buy_date: Optional[str] = None
+    latest_buy_age_days: Optional[int] = None
+    fresh_buy_window = "NONE"
+    if buy_dates:
+        max_buy_dt = max(buy_dates)
+        latest_buy_date = max_buy_dt.strftime("%Y-%m-%d")
+        latest_buy_age_days = max(0, (ref_dt.date() - max_buy_dt.date()).days)
+        if latest_buy_age_days <= 5:
+            fresh_buy_window = "FRESH_5D"
+        elif latest_buy_age_days <= 30:
+            fresh_buy_window = "RECENT_30D"
+        else:
+            fresh_buy_window = "STALE"
+
+    fresh_tag = (
+        f" [FRESH {latest_buy_age_days}d]" if fresh_buy_window == "FRESH_5D"
+        else (f" [RECENT {latest_buy_age_days}d]" if fresh_buy_window == "RECENT_30D" else "")
+    )
+
+    if (
+        (num_buyers >= 2 and buys_usd >= 250_000.0)
+        or (csuite_buy_hit and csuite_buys_usd >= 250_000.0 and sales_usd == 0.0)
+        or (buys_usd >= 2_000_000.0 and sales_usd == 0.0)
+    ):
+        multiplier = 1.15
+        signal = "CLUSTER_BUY_BOOST"
+        csuite_note = f" (C-Suite: {', '.join(csuite_buyers[:3])})" if csuite_buyers else ""
+        notes = f"Cluster Buying Boost (1.15x){fresh_tag}: {num_buyers} insider(s) bought ${buys_usd:,.0f} on open market{csuite_note}."
+    elif csuite_sales_usd >= 20_000_000.0 and buys_usd == 0.0:
+        multiplier = 0.70
+        signal = "CSUITE_DISTRIBUTION_HAIRCUT"
+        notes = (
+            f"Heavy C-Suite Distribution Haircut (0.70x): C-suite sold ${csuite_sales_usd:,.0f} "
+            f"with zero buys ({', '.join(csuite_sellers[:3])})."
+        )
+    else:
+        multiplier = 1.00
+        signal = "NEUTRAL"
+        notes = f"Neutral conviction (Buys: ${buys_usd:,.0f}, Sales: ${sales_usd:,.0f})."
+
+    if exclude_10b5_1 and planned_csuite_sales_usd > 0.0:
+        notes += f" (Excluded ${planned_csuite_sales_usd:,.0f} Rule 10b5-1 planned C-suite sales)"
+
+    return {
+        "multiplier": multiplier,
+        "signal": signal,
+        "buys_usd": buys_usd,
+        "sales_usd": sales_usd,
+        "csuite_sales_usd": csuite_sales_usd,
+        "num_buyers": num_buyers,
+        "num_sellers": num_sellers,
+        "buyers": buyers,
+        "sellers": sellers,
+        "csuite_sellers": csuite_sellers,
+        "csuite_buys_usd": csuite_buys_usd,
+        "csuite_buyers": csuite_buyers,
+        "csuite_buy_hit": csuite_buy_hit,
+        "discretionary_sales_usd": disc_sales_usd,
+        "discretionary_csuite_sales_usd": disc_csuite_sales_usd,
+        "planned_10b5_buys_usd": planned_buys_usd,
+        "planned_10b5_sales_usd": planned_sales_usd,
+        "planned_10b5_csuite_sales_usd": planned_csuite_sales_usd,
+        "latest_buy_date": latest_buy_date,
+        "latest_buy_age_days": latest_buy_age_days,
+        "fresh_buy_window": fresh_buy_window,
+        "exclude_10b5_1": exclude_10b5_1,
+        "source": source,
+        "notes": notes,
+    }
+
 
 def fetch_live_insider_activity(
     tickers: List[str] | str,
     lookback_days: int = 180,
     email_header: str = "QuantResearch quant@mungersystem.org",
+    exclude_10b5_1: bool = True,
 ) -> Dict[str, Dict[str, Any]]:
     """
-    Queries SEC EDGAR Form 4 XML filings via edgartools (falling back to finvizfinance)
-    and strictly isolates discretionary Open-Market Purchases (Code P) and Open-Market
-    Sales (Code S), discarding non-discretionary noise:
-      - Discards Code F (tax withholding on RSU vest)
-      - Discards Code M (option exercises)
-      - Discards Code A (grants and awards)
-      - Discards Code G (gifts)
-
-    Scoring Multipliers:
-      - Cluster Buying Boost (1.15x): Awarded when >= 2 distinct insiders buy >= $250k
-        on the open market (or aggregate/single open-market purchase >= $2M with zero sales).
-      - Heavy C-Suite Distribution Haircut (0.70x): Applied when C-suite executives
-        (CEO, CFO, COO, President, Chairman) sell >= $20M on the open market with zero buys.
-        (e.g., catching Micron CEO Sanjay Mehrotra's $46.33M+ open-market sale).
-      - Neutral (1.00x): Applied otherwise or when no insider filings trigger conditions.
+    Queries SEC EDGAR Form 4 XML filings via edgartools -> direct SEC submissions
+    XML fallback -> finvizfinance tertiary fallback.
+    Strictly isolates discretionary Open-Market Purchases (Code P) and Open-Market
+    Sales (Code S), discarding noise (Codes F, M, A, G) and stripping predetermined
+    Rule 10b5-1 trading plans when `exclude_10b5_1=True`.
     """
     if isinstance(tickers, str):
         tickers = [tickers]
 
     results: Dict[str, Dict[str, Any]] = {}
-    csuite_titles = {"CEO", "CHIEF EXECUTIVE", "CFO", "CHIEF FINANCIAL", "COO", "CHIEF OPERATING", "PRESIDENT", "CHAIRMAN"}
-
-    def is_csuite(pos_str: Any) -> bool:
-        p = str(pos_str).upper()
-        return any(t in p for t in csuite_titles)
-
     cutoff_dt = pd.Timestamp.now() - pd.Timedelta(days=lookback_days)
 
     for ticker in tickers:
         t_clean = ticker.upper().strip()
-        data_res: Dict[str, Any] = {
-            "ticker": t_clean,
-            "multiplier": 1.0,
-            "signal": "NEUTRAL",
-            "buys_usd": 0.0,
-            "sales_usd": 0.0,
-            "csuite_sales_usd": 0.0,
-            "num_buyers": 0,
-            "num_sellers": 0,
-            "buyers": [],
-            "sellers": [],
-            "csuite_sellers": [],
-            "source": "None",
-            "notes": "No qualifying insider activity detected.",
-        }
-
-        # 1. Primary Source: SEC EDGAR Form 4 direct XML
+        all_txs: List[Dict[str, Any]] = []
         used_edgar = False
+        source_label = "None"
+
+        # 1. Primary Source: SEC EDGAR Form 4 XML via edgartools (captures <aff10b5One>)
         try:
             from edgar import set_identity, Company
             set_identity(email_header)
@@ -1116,7 +2020,7 @@ def fetch_live_insider_activity(
             filings = c.get_filings(form="4")
             if filings and len(filings) > 0:
                 recent_filings = filings[:35]
-                records = []
+                parsed_any = False
                 for f in recent_filings:
                     try:
                         f_date_str = getattr(f, "filing_date", None)
@@ -1124,50 +2028,63 @@ def fetch_live_insider_activity(
                             f_date = pd.to_datetime(f_date_str)
                             if f_date < cutoff_dt:
                                 break
+                        xml_txt = f.xml() if hasattr(f, "xml") else ""
+                        if isinstance(xml_txt, str) and "<ownershipDocument" in xml_txt:
+                            parsed = parse_form4_xml(xml_txt, exclude_10b5_1=False)
+                            for tx in parsed["transactions"]:
+                                tx["file_date"] = str(f_date_str or "")
+                                all_txs.append(tx)
+                            parsed_any = True
+                            continue
                         obj = f.obj()
                         if hasattr(obj, "to_dataframe"):
                             df = obj.to_dataframe()
                             if df is not None and not df.empty:
-                                records.append(df)
+                                df["Value"] = pd.to_numeric(df["Value"], errors="coerce").fillna(0.0)
+                                for _, r in df.iterrows():
+                                    code = str(r.get("Code", "")).strip().upper()
+                                    val = float(r.get("Value", 0.0))
+                                    if code not in {"P", "S"} or val <= 0.0:
+                                        continue
+                                    pos = str(r.get("Position", "") or "")
+                                    all_txs.append({
+                                        "code": code,
+                                        "insider": str(r.get("Insider", "Unknown") or "Unknown"),
+                                        "role": pos or "Insider",
+                                        "is_c_suite": _is_csuite_role(pos),
+                                        "is_10b5_1": False,
+                                        "tx_date": str(r.get("Date", f_date_str or "") or ""),
+                                        "file_date": str(f_date_str or ""),
+                                        "shares": float(pd.to_numeric(r.get("Shares", 0.0), errors="coerce") or 0.0),
+                                        "price": float(pd.to_numeric(r.get("Price", 0.0), errors="coerce") or 0.0),
+                                        "dollar_value": val,
+                                    })
+                                parsed_any = True
                     except Exception:
                         continue
-
-                if records:
-                    all_f4 = pd.concat(records, ignore_index=True)
-                    all_f4["Value"] = pd.to_numeric(all_f4["Value"], errors="coerce").fillna(0.0)
-
-                    code_p = all_f4[all_f4["Code"] == "P"]
-                    code_s = all_f4[all_f4["Code"] == "S"]
-
-                    buys_usd = float(code_p["Value"].sum())
-                    buyers = list(code_p["Insider"].dropna().unique())
-                    num_buyers = len(buyers)
-
-                    sales_usd = float(code_s["Value"].sum())
-                    sellers = list(code_s["Insider"].dropna().unique())
-                    num_sellers = len(sellers)
-
-                    csuite_s = code_s[code_s["Position"].apply(is_csuite)]
-                    csuite_sales_usd = float(csuite_s["Value"].sum())
-                    csuite_sellers = list(csuite_s["Insider"].dropna().unique())
-
-                    data_res.update({
-                        "buys_usd": buys_usd,
-                        "sales_usd": sales_usd,
-                        "csuite_sales_usd": csuite_sales_usd,
-                        "num_buyers": num_buyers,
-                        "num_sellers": num_sellers,
-                        "buyers": buyers,
-                        "sellers": sellers,
-                        "csuite_sellers": csuite_sellers,
-                        "source": "SEC EDGAR Form 4",
-                    })
+                if parsed_any:
                     used_edgar = True
+                    source_label = "SEC EDGAR Form 4"
         except Exception:
             pass
 
-        # 2. Fallback to finvizfinance
-        if not used_edgar or (data_res["num_buyers"] == 0 and data_res["num_sellers"] == 0):
+        # 2. Secondary Fallback: Direct SEC EDGAR Submissions XML
+        if not used_edgar:
+            xml_pairs, direct_ok = _fetch_ticker_form4_xmls_direct(
+                t_clean, lookback_days=lookback_days, email_header=email_header, max_filings=35
+            )
+            if direct_ok:
+                used_edgar = True
+                source_label = "SEC EDGAR Form 4 (Direct XML)"
+                for fdate, xml_txt in xml_pairs:
+                    parsed = parse_form4_xml(xml_txt, exclude_10b5_1=False)
+                    for tx in parsed["transactions"]:
+                        tx["file_date"] = fdate
+                        all_txs.append(tx)
+
+        # 3. Tertiary Fallback: finvizfinance (only if both SEC EDGAR paths failed)
+        used_finviz = False
+        if not used_edgar:
             try:
                 from finvizfinance.quote import finvizfinance
                 stock = finvizfinance(t_clean)
@@ -1178,59 +2095,107 @@ def fetch_live_insider_activity(
                         inside_df = inside_df[inside_df["_dt"].isna() | (inside_df["_dt"] >= cutoff_dt)]
                     trans_col = inside_df["Transaction"].astype(str).str.strip().str.lower()
                     val_col = pd.to_numeric(inside_df["Value ($)"], errors="coerce").fillna(0.0)
-                    inside_df["_clean_val"] = val_col
-
-                    buys_df = inside_df[trans_col == "buy"]
-                    sales_df = inside_df[trans_col == "sale"]
-
-                    buys_usd = float(buys_df["_clean_val"].sum())
-                    buyers = list(buys_df["Insider Trading"].dropna().unique())
-                    num_buyers = len(buyers)
-
-                    sales_usd = float(sales_df["_clean_val"].sum())
-                    sellers = list(sales_df["Insider Trading"].dropna().unique())
-                    num_sellers = len(sellers)
-
-                    csuite_s = sales_df[sales_df["Relationship"].apply(is_csuite)]
-                    csuite_sales_usd = float(csuite_s["_clean_val"].sum())
-                    csuite_sellers = list(csuite_s["Insider Trading"].dropna().unique())
-
-                    data_res.update({
-                        "buys_usd": buys_usd,
-                        "sales_usd": sales_usd,
-                        "csuite_sales_usd": csuite_sales_usd,
-                        "num_buyers": num_buyers,
-                        "num_sellers": num_sellers,
-                        "buyers": buyers,
-                        "sellers": sellers,
-                        "csuite_sellers": csuite_sellers,
-                        "source": "Finviz Insider",
-                    })
+                    for idx_r, r in inside_df.iterrows():
+                        tr_type = str(trans_col.loc[idx_r])
+                        val = float(val_col.loc[idx_r])
+                        if tr_type not in {"buy", "sale"} or val <= 0.0:
+                            continue
+                        rel = str(r.get("Relationship", "") or "")
+                        dt_val = r.get("_dt")
+                        dt_str = dt_val.strftime("%Y-%m-%d") if pd.notna(dt_val) else ""
+                        all_txs.append({
+                            "code": "P" if tr_type == "buy" else "S",
+                            "insider": str(r.get("Insider Trading", "Unknown") or "Unknown"),
+                            "role": rel or "Insider",
+                            "is_c_suite": _is_csuite_role(rel),
+                            "is_10b5_1": False,
+                            "tx_date": dt_str,
+                            "file_date": dt_str,
+                            "shares": 0.0,
+                            "price": 0.0,
+                            "dollar_value": val,
+                        })
+                    used_finviz = True
+                    source_label = "Finviz Insider"
             except Exception:
                 pass
 
-        # 3. Apply Multiplier Rules
-        num_b = data_res["num_buyers"]
-        b_usd = data_res["buys_usd"]
-        s_usd = data_res["sales_usd"]
-        cs_usd = data_res["csuite_sales_usd"]
+        scored = score_insider_transactions(
+            all_txs,
+            exclude_10b5_1=exclude_10b5_1,
+            source=source_label,
+        )
+        if not used_edgar and not used_finviz and not all_txs:
+            scored["notes"] = "No qualifying insider activity detected."
+        elif used_finviz:
+            scored["notes"] += " [Finviz fallback: Rule 10b5-1 flags unavailable]"
 
-        if (num_b >= 2 and b_usd >= 250_000.0) or (b_usd >= 2_000_000.0 and s_usd == 0.0):
-            data_res["multiplier"] = 1.15
-            data_res["signal"] = "CLUSTER_BUY_BOOST"
-            data_res["notes"] = f"Cluster Buying Boost (1.15x): {num_b} insiders bought ${b_usd:,.0f} on open market."
-        elif cs_usd >= 20_000_000.0 and b_usd == 0.0:
-            data_res["multiplier"] = 0.70
-            data_res["signal"] = "CSUITE_DISTRIBUTION_HAIRCUT"
-            data_res["notes"] = f"Heavy C-Suite Distribution Haircut (0.70x): C-suite sold ${cs_usd:,.0f} with zero buys ({', '.join(data_res['csuite_sellers'][:3])})."
-        else:
-            data_res["multiplier"] = 1.00
-            data_res["signal"] = "NEUTRAL"
-            data_res["notes"] = f"Neutral conviction (Buys: ${b_usd:,.0f}, Sales: ${s_usd:,.0f})."
-
+        data_res = {"ticker": t_clean, **scored}
         results[t_clean] = data_res
 
     return results
+
+
+def fetch_schedule_13d_catalysts(
+    universe_tickers: Optional[Iterable[str]] = None,
+    lookback_days: int = 30,
+    email_header: str = "QuantResearch quant@mungersystem.org",
+) -> Dict[str, List[Dict[str, Any]]]:
+    """
+    Queries SEC EDGAR EFTS for recent Schedule 13D activist filings and intersects
+    against `universe_tickers` (when provided) to filter out closed-end funds & microcaps.
+    """
+    try:
+        import requests
+    except ImportError:
+        return {}
+
+    end_dt = pd.Timestamp.now().strftime("%Y-%m-%d")
+    start_dt = (pd.Timestamp.now() - pd.Timedelta(days=lookback_days)).strftime("%Y-%m-%d")
+    url = (
+        f"https://efts.sec.gov/LATEST/search-index?forms=SCHEDULE%2013D"
+        f"&dateRange=custom&startdt={start_dt}&enddt={end_dt}&from=0&size=100"
+    )
+    headers = {"User-Agent": email_header, "Accept-Encoding": "gzip, deflate"}
+    universe_set = {str(t).upper().strip() for t in universe_tickers} if universe_tickers is not None else None
+
+    try:
+        r = requests.get(url, headers=headers, timeout=10)
+        if r.status_code != 200:
+            return {}
+        hits = r.json().get("hits", {}).get("hits", [])
+    except Exception:
+        return {}
+
+    catalysts: Dict[str, List[Dict[str, Any]]] = {}
+    for h in hits:
+        src = h.get("_source", {})
+        names = src.get("display_names", [])
+        target = str(names[0]) if len(names) >= 1 else ""
+        filer = str(names[1]) if len(names) >= 2 else "Activist Filer"
+        target_clean = re.sub(r"\(\s*CIK\s+\d+\s*\)", "", target, flags=re.IGNORECASE)
+        matches = re.findall(r"\(([A-Z0-9.,\s-]{1,24})\)", target_clean)
+        found_tickers: List[str] = []
+        for grp in matches:
+            for part in grp.split(","):
+                cand = part.strip().upper()
+                if cand and re.fullmatch(r"[A-Z][A-Z0-9.-]{0,5}", cand):
+                    found_tickers.append(cand)
+        if not found_tickers:
+            continue
+
+        for tk in found_tickers:
+            if universe_set is not None and tk not in universe_set:
+                continue
+            catalysts.setdefault(tk, []).append({
+                "file_date": str(src.get("file_date", "")),
+                "form": str(src.get("form", "SCHEDULE 13D")),
+                "target": target.strip(),
+                "filer": filer.strip(),
+                "adsh": str(src.get("adsh", "")),
+            })
+
+    return catalysts
 
 
 # ==============================================================================
@@ -1308,7 +2273,16 @@ def parse_fidelity_positions_csv(
             loss in a taxable account (immediate tax-loss harvest with zero tax drag)
     """
     if csv_path is None:
-        candidate_paths = list(Path(".").glob("Portfolio_Positions*.csv")) + list(Path("data").glob("Portfolio_Positions*.csv"))
+        base_dir = Path(__file__).resolve().parent
+        candidate_paths = (
+            list(Path(".").glob("Portfolio_Positions*.csv"))
+            + list(Path("data").glob("Portfolio_Positions*.csv"))
+            + list((base_dir / "data").glob("Portfolio_Positions*.csv"))
+        )
+        # Prefer Portfolio_Positions_latest.csv if present, otherwise newest mtime
+        latest_named = [p for p in candidate_paths if p.name.lower() == "portfolio_positions_latest.csv"]
+        if latest_named:
+            candidate_paths = [latest_named[0]]
         if not candidate_paths:
             candidate_paths = list(Path(".").glob("*Positions*.csv")) + list(Path("data").glob("*Positions*.csv"))
         if candidate_paths:

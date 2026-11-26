@@ -91,8 +91,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (stepNumber === 7) {
             if (state.activeOptionsTab === 'spreads') {
                 loadOptionsSpreads();
-            } else {
+            } else if (state.activeOptionsTab === 'collars') {
                 loadOptionsCollars();
+            } else {
+                loadOptionsVrp();
             }
         }
     }
@@ -148,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Checkbox toggles card styling
-    ['chk-conjunctive', 'chk-value-trap', 'chk-gating200w', 'chk-cluster-boost', 'chk-csuite-haircut'].forEach(id => {
+    ['chk-conjunctive', 'chk-value-trap', 'chk-gating200w', 'chk-cluster-boost', 'chk-csuite-haircut', 'chk-exclude-10b5-1'].forEach(id => {
         const chk = document.getElementById(id);
         const card = document.getElementById(`${id}-card`) || (chk ? chk.closest('.toggle-card') : null);
         if (chk && card) {
@@ -356,6 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gating_200w: document.getElementById('chk-gating200w').checked,
             cluster_boost: document.getElementById('chk-cluster-boost').checked,
             csuite_haircut: document.getElementById('chk-csuite-haircut').checked,
+            exclude_10b5_1: document.getElementById('chk-exclude-10b5-1') ? document.getElementById('chk-exclude-10b5-1').checked : true,
             min_insider_buys: parseFloat(document.getElementById('slider-min-insider').value),
             include_insider: true
         };
@@ -408,6 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const clusters = cands.filter(c => c.insider_mult > 1.0).length || data.cluster_buys_count || 0;
         const insiderConviction = cands.filter(c => c.insider_mult > 1.0 || (c.insider_buys_usd > 0 && c.insider_mult >= 1.0)).length;
         const allPassed = cands.filter(c => c.all_med).length;
+        const nearMiss = cands.filter(c => c.is_near_miss || (c.passed_count === 3 && !c.is_trap)).length;
         const watchlist = total - strike - traps;
 
         document.getElementById('kpi-total-screened').textContent = total;
@@ -418,6 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (document.getElementById('cnt-all')) document.getElementById('cnt-all').textContent = total;
         if (document.getElementById('cnt-strike')) document.getElementById('cnt-strike').textContent = strike;
         if (document.getElementById('cnt-all-passed')) document.getElementById('cnt-all-passed').textContent = allPassed;
+        if (document.getElementById('cnt-nearmiss')) document.getElementById('cnt-nearmiss').textContent = nearMiss;
         if (document.getElementById('cnt-insider')) document.getElementById('cnt-insider').textContent = insiderConviction;
         if (document.getElementById('cnt-traps')) document.getElementById('cnt-traps').textContent = traps;
         if (document.getElementById('cnt-cluster')) document.getElementById('cnt-cluster').textContent = clusters;
@@ -440,6 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Filter chips
             if (state.activeFilter === 'strike' && !c.is_strike_zone) return false;
             if (state.activeFilter === 'all-passed' && !c.all_med) return false;
+            if (state.activeFilter === 'nearmiss' && !(c.is_near_miss || (c.passed_count === 3 && !c.is_trap))) return false;
             if (state.activeFilter === 'insider' && !(c.insider_mult > 1.0 || (c.insider_buys_usd > 0 && c.insider_mult >= 1.0))) return false;
             if (state.activeFilter === 'traps' && !c.is_trap) return false;
             if (state.activeFilter === 'cluster' && c.insider_mult <= 1.0) return false;
@@ -528,16 +534,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let insiderBadge = '<span style="color: var(--text-muted); font-size: 0.8rem;">1.00x</span>';
             if (c.insider_mult > 1.0) {
-                insiderBadge = `<span class="badge badge-boost">+15% (${c.insider_mult.toFixed(2)}x)</span>`;
+                const freshTag = c.fresh_buy_window === 'FRESH_5D' ? ' 🔥5D' : '';
+                insiderBadge = `<span class="badge badge-boost">+15% (${c.insider_mult.toFixed(2)}x)${freshTag}</span>`;
             } else if (c.insider_mult < 1.0) {
                 insiderBadge = `<span class="badge badge-haircut">-30% (${c.insider_mult.toFixed(2)}x)</span>`;
             }
+            const tag13d = (c.activist_13d && c.activist_13d.length > 0)
+                ? ` <span class="badge badge-boost" title="Schedule 13D Activist Filing (${c.activist_13d[0].filer || 'Activist'})">13D</span>`
+                : '';
 
             tr.innerHTML = `
                 <td style="text-align: center;">
                     <input type="checkbox" class="candidate-select" data-ticker="${c.ticker}" ${isSelected ? 'checked' : ''}>
                 </td>
-                <td><strong class="mono" style="color: #60a5fa;">${c.ticker}</strong></td>
+                <td><strong class="mono" style="color: #60a5fa;">${c.ticker}</strong>${tag13d}</td>
                 <td style="max-width: 160px; overflow: hidden; text-overflow: ellipsis;" title="${c.name || c.ticker}">${c.name || c.ticker}</td>
                 <td style="text-align: right;" class="mono">$${c.spot.toFixed(2)}</td>
 
@@ -687,6 +697,19 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('modal-solvency').textContent = `${c.de.toFixed(1)}%`;
         }
 
+        const gatingEl = document.getElementById('modal-gating-tier');
+        if (gatingEl) {
+            const d100 = Number(c.dist_100w_pct || 0);
+            const d200 = Number(c.dist_200w_pct || 0);
+            gatingEl.textContent = `${c.gating_tier || 'HOLD_CASH'} (${d100 >= 0 ? '+' : ''}${d100.toFixed(1)}% 100W / ${d200 >= 0 ? '+' : ''}${d200.toFixed(1)}% 200W)`;
+        }
+        const ivrEl = document.getElementById('modal-ivr');
+        if (ivrEl) {
+            const ivrTxt = (c.ivr_1y !== null && c.ivr_1y !== undefined) ? `${Number(c.ivr_1y).toFixed(1)}%` : '--';
+            const ivTxt = (c.iv_proxy_pct !== null && c.iv_proxy_pct !== undefined) ? `${Number(c.iv_proxy_pct).toFixed(1)}%` : '--';
+            ivrEl.textContent = `1Y IVR: ${ivrTxt} | IV Proxy: ${ivTxt}`;
+        }
+
         const badge = document.getElementById('modal-insider-badge');
         if (c.insider_mult > 1.0) {
             badge.className = "badge badge-boost";
@@ -702,6 +725,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modal-insider-notes').textContent = c.insider_notes || "Balanced open-market insider activity.";
         document.getElementById('modal-insider-buys').textContent = `$${Math.round(c.insider_buys_usd || 0).toLocaleString()}`;
         document.getElementById('modal-insider-sales').textContent = `$${Math.round(c.insider_sales_usd || 0).toLocaleString()}`;
+        const el10b5 = document.getElementById('modal-insider-10b5');
+        if (el10b5) {
+            const plannedUsd = Number(c.planned_10b5_csuite_sales_usd || 0);
+            el10b5.textContent = plannedUsd > 0 ? `Excluded 10b5-1 C-Suite Sales: $${Math.round(plannedUsd).toLocaleString()}` : '';
+        }
 
         document.getElementById('modal-link-edgar').href = `https://www.sec.gov/edgar/searchedgar/companysearch?companyName=${c.ticker}`;
         document.getElementById('modal-link-research').href = c.fidelity_research || `https://digital.fidelity.com/prgw/digital/research/quote/dashboard/summary?symbol=${c.ticker}`;
@@ -1379,30 +1407,111 @@ document.addEventListener('DOMContentLoaded', () => {
     // Stage 7 Sub-tab switching
     const btnTabSpreads = document.getElementById('btn-tab-call-spreads');
     const btnTabCollars = document.getElementById('btn-tab-collars');
+    const btnTabVrp = document.getElementById('btn-tab-vrp');
     const panelSpreads = document.getElementById('panel-options-spreads');
     const panelCollars = document.getElementById('panel-options-collars');
+    const panelVrp = document.getElementById('panel-options-vrp');
+
+    function setActiveOptionsSubtab(tab) {
+        state.activeOptionsTab = tab;
+        const map = [
+            ['spreads', btnTabSpreads, panelSpreads],
+            ['collars', btnTabCollars, panelCollars],
+            ['vrp', btnTabVrp, panelVrp],
+        ];
+        map.forEach(([key, btn, panel]) => {
+            if (btn) {
+                btn.classList.toggle('btn-primary', key === tab);
+                btn.classList.toggle('btn-secondary', key !== tab);
+            }
+            if (panel) {
+                panel.style.display = key === tab ? 'block' : 'none';
+            }
+        });
+    }
 
     if (btnTabSpreads && btnTabCollars && panelSpreads && panelCollars) {
         btnTabSpreads.addEventListener('click', () => {
-            state.activeOptionsTab = 'spreads';
-            btnTabSpreads.classList.remove('btn-secondary');
-            btnTabSpreads.classList.add('btn-primary');
-            btnTabCollars.classList.remove('btn-primary');
-            btnTabCollars.classList.add('btn-secondary');
-            panelSpreads.style.display = 'block';
-            panelCollars.style.display = 'none';
+            setActiveOptionsSubtab('spreads');
             loadOptionsSpreads();
         });
 
         btnTabCollars.addEventListener('click', () => {
-            state.activeOptionsTab = 'collars';
-            btnTabCollars.classList.remove('btn-secondary');
-            btnTabCollars.classList.add('btn-primary');
-            btnTabSpreads.classList.remove('btn-primary');
-            btnTabSpreads.classList.add('btn-secondary');
-            panelCollars.style.display = 'block';
-            panelSpreads.style.display = 'none';
+            setActiveOptionsSubtab('collars');
             loadOptionsCollars();
+        });
+
+        if (btnTabVrp && panelVrp) {
+            btnTabVrp.addEventListener('click', () => {
+                setActiveOptionsSubtab('vrp');
+                loadOptionsVrp();
+            });
+        }
+    }
+
+    async function loadOptionsVrp() {
+        try {
+            const resp = await fetch('/api/munger/options-vrp');
+            if (resp.ok) {
+                const data = await resp.json();
+                renderVrpTable(data);
+                return;
+            }
+        } catch (e) {
+            console.warn("Options VRP API offline, rendering seed VRP table...", e);
+        }
+        renderVrpTable({
+            vol_regime: { vix: 22.0, vix_ivr_1y: 55.0, vxn: 28.0, vxn_ivr_1y: 60.0, tbill_yield_pct: 4.2, condor_regime: 'OPEN (IVR >= 50)' },
+            tax_note: 'Execute index spreads via Section 1256 (XSP/XND) in Taxable, or single-stock CSP/Jade Lizards in Roth IRA.',
+            entries: []
+        });
+    }
+
+    function renderVrpTable(data) {
+        const vol = data.vol_regime || {};
+        const badge = document.getElementById('vrp-vol-regime-badge');
+        if (badge) {
+            const vixTxt = vol.vix !== null && vol.vix !== undefined ? `VIX ${vol.vix} (IVR ${vol.vix_ivr_1y ?? '--'}%)` : 'VIX --';
+            const vxnTxt = vol.vxn !== null && vol.vxn !== undefined ? `VXN ${vol.vxn} (IVR ${vol.vxn_ivr_1y ?? '--'}%)` : 'VXN --';
+            badge.textContent = `${vixTxt} • ${vxnTxt} • T-Bill ${vol.tbill_yield_pct ?? 4.2}%`;
+        }
+        const noteEl = document.getElementById('vrp-tax-note');
+        if (noteEl && data.tax_note) {
+            noteEl.textContent = data.tax_note;
+        }
+        const tbody = document.getElementById('vrp-table-body');
+        if (!tbody) return;
+        const entries = data.entries || [];
+        if (entries.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">No VRP entries loaded (start local server for live calculations).</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = '';
+        entries.forEach(e => {
+            const csp = e.csp_25d || {};
+            const jl = e.jade_lizard || {};
+            const ic = e.iron_condor || {};
+            const ivrDisp = (e.ivr_1y !== null && e.ivr_1y !== undefined) ? `${Number(e.ivr_1y).toFixed(0)}%` : '--';
+            const icHtml = ic.signal === 'ACTIVE_OPEN_CONDOR'
+                ? `<span class="badge badge-strike">OPEN +$${Number(ic.est_credit || 0).toFixed(2)} (${ic.put_spread} | ${ic.call_spread})</span>`
+                : `<span class="badge badge-watchlist">WAIT (IVR &lt; 50)</span>`;
+            const jlBadge = jl.zero_upside_risk_valid
+                ? `<span class="badge badge-boost">0-UP-RISK OK</span>`
+                : `<span class="badge badge-watchlist">CHECK WIDTH</span>`;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong class="mono" style="color: #60a5fa;">${e.ticker}</strong></td>
+                <td style="font-size: 0.78rem;">${e.role || ''}<br><span style="color: var(--text-muted);">${e.gating_tier || ''}</span></td>
+                <td style="text-align: right;" class="mono">$${Number(e.spot || 0).toFixed(2)}</td>
+                <td style="text-align: center;" class="mono">${ivrDisp}</td>
+                <td class="mono" style="font-size: 0.78rem;">$${Number(csp.short_put || 0).toFixed(1)}P +$${Number(csp.est_credit || 0).toFixed(2)}<br><span style="color: #34d399;">${Number(csp.ann_yield_incl_tbill_pct || 0).toFixed(1)}% ann</span></td>
+                <td class="mono" style="font-size: 0.78rem;">${Number(jl.short_put || 0).toFixed(1)}P / ${Number(jl.short_call || 0).toFixed(1)}-${Number(jl.long_call || 0).toFixed(1)}C +$${Number(jl.est_credit || 0).toFixed(2)} ${jlBadge}</td>
+                <td>${icHtml}</td>
+                <td style="text-align: center;">
+                    <a href="${e.fidelity_deeplink || '#'}" target="_blank" class="btn-action btn-secondary" style="padding: 3px 8px; font-size: 0.74rem;">Trade ↗</a>
+                </td>
+            `;
+            tbody.appendChild(tr);
         });
     }
 

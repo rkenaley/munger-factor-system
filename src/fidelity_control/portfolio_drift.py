@@ -105,18 +105,27 @@ def evaluate_portfolio_drift(
     crypto_val = (btc_shares * btc_price) + (eth_shares * eth_price)
     crypto_pct = (crypto_val / effective_nw) * 100.0
     max_crypto_pct = config['risk_limits'].get('max_crypto_pct', 0.025) * 100.0
-    
+    trim_band_pct = max(
+        max_crypto_pct,
+        config['risk_limits'].get('trim_crypto_band_pct', 0.030) * 100.0,
+    )
+    surplus = max(0.0, crypto_val - (effective_nw * (max_crypto_pct / 100.0))) if crypto_pct > trim_band_pct else 0.0
+
     crypto_alert = {
         "metric": "Crypto Portfolio Cap",
         "current_pct": round(crypto_pct, 2),
         "target_max_pct": max_crypto_pct,
+        "trim_trigger_pct": round(trim_band_pct, 2),
+        "trim_surplus_usd": round(surplus, 2),
         "current_val_usd": round(crypto_val, 2),
-        "status": "OK" if crypto_pct <= max_crypto_pct else "BREACH"
+        "status": "OK" if crypto_pct <= trim_band_pct else "BREACH"
     }
-    
-    if crypto_pct > max_crypto_pct:
-        surplus = crypto_val - (effective_nw * (max_crypto_pct / 100.0))
-        alerts.append(f"[CRYPTO DRIFT] Crypto at {crypto_pct:.2f}% exceeds {max_crypto_pct:.1f}% limit! Trim ${surplus:,.0f} into core VTI.")
+
+    if crypto_pct > trim_band_pct:
+        alerts.append(
+            f"[CRYPTO DRIFT] Crypto at {crypto_pct:.2f}% breached {trim_band_pct:.1f}% trim band "
+            f"(target {max_crypto_pct:.1f}%). Trim ${surplus:,.0f} into core VTI."
+        )
         
     # 2. Single Stock Concentration (NVDA)
     nvda_shares = sum(float(acc.get('holdings', {}).get('NVDA', {}).get('shares', 0.0)) for acc in accounts)

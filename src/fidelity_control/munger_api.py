@@ -34,9 +34,19 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from munger_engine import (
+    build_csp_jade_lizard_blueprint,
     check_data_freshness,
+    classify_candidate_audit_status,
+    compute_cycle_and_trend_diagnostics,
+    compute_ivr_from_prices,
+    compute_two_tier_sma_status,
     compute_vectorized_munger_scores,
+    extract_ticker_cycle_snapshot,
     fetch_live_insider_activity,
+    fetch_schedule_13d_catalysts,
+    fetch_vol_regime_snapshot,
+    fetch_yahoo_v8_chart,
+    load_coi_excluded_tickers,
     load_or_generate_dataset,
     parse_fidelity_positions_csv,
     refresh_live_intraday_prices,
@@ -51,18 +61,48 @@ from .fidelity_connector import (
 )
 
 def bsm_put(S: float, K: float, T: float, r: float, sigma: float, q: float = 0.01) -> Dict[str, float]:
-    """Closed-form European Put price via BSM Put-Call Parity."""
+    """Closed-form European Put price and delta via BSM Put-Call Parity."""
     call_res = bsm_call(S, K, T, r, sigma, q)
-    put_price = max(0.0, call_res["price"] - S * math.exp(-q * T) + K * math.exp(-r * T))
+    df_q = math.exp(-q * T)
+    put_price = max(0.0, call_res["price"] - S * df_q + K * math.exp(-r * T))
     return {
         "price": put_price,
-        "delta": call_res["delta"] - 1.0,
+        "delta": call_res["delta"] - df_q,
     }
 
 # Global In-Memory Caches for instantaneous UI responsiveness
 _DATASET_CACHE: Dict[str, Any] = {}
 _INSIDER_CACHE: Dict[str, Any] = {}
 _LAST_SCAN_CACHE: Dict[str, Any] = {}
+_CATALYST_13D_CACHE: Dict[str, Any] = {"fetched_at": 0.0, "data": {}}
+_VOL_REGIME_CACHE: Dict[str, Any] = {"fetched_at": 0.0, "data": {}}
+
+
+def _get_cached_vol_regime() -> Dict[str, Any]:
+    now = time.time()
+    if not _VOL_REGIME_CACHE["data"] or (now - _VOL_REGIME_CACHE["fetched_at"]) > 900.0:
+        try:
+            _VOL_REGIME_CACHE["data"] = fetch_vol_regime_snapshot()
+        except Exception:
+            _VOL_REGIME_CACHE["data"] = {
+                "vix": None, "vix_ivr_1y": None,
+                "vxn": None, "vxn_ivr_1y": None,
+                "tbill_yield_pct": 4.2, "condor_regime": "WAIT (IVR < 50)",
+            }
+        _VOL_REGIME_CACHE["fetched_at"] = now
+    return dict(_VOL_REGIME_CACHE["data"])
+
+
+def _get_cached_13d(universe_set: set[str]) -> Dict[str, List[Dict[str, Any]]]:
+    now = time.time()
+    if (now - _CATALYST_13D_CACHE["fetched_at"]) > 900.0:
+        try:
+            _CATALYST_13D_CACHE["data"] = fetch_schedule_13d_catalysts(universe_tickers=None, lookback_days=30)
+        except Exception:
+            _CATALYST_13D_CACHE["data"] = {}
+        _CATALYST_13D_CACHE["fetched_at"] = now
+    raw_13d = _CATALYST_13D_CACHE.get("data", {})
+    return {k: v for k, v in raw_13d.items() if k in universe_set}
 
 
 def _get_dataset():
@@ -209,11 +249,14 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
     winsorize = bool(params.get("winsorize", True))
     enforce_full_cycle = bool(params.get("enforce_full_cycle", True))
     use_cyclically_adjusted_ey = bool(params.get("use_cyclically_adjusted_ey", True))
+    apply_anti_crest_guard = bool(params.get("apply_anti_crest_guard", True))
     include_insider = bool(params.get("include_insider", True))
     cluster_boost_enabled = bool(params.get("cluster_boost", True))
     csuite_haircut_enabled = bool(params.get("csuite_haircut", True))
     min_insider_buys = float(params.get("min_insider_buys", 0.0))
     gating_200w_enabled = bool(params.get("gating_200w", False))
+    include_coi = bool(params.get("include_coi", False))
+    exclude_10b5_1 = bool(params.get("exclude_10b5_1", True))
     universe_choice = str(params.get("universe", "sp900")).lower().strip()
 
     ds = _get_dataset()
@@ -261,9 +304,10 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
         winsorize_cross_section=False,
         enforce_full_cycle_profitability=False,
         use_cyclically_adjusted_ey=False,
+        apply_anti_crest_guard=False,
     )
 
-    # Compute clean Value Trap-immunized scores with user parameters
+    # Compute clean Value Trap + Anti-Crest immunized scores with user parameters
     scores_clean, med_clean, ey_clean = compute_vectorized_munger_scores(
         close_df=close_df,
         eval_dates=latest_dates,
@@ -274,27 +318,45 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
         winsorize_cross_section=winsorize,
         enforce_full_cycle_profitability=enforce_full_cycle,
         use_cyclically_adjusted_ey=use_cyclically_adjusted_ey,
+        apply_anti_crest_guard=apply_anti_crest_guard,
     )
+
+    cycle_diag = compute_cycle_and_trend_diagnostics(
+        close_df=close_df,
+        eval_dates=latest_dates,
+        eps_dict=eps_dict,
+        reporting_lag_days=45,
+    )
+
+    coi_excluded = set() if include_coi else load_coi_excluded_tickers(ROOT_DIR / "data")
+    coi_excluded_count = sum(1 for c in close_df.columns if c in coi_excluded)
 
     # Identify candidate tickers for insider data
     clean_series = scores_clean.loc[dt_last].sort_values(ascending=False)
-    top_candidates = list(clean_series.head(20).index)
+    med_series = scores_clean.loc[dt_last][med_clean.loc[dt_last]].sort_values(ascending=False)
+    med_filtered = [t for t in med_series.index if t not in coi_excluded]
+    clean_filtered = [t for t in clean_series.index if t not in coi_excluded]
+    top_candidates = list(dict.fromkeys(med_filtered[:15] + clean_filtered[:15]))
     raw_series = scores_raw.loc[dt_last].sort_values(ascending=False)
     cyclical_traps_flagged = [
         t for t in raw_series.index
-        if float(raw_series.get(t, 0.0)) >= 2.0 and float(clean_series.get(t, 0.0)) == 0.0
+        if t not in coi_excluded and float(raw_series.get(t, 0.0)) >= 2.0 and float(clean_series.get(t, 0.0)) == 0.0
     ][:5]
 
-    insider_query_tickers = list(dict.fromkeys(top_candidates + cyclical_traps_flagged + ["NVDA", "AAPL", "MU", "LLY", "FTNT", "MSFT", "GOOGL"]))
+    insider_query_tickers = list(dict.fromkeys(top_candidates + cyclical_traps_flagged + [t for t in ["NVDA", "AAPL", "MU", "FTNT", "MSFT", "GOOGL"] if t not in coi_excluded]))
 
     global _INSIDER_CACHE
-    tickers_to_query = [t for t in insider_query_tickers if t not in _INSIDER_CACHE]
+    tickers_to_query = [t for t in insider_query_tickers if f"{t}:{int(exclude_10b5_1)}" not in _INSIDER_CACHE]
     if tickers_to_query and include_insider:
         try:
-            new_insider = fetch_live_insider_activity(tickers_to_query)
-            _INSIDER_CACHE.update(new_insider)
+            new_insider = fetch_live_insider_activity(tickers_to_query, exclude_10b5_1=exclude_10b5_1)
+            for tk, info in new_insider.items():
+                _INSIDER_CACHE[f"{tk}:{int(exclude_10b5_1)}"] = info
         except Exception:
             pass
+
+    active_universe_set = {t for t in close_df.columns if t not in coi_excluded}
+    catalysts_13d = _get_cached_13d(active_universe_set)
 
     # Build cross-sectional percentile rankings for the radar view
     growth_vals = {t: float(clean_fund.get(t, {}).get("sales5y", 0.0)) for t in close_df.columns}
@@ -316,19 +378,13 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
     de_pct = ((1.0 - de_s.rank(pct=True)) * 100.0).to_dict()
     solvency_pct = ((1.0 - nd_ebitda_s.rank(pct=True)) * 100.0).to_dict()
 
-    # Calculate 200-week SMA for pullback gating if requested
-    sma_200w_dist = {}
-    if gating_200w_enabled or True:  # always precompute for detail modal
-        for t in close_df.columns:
-            s_close = close_df[t].dropna()
-            if len(s_close) >= 50:
-                # 200 weeks approx 1000 daily trading bars (or full available window if <1000)
-                sma_200w = s_close.iloc[-min(len(s_close), 1000):].mean()
-                cur_p = float(s_close.iloc[-1])
-                dist = ((cur_p / sma_200w) - 1.0) * 100.0
-                sma_200w_dist[t] = round(dist, 1)
-            else:
-                sma_200w_dist[t] = 0.0
+    # Calculate Two-Tier Weekly SMA Gating (SMA-50w / SMA-100w / SMA-200w) & 1Y IVR
+    two_tier_map: Dict[str, Dict[str, Any]] = {}
+    ivr_map: Dict[str, Dict[str, Any]] = {}
+    for t in close_df.columns:
+        s_close = close_df[t].dropna()
+        two_tier_map[t] = compute_two_tier_sma_status(s_close)
+        ivr_map[t] = compute_ivr_from_prices(s_close)
 
     med_g = float(growth_s.median()) if not growth_s.empty else 10.0
     med_r = float(roic_s.median()) if not roic_s.empty else 15.0
@@ -338,11 +394,15 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
 
     candidates = []
     strike_zone_count = 0
+    near_miss_count = 0
     cyclical_traps_count = 0
     cluster_buys_count = 0
     csuite_haircuts_count = 0
+    activist_13d_count = 0
 
     for t in close_df.columns:
+        if t in coi_excluded:
+            continue
         meta = clean_fund.get(t, fund_dict.get(t, {}))
         name = meta.get("name", t)
         sector = meta.get("sector", "General")
@@ -368,13 +428,20 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
         else:
             pass_s = bool(de <= med_s and de <= max_de)
 
-        passed_all_med = bool(
+        eng_med = bool(med_clean.loc[dt_last, t]) if t in med_clean.columns else False
+        cyc = extract_ticker_cycle_snapshot(cycle_diag, dt_last, t)
+
+        passed_static_med = bool(
             sales5y >= med_g and roic >= med_r and (pe <= med_y and pe > 0) and
             (nd_ebitda <= med_nd if max_de <= 15.0 else de <= med_s)
         )
+        passed_all_med = bool(passed_static_med and eng_med and clean_m > 0.0) if apply_anti_crest_guard else passed_static_med
 
         # Check insider conviction
-        insider_info = _INSIDER_CACHE.get(t, {"multiplier": 1.0, "signal": "NEUTRAL", "notes": "", "buys_usd": 0.0, "sales_usd": 0.0})
+        insider_info = _INSIDER_CACHE.get(
+            f"{t}:{int(exclude_10b5_1)}",
+            {"multiplier": 1.0, "signal": "NEUTRAL", "notes": "", "buys_usd": 0.0, "sales_usd": 0.0},
+        )
         insider_mult = float(insider_info.get("multiplier", 1.0))
 
         # Adjust multiplier based on user toggles
@@ -391,6 +458,11 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
             csuite_haircuts_count += 1
 
         conviction_m = round(clean_m * insider_mult, 2)
+        gate_info = two_tier_map.get(t, {})
+        ivr_info = ivr_map.get(t, {})
+        act_13d = catalysts_13d.get(t, [])
+        if act_13d:
+            activist_13d_count += 1
 
         # Slider threshold checks
         passes_sliders = True
@@ -410,33 +482,33 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
 
         if enforce_conjunctive and not passed_all_med:
             passes_sliders = False
-        if gating_200w_enabled and sma_200w_dist.get(t, 0.0) > 20.0:
+        if gating_200w_enabled and gate_info.get("gating_tier") not in ("TIER2_BUY_100%", "TIER1_BUY_50%"):
             passes_sliders = False
         if min_insider_buys > 0.0 and float(insider_info.get("buys_usd", 0.0)) < min_insider_buys:
             passes_sliders = False
 
-        # Status assignment
-        is_trap = (raw_m >= 2.0 and clean_m == 0.0)
+        # Status assignment via shared engine classifier
         is_strike_zone = (clean_m >= min_munger and (passed_all_med or not enforce_conjunctive) and passes_sliders)
-
-        if is_strike_zone:
-            strike_zone_count += 1
-            if insider_mult > 1.0:
-                audit_status = f"STRIKE ZONE (CLUSTER BUY {insider_mult:.2f}x)"
-            elif insider_mult < 1.0:
-                audit_status = f"STRIKE ZONE (C-SUITE HAIRCUT {insider_mult:.2f}x)"
-            else:
-                audit_status = "STRIKE ZONE"
-        elif is_trap:
-            cyclical_traps_count += 1
-            audit_status = "CYCLICAL TRAP BLOCKED"
-        elif clean_m >= 1.0 or passes_sliders:
-            audit_status = "Watchlist (High Moat)"
-        else:
-            audit_status = "Neutral / Low Hurdle"
+        fallback_lbl = "Watchlist (High Moat)" if (clean_m >= 1.0 or passes_sliders) else "Neutral / Low Hurdle"
+        audit_status, is_trap = classify_candidate_audit_status(
+            raw_m=raw_m,
+            clean_m=clean_m,
+            is_strike_zone=is_strike_zone,
+            insider_mult=insider_mult,
+            cyc=cyc,
+            fallback_watchlist_label=fallback_lbl,
+        )
 
         passed_count = int(pass_g) + int(pass_r) + int(pass_y) + int(pass_s)
         failed_pillars = [p for p, ok in [("Growth", pass_g), ("ROIC", pass_r), ("Valuation", pass_y), ("Solvency", pass_s)] if not ok]
+        is_near_miss = bool(passed_count == 3 and not is_trap and clean_m > 0.0)
+
+        if is_strike_zone:
+            strike_zone_count += 1
+        elif is_trap:
+            cyclical_traps_count += 1
+        if is_near_miss:
+            near_miss_count += 1
 
         candidates.append({
             "ticker": t,
@@ -453,8 +525,19 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
             "raw_m": round(raw_m, 2),
             "clean_m": round(clean_m, 2),
             "insider_mult": insider_mult,
+            "anti_crest_mult": cyc["anti_crest_mult"],
             "conviction_m": conviction_m,
             "all_med": passed_all_med,
+            "eng_med": eng_med,
+            "cycle_flags": cyc["cycle_flags"],
+            "cycle_label": cyc["cycle_label"],
+            "mom_12_1_pct": cyc["mom_12_1_pct"],
+            "dd_52w_pct": cyc["dd_52w_pct"],
+            "vs_sma200_pct": cyc["vs_sma200_pct"],
+            "sma200_slope_pct": cyc["sma200_slope_pct"],
+            "windfall_ratio": cyc["windfall_ratio"],
+            "ttm_vs_3y_peak": cyc["ttm_vs_3y_peak"],
+            "q_eps_yoy_pct": cyc["q_eps_yoy_pct"],
             "pillar_pass": {
                 "growth": pass_g,
                 "roic": pass_r,
@@ -463,15 +546,26 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
             },
             "passed_count": passed_count,
             "failed_pillars": failed_pillars,
+            "is_near_miss": is_near_miss,
             "audit_status": audit_status,
             "is_strike_zone": is_strike_zone,
             "is_trap": is_trap,
             "passes_sliders": passes_sliders,
-            "dist_200w_pct": sma_200w_dist.get(t, 0.0),
+            "gating_tier": gate_info.get("gating_tier", "HOLD_CASH"),
+            "deploy_tranche_pct": int(gate_info.get("deploy_tranche_pct", 0)),
+            "dist_50w_pct": gate_info.get("dist_50w_pct", 0.0),
+            "dist_100w_pct": gate_info.get("dist_100w_pct", 0.0),
+            "dist_200w_pct": gate_info.get("dist_200w_pct", 0.0),
+            "ivr_1y": ivr_info.get("ivr_1y"),
+            "iv_proxy_pct": ivr_info.get("iv_proxy_pct"),
             "insider_signal": insider_info.get("signal", "NEUTRAL"),
             "insider_notes": insider_info.get("notes", "No open-market filings flagged."),
             "insider_buys_usd": float(insider_info.get("buys_usd", 0.0)),
             "insider_sales_usd": float(insider_info.get("sales_usd", 0.0)),
+            "csuite_buy_hit": bool(insider_info.get("csuite_buy_hit", False)),
+            "fresh_buy_window": insider_info.get("fresh_buy_window", "NONE"),
+            "planned_10b5_csuite_sales_usd": float(insider_info.get("planned_10b5_csuite_sales_usd", 0.0)),
+            "activist_13d": act_13d,
             "radar": {
                 "growth": round(growth_pct.get(t, 50.0), 1),
                 "roic": round(roic_pct.get(t, 50.0), 1),
@@ -489,10 +583,13 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
         "status": "SUCCESS",
         "eval_date": dt_last.strftime("%Y-%m-%d"),
         "total_screened": len(candidates),
+        "coi_excluded_count": coi_excluded_count,
         "strike_zone_count": strike_zone_count,
+        "near_miss_count": near_miss_count,
         "cyclical_traps_count": cyclical_traps_count,
         "cluster_buys_count": cluster_buys_count,
         "csuite_haircuts_count": csuite_haircuts_count,
+        "activist_13d_count": activist_13d_count,
         "medians": {
             "sales5y": round(float(growth_s.median()), 1),
             "roic": round(float(roic_s.median()), 1),
@@ -510,7 +607,9 @@ def run_munger_scan_api(params: Optional[Dict[str, Any]] = None) -> Dict[str, An
             "winsorize": winsorize,
             "enforce_full_cycle": enforce_full_cycle,
             "use_cyclically_adjusted_ey": use_cyclically_adjusted_ey,
+            "apply_anti_crest_guard": apply_anti_crest_guard,
             "include_insider": include_insider,
+            "exclude_10b5_1": exclude_10b5_1,
             "cluster_boost": cluster_boost_enabled,
             "csuite_haircut": csuite_haircut_enabled,
         },
@@ -828,12 +927,12 @@ def generate_fidelity_orders_api(params: Dict[str, Any]) -> Dict[str, Any]:
 def get_options_call_spreads_api(candidates: Optional[List[str]] = None) -> Dict[str, Any]:
     """
     Generates 180-365 DTE defined-risk vertical bull call spread (95C / 110C) recommendations
-    for Strike-Zone candidates, achieving up to +133.6% Return on Capital (ROC) with strictly
-    defined loss limited to net debit.
+    for Strike-Zone candidates using per-ticker VRP-adjusted IV and live T-bill yield.
     """
     ds = _get_dataset()
     close_df = ds["close_df"]
     dt_last = close_df.index[-1]
+    vol_reg = _get_cached_vol_regime()
 
     # Target candidate tickers
     if not candidates:
@@ -843,18 +942,20 @@ def get_options_call_spreads_api(candidates: Optional[List[str]] = None) -> Dict
         candidates = [c["ticker"] for c in _LAST_SCAN_CACHE.get("candidates", []) if c.get("is_strike_zone")][:8]
 
     if not candidates:
-        candidates = ["NVDA", "AAPL", "MSFT", "LLY", "FTNT", "AVGO", "ISRG"]
+        candidates = ["NVDA", "AAPL", "MSFT", "AVGO", "GOOGL", "ASML", "TSM"]
 
     spreads = []
     T = 1.0  # 365 DTE
-    r = 0.045
-    iv = 0.28
+    r = max(0.01, float(vol_reg.get("tbill_yield_pct") or 4.2) / 100.0)
 
     for sym in candidates:
         sym = sym.upper().strip()
         spot = float(close_df.loc[dt_last, sym]) if sym in close_df else 150.0
         if spot <= 0:
             continue
+
+        iv_info = compute_ivr_from_prices(close_df[sym]) if sym in close_df else {}
+        iv = max(0.14, float(iv_info.get("iv_proxy_pct") or 28.0) / 100.0)
 
         k95 = round(spot * 0.95, 1)
         k110 = round(spot * 1.10, 1)
@@ -874,6 +975,8 @@ def get_options_call_spreads_api(candidates: Optional[List[str]] = None) -> Dict
             "symbol": sym,
             "spot": round(spot, 2),
             "dte": 365,
+            "iv_proxy_pct": round(iv * 100.0, 1),
+            "ivr_1y": iv_info.get("ivr_1y"),
             "k95": k95,
             "k110": k110,
             "c95_price": round(c95, 2),
@@ -899,6 +1002,96 @@ def get_options_call_spreads_api(candidates: Optional[List[str]] = None) -> Dict
             "advantage": "Eliminates negative theta bleed, cuts capital requirement by >90%, strictly caps max risk to net debit.",
             "target_roc": "+133.6% on a moderate +10% underlying stock advance."
         }
+    }
+
+
+def get_options_vrp_entries_api(candidates: Optional[List[str]] = None) -> Dict[str, Any]:
+    """
+    Generates 30-DTE Cash-Secured Put (25-delta), Zero-Upside-Risk Jade Lizard,
+    and IVR >= 50 Gated Iron Condor blueprints for index benchmarks (SPY/QQQ)
+    plus Strike-Zone and Valuation 3/4 Near-Miss compounders.
+    """
+    ds = _get_dataset()
+    close_df = ds["close_df"]
+    dt_last = close_df.index[-1]
+    vol_reg = _get_cached_vol_regime()
+    tbill_rate = max(0.01, float(vol_reg.get("tbill_yield_pct") or 4.2) / 100.0)
+
+    global _LAST_SCAN_CACHE
+    if not _LAST_SCAN_CACHE:
+        run_munger_scan_api()
+
+    cand_map = {c["ticker"]: c for c in _LAST_SCAN_CACHE.get("candidates", [])}
+
+    if not candidates:
+        strike_picks = [c["ticker"] for c in _LAST_SCAN_CACHE.get("candidates", []) if c.get("is_strike_zone")][:5]
+        val_near = [
+            c["ticker"] for c in _LAST_SCAN_CACHE.get("candidates", [])
+            if c.get("is_near_miss") and c.get("failed_pillars") == ["Valuation"]
+        ][:5]
+        selected_eq = list(dict.fromkeys(strike_picks + val_near))[:8]
+    else:
+        selected_eq = [t.upper().strip() for t in candidates]
+
+    entries: List[Dict[str, Any]] = []
+
+    # 1. Index Benchmarks (SPY, QQQ) with Section 1256 (XSP/XND) tax notes
+    for idx_t in ["SPY", "QQQ"]:
+        s_idx, _ = fetch_yahoo_v8_chart(idx_t, range_str="5y", interval="1d", timeout=6.0)
+        if not s_idx.empty and len(s_idx) >= 40:
+            spot = float(s_idx.iloc[-1])
+            ivr_info = compute_ivr_from_prices(s_idx)
+            gate_info = compute_two_tier_sma_status(s_idx)
+        else:
+            spot = 600.0 if idx_t == "SPY" else 520.0
+            ivr_info = {"iv_proxy_pct": 20.0, "ivr_1y": None}
+            gate_info = {"gating_tier": "INDEX_BENCHMARK", "dist_100w_pct": 0.0, "dist_200w_pct": 0.0}
+
+        if idx_t == "SPY" and vol_reg.get("vix") is not None:
+            ivp = float(vol_reg["vix"])
+            ivr = vol_reg.get("vix_ivr_1y") or ivr_info.get("ivr_1y")
+        elif idx_t == "QQQ" and vol_reg.get("vxn") is not None:
+            ivp = float(vol_reg["vxn"])
+            ivr = vol_reg.get("vxn_ivr_1y") or ivr_info.get("ivr_1y")
+        else:
+            ivp = float(ivr_info.get("iv_proxy_pct") or 22.0)
+            ivr = ivr_info.get("ivr_1y")
+
+        bp = build_csp_jade_lizard_blueprint(idx_t, spot, ivp, ivr, tbill_rate=tbill_rate, dte=30)
+        bp["role"] = "INDEX (Sec 1256: XSP/XND)"
+        bp["gating_tier"] = gate_info.get("gating_tier", "INDEX_BENCHMARK")
+        bp["dist_100w_pct"] = gate_info.get("dist_100w_pct", 0.0)
+        bp["dist_200w_pct"] = gate_info.get("dist_200w_pct", 0.0)
+        bp["fidelity_deeplink"] = generate_fidelity_deeplink(idx_t, "BUY")
+        entries.append(bp)
+
+    # 2. Equity Candidates (Strike Zone & Valuation 3/4 Near-Misses)
+    for sym in selected_eq:
+        if sym in {"SPY", "QQQ"} or sym not in close_df.columns:
+            continue
+        spot = float(close_df.loc[dt_last, sym])
+        if not (math.isfinite(spot) and spot > 0):
+            continue
+        meta = cand_map.get(sym, {})
+        iv_info = compute_ivr_from_prices(close_df[sym])
+        gate_info = compute_two_tier_sma_status(close_df[sym])
+        ivp = float(meta.get("iv_proxy_pct") or iv_info.get("iv_proxy_pct") or 28.0)
+        ivr = meta.get("ivr_1y") if meta.get("ivr_1y") is not None else iv_info.get("ivr_1y")
+
+        bp = build_csp_jade_lizard_blueprint(sym, spot, ivp, ivr, tbill_rate=tbill_rate, dte=30)
+        bp["role"] = "STRIKE ZONE" if meta.get("is_strike_zone") else "3/4 NEAR-MISS (P/E)"
+        bp["gating_tier"] = meta.get("gating_tier") or gate_info.get("gating_tier", "HOLD_CASH")
+        bp["dist_100w_pct"] = meta.get("dist_100w_pct", gate_info.get("dist_100w_pct", 0.0))
+        bp["dist_200w_pct"] = meta.get("dist_200w_pct", gate_info.get("dist_200w_pct", 0.0))
+        bp["fidelity_deeplink"] = generate_fidelity_deeplink(sym, "BUY")
+        entries.append(bp)
+
+    return {
+        "status": "SUCCESS",
+        "eval_date": dt_last.strftime("%Y-%m-%d"),
+        "vol_regime": vol_reg,
+        "entries": entries,
+        "tax_note": "Execute index spreads via Section 1256 (XSP/XND) in Taxable for 60/40 LTCG/STCG, or single-stock CSP/Jade Lizards in Roth IRA.",
     }
 
 
@@ -931,11 +1124,13 @@ def get_buffett_showdown_api() -> Dict[str, Any]:
 
 def get_options_collars_api(holdings: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
     """
-    Generates 180-365 DTE protective collar recommendations for high-gain holdings.
+    Generates 180-365 DTE protective collar recommendations for high-gain holdings
+    using per-ticker VRP-adjusted volatility and live T-bill yield.
     """
     ds = _get_dataset()
     close_df = ds["close_df"]
     dt_last = close_df.index[-1]
+    vol_reg = _get_cached_vol_regime()
 
     target_holdings = holdings or [
         {"symbol": "NVDA", "shares": 100, "unrealized_gain": 85000.0},
@@ -943,6 +1138,7 @@ def get_options_collars_api(holdings: Optional[List[Dict[str, Any]]] = None) -> 
         {"symbol": "MSFT", "shares": 100, "unrealized_gain": 22000.0},
     ]
 
+    r = max(0.01, float(vol_reg.get("tbill_yield_pct") or 4.2) / 100.0)
     collars = []
     for h in target_holdings:
         sym = h.get("symbol", "").upper().strip()
@@ -951,8 +1147,8 @@ def get_options_collars_api(holdings: Optional[List[Dict[str, Any]]] = None) -> 
 
         spot = float(close_df.loc[dt_last, sym]) if sym in close_df else 150.0
         T = 0.75  # 270 DTE (~9 months)
-        r = 0.045
-        base_sigma = 0.35
+        iv_info = compute_ivr_from_prices(close_df[sym]) if sym in close_df else {}
+        base_sigma = max(0.14, float(iv_info.get("iv_proxy_pct") or 35.0) / 100.0)
 
         # 10% OTM protective put
         put_strike = round(spot * 0.90, 1)

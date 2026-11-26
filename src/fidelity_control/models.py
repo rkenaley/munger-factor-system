@@ -22,18 +22,21 @@ class SecurityMetrics:
     # Technical & Moving Averages
     sma50d: float = 0.0
     sma200d: float = 0.0
+    sma50w: float = 0.0
+    sma100w: float = 0.0
     sma200w: float = 0.0
+    dist_100w_pct: float = 0.0
     dist_200w_pct: float = 0.0
     dist_200d_pct: float = 0.0
     munger_gating_open: bool = False
+    gating_tier: str = "HOLD_CASH"
     
-    # Sentiment & Momentum
-    rsi14: float = 50.0
+    # Structural Drawdown & Momentum (RSI/ExtIdx retired)
+    dd_52w_pct: float = 0.0
     residual_mom_12_1: float = 0.0
     pead_score: float = 50.0
     sentiment_score: float = 50.0
-    extremizing_index: float = 0.0
-    extremizing_status: str = "NEUTRAL"
+    structural_regime: str = "NEUTRAL"
     
     # Valuation & Target Thresholds
     intrinsic_value: float = 0.0

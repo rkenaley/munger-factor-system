@@ -1,6 +1,12 @@
 {
-  "last_updated": "2026-11-02",
-  "curation_methodology": "Munger Factor 4-Pillar Quality/Value Screener with SEC Form 4 Insider Conviction & Technical Gating",
+  "last_updated": "2026-11-17",
+  "curation_methodology": "Munger Factor 4-Pillar Quality/Value Screener with SEC Form 4 Insider Conviction, Anti-Crest Guard & Physician COI Exclusion",
+  "compliance_exclusions": {
+    "physician_coi_excluded": true,
+    "excluded_themes": ["Biotechnology", "Pharmaceuticals"],
+    "config_file": "data/coi_exclusions.json",
+    "notes": "Biotech and pharmaceutical companies (e.g., REGN, INCY, LLY, VRTX) are excluded due to physician spouse conflict of interest. Existing Roth lot SIBN (medical device) flagged for hospital COI policy verification."
+  },
   "watchlist": [
     {
       "ticker": "ASML",
@@ -251,6 +257,131 @@
       "tax_location_recommendation": "Roth IRA or Taxable Brokerage (High asymmetric convexity on optical shift)",
       "insider_status": "Neutral (Buys: $0, Sales: $2.7M)",
       "status": "WATCHLIST - HIGH-CONVICTION OPTICAL CHOKE-POINT"
+    },
+    {
+      "ticker": "EOG",
+      "name": "EOG Resources, Inc.",
+      "category": "Stock Picking",
+      "theme": "Low-Cost US Shale Oil & Gas / Free Cash Flow Capital Return",
+      "moat_type": "Low-Cost Acreage Moat (Double-Premium Basin Reserves + Net Cash Buffer)",
+      "moat_description": "Premier low-cost U.S. onshore E&P operator generating substantial free cash flow through disciplined capex, returning cash via base dividend hikes and share repurchases.",
+      "spot_price": 157.79,
+      "clean_munger_score": 3.59,
+      "conviction_munger_score": 3.59,
+      "roic_pct": 14.5,
+      "sales_5y_cagr_pct": 9.7,
+      "pe_ratio": 17.5,
+      "net_debt_to_ebitda": 0.23,
+      "balance_sheet": "Fortress Balance Sheet (0.23x Net Debt / EBITDA)",
+      "drawdown_from_52w_high_pct": -4.7,
+      "strike_zone_triggers": {
+        "tier_1_starter": 152.00,
+        "tier_2_deep_value": 138.00,
+        "munger_sma200w_buffer": 117.09
+      },
+      "tax_location_recommendation": "Taxable Brokerage (Qualified dividend + inflation/yield hedge)",
+      "insider_status": "Neutral (Balanced)",
+      "status": "STRIKE ZONE - CLEAN NON-BIOTECH INFLATION HEDGE"
+    },
+    {
+      "ticker": "AMP",
+      "name": "Ameriprise Financial, Inc.",
+      "category": "Stock Picking",
+      "theme": "Fee-Based Wealth & Asset Management Compounder",
+      "moat_type": "Advisor Switching-Cost & AUM Scale Moat ($1.79T AUMA)",
+      "moat_description": "Capital-light advice, wealth, and asset management platform backed by sticky advisor relationships, fee-based asset growth, and aggressive share repurchases.",
+      "spot_price": 517.89,
+      "clean_munger_score": 2.36,
+      "conviction_munger_score": 2.36,
+      "roic_pct": 13.5,
+      "sales_5y_cagr_pct": 11.6,
+      "pe_ratio": 18.5,
+      "net_debt_to_ebitda": 1.35,
+      "balance_sheet": "Strong Cash Liquidity ($10.3B cash vs $4.3B debt)",
+      "drawdown_from_52w_high_pct": -9.3,
+      "strike_zone_triggers": {
+        "tier_1_starter": 510.00,
+        "tier_2_deep_value": 475.00,
+        "munger_sma200w_buffer": 434.18
+      },
+      "tax_location_recommendation": "Taxable Brokerage or Traditional IRA (Capital-return buyback compounder)",
+      "insider_status": "Neutral (Balanced)",
+      "status": "STRIKE ZONE - CLEAN NON-BIOTECH QUALITY FINANCIAL"
+    },
+    {
+      "ticker": "FSLR",
+      "name": "First Solar, Inc.",
+      "category": "Stock Picking / Energy Transition",
+      "theme": "U.S. Utility-Scale Thin-Film Solar Manufacturing",
+      "moat_type": "Domestic Thin-Film Technology & Tariff-Protected U.S. Manufacturing",
+      "moat_description": "Premier U.S. utility-scale solar module manufacturer with 37.7% operating margins, net-cash balance sheet ($1.62B cash vs $325M debt), and domestic manufacturing protection against Chinese polysilicon imports.",
+      "spot_price": 151.95,
+      "clean_munger_score": 0.0,
+      "conviction_munger_score": 0.0,
+      "roic_pct": 18.7,
+      "sales_5y_cagr_pct": -3.7,
+      "pe_ratio": 8.8,
+      "net_debt_to_ebitda": -0.64,
+      "balance_sheet": "Net Cash Fortress ($1.62B cash vs $325M debt, +$688M FCF)",
+      "drawdown_from_52w_high_pct": -52.7,
+      "strike_zone_triggers": {
+        "tier_1_starter": 145.00,
+        "tier_2_deep_value": 125.00,
+        "munger_sma200w_buffer": 165.00
+      },
+      "tax_location_recommendation": "Roth IRA or Taxable Brokerage (Wait for base-building after 5-day flush)",
+      "insider_status": "Monitored via Weeknight Screener",
+      "status": "WATCHLIST - UTILITY SOLAR DEEP VALUE (6.6x FWD P/E)"
+    },
+    {
+      "ticker": "NXT",
+      "name": "Nextpower Inc. (fka Nextracker)",
+      "category": "Stock Picking / Energy Transition",
+      "theme": "Utility-Scale Solar Trackers & Data Center Power Conversion",
+      "moat_type": "Market-Leading Utility Tracker Software + Medium-Voltage Power Hardware",
+      "moat_description": "Leading utility-scale solar tracker and power conversion platform (+22.5% YoY revenue growth, 26.5% ROE, +$371M FCF) expanding into industrial and AI data center power infrastructure.",
+      "spot_price": 75.95,
+      "clean_munger_score": 0.0,
+      "conviction_munger_score": 0.0,
+      "roic_pct": 27.2,
+      "sales_5y_cagr_pct": 8.2,
+      "pe_ratio": 19.1,
+      "net_debt_to_ebitda": -1.57,
+      "balance_sheet": "Net Cash Fortress ($1.03B cash vs $44.5M debt)",
+      "drawdown_from_52w_high_pct": -53.4,
+      "strike_zone_triggers": {
+        "tier_1_starter": 72.00,
+        "tier_2_deep_value": 62.00,
+        "munger_sma200w_buffer": 55.00
+      },
+      "tax_location_recommendation": "Roth IRA or Taxable Brokerage (Staged entry once 5-day selloff stabilizes)",
+      "insider_status": "Monitored via Weeknight Screener",
+      "status": "WATCHLIST - UTILITY SOLAR & DATA CENTER POWER COMPOUNDER"
+    },
+    {
+      "ticker": "MWH",
+      "name": "SOLV Energy, Inc.",
+      "category": "Stock Picking / Wild Satellite",
+      "theme": "Utility-Scale Solar, BESS Storage & T&D EPC",
+      "moat_type": "Scale Utility EPC Execution & $9.2B Record Backlog",
+      "moat_description": "Pure-play utility-scale solar, battery energy storage (BESS), and transmission EPC contractor growing revenue +65% YoY with zero term debt ($422M cash, +$356M FCF). Monitor elevated ~18.5% short interest.",
+      "spot_price": 27.18,
+      "clean_munger_score": 0.0,
+      "conviction_munger_score": 0.0,
+      "roic_pct": 28.4,
+      "sales_5y_cagr_pct": 64.9,
+      "pe_ratio": 27.2,
+      "net_debt_to_ebitda": -0.50,
+      "balance_sheet": "Zero Term Debt ($422M cash vs $87M debt, $9.2B backlog)",
+      "drawdown_from_52w_high_pct": -43.8,
+      "strike_zone_triggers": {
+        "tier_1_starter": 25.00,
+        "tier_2_deep_value": 21.50,
+        "munger_sma200w_buffer": 0.0
+      },
+      "tax_location_recommendation": "Roth IRA Wild Sleeve (High-beta relative strength leader; watch 18.5% SI)",
+      "insider_status": "Monitored via Weeknight Screener",
+      "status": "WATCHLIST - RELATIVE STRENGTH UTILITY SOLAR EPC"
     }
   ]
 }

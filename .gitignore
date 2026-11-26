@@ -67,3 +67,10 @@ scratch/
 analyze_broadcom_factors.py
 avgo_collar.py
 run_biweekly_checkin.py
+
+# Generated runtime reports, SQLite ledgers, and daily briefings
+output/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+
